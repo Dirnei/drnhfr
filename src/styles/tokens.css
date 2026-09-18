@@ -1,0 +1,17 @@
+:root {
+  --ink: #0a0a0b;
+  --surface: #0d0d0f;
+  --hairline: #2a2c33;
+  --hairline-soft: #1e1f24;
+  --text: #f2f2f2;
+  --text-muted: #8d919b;
+  --text-dim: #55575f;
+  --red: #da1515;
+
+  --font-display: 'Open Sans Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --measure: 62ch;
+  --gutter: 1.25rem;
+  --page-max: 68rem;
+}

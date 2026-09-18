@@ -1,0 +1,64 @@
+---
+import '../styles/base.css';
+import Logo from '../components/Logo.astro';
+
+interface Props {
+  lang: 'de' | 'en';
+  title: string;
+  description: string;
+  altHref: string;
+}
+
+const { lang, title, description, altHref } = Astro.props;
+const other = lang === 'de' ? 'en' : 'de';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={other} href={new URL(altHref, Astro.site)} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      {lang === 'de' ? 'Zum Inhalt springen' : 'Skip to content'}
+    </a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a href={`/${lang}/`} aria-label="drnhfr"><Logo size={28} /></a>
+        <nav class="nav"><slot name="nav" /></nav>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="shell"><slot name="footer" /></div>
+    </footer>
+  </body>
+</html>
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 0.75rem;
+  }
+  .nav {
+    margin-left: auto;
+  }
+  .site-footer {
+    border-top: 1px solid var(--hairline);
+    margin-top: 4rem;
+    padding-block: 1.25rem;
+  }
+</style>
