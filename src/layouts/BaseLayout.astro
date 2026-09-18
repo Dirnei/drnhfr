@@ -2,7 +2,8 @@
 import '../styles/base.css';
 import Logo from '../components/Logo.astro';
 import SiteNav from '../components/SiteNav.astro';
-import type { RouteKey } from '../i18n/routes';
+import { routePath, type RouteKey } from '../i18n/routes';
+import { useTranslations } from '../i18n/ui';
 
 interface Props {
   lang: 'de' | 'en';
@@ -16,6 +17,7 @@ interface Props {
 const { lang, title, description, altHref, current, altAvailable = true } = Astro.props;
 const other = lang === 'de' ? 'en' : 'de';
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const t = useTranslations(lang);
 ---
 <!doctype html>
 <html lang={lang}>
@@ -45,7 +47,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       <slot />
     </main>
     <footer class="site-footer">
-      <div class="shell"><slot name="footer" /></div>
+      <div class="shell">
+        <ul class="footer-list">
+          <li><a href={routePath('imprint', lang)}>{t('nav.imprint')}</a></li>
+          <li><a href={routePath('privacy', lang)}>{t('nav.privacy')}</a></li>
+          <li><a href="mailto:christian@dirnhofer.net">christian@dirnhofer.net</a></li>
+        </ul>
+      </div>
     </footer>
   </body>
 </html>
@@ -66,5 +74,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     border-top: 1px solid var(--hairline);
     margin-top: 4rem;
     padding-block: 1.25rem;
+  }
+  .footer-list {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .footer-list a:hover {
+    color: var(--red);
   }
 </style>

@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { routePath } from '../../../i18n/routes';
+---
+<BaseLayout
+  lang="de"
+  title="Datenschutzerklärung — Christian Dirnhofer"
+  description="Datenschutzerklärung von Christian Dirnhofer."
+  altHref={routePath('privacy', 'en')}
+>
+  <div class="shell legal">
+    <h1>Datenschutz&shy;erklärung</h1>
+
+    <h2 class="mono-label">Verantwortlicher</h2>
+    <p>
+      Christian Dirnhofer, Neuschmied 12, 83246 Unterwössen, Deutschland.<br />
+      E-Mail: <a href="mailto:christian@dirnhofer.net">christian@dirnhofer.net</a>
+    </p>
+
+    <h2 class="mono-label">Hosting durch GitHub Pages</h2>
+    <p>
+      Diese Website wird von GitHub Inc., 88 Colin P. Kelly Jr. Street, San
+      Francisco, CA 94107, USA, als GitHub Pages gehostet. Beim Aufruf der Seite
+      verarbeitet GitHub technisch notwendige Verbindungsdaten in
+      Server-Logfiles, insbesondere Ihre IP-Adresse, Datum und Uhrzeit des
+      Zugriffs, die aufgerufene Seite, den Browsertyp und das Betriebssystem.
+      Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; mein berechtigtes Interesse
+      liegt im sicheren und zuverlässigen Betrieb dieser Website. Die
+      Verarbeitung findet auch in den USA statt. Einzelheiten finden Sie in der
+      Datenschutzerklärung von GitHub unter
+      <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">
+        docs.github.com
+      </a>.
+    </p>
+
+    <h2 class="mono-label">Keine Cookies, kein Tracking</h2>
+    <p>
+      Diese Website setzt keine Cookies, bindet keine Analyse- oder
+      Trackingdienste ein und verwendet keine Werbenetzwerke. Es findet kein
+      Profiling statt.
+    </p>
+
+    <h2 class="mono-label">Schriftarten</h2>
+    <p>
+      Alle verwendeten Schriftarten werden von diesem Server ausgeliefert. Es
+      besteht keine Verbindung zu Google Fonts oder einem anderen externen
+      Dienst.
+    </p>
+
+    <h2 class="mono-label">Lokaler Browserspeicher</h2>
+    <p>
+      Beim ersten Aufruf pro Browsersitzung wird eine kurze Startanimation
+      gezeigt. Damit sie sich nicht wiederholt, wird ein einzelner Eintrag im
+      <code>sessionStorage</code> Ihres Browsers gespeichert. Dieser Eintrag
+      enthält keine personenbezogenen Daten, wird nicht an mich übertragen und
+      wird beim Schließen des Browser-Tabs gelöscht.
+    </p>
+
+    <h2 class="mono-label">Kontaktaufnahme per E-Mail</h2>
+    <p>
+      Wenn Sie mir eine E-Mail schreiben, verarbeite ich Ihre Angaben zur
+      Bearbeitung der Anfrage auf Grundlage von Art. 6 Abs. 1 lit. b bzw. lit. f
+      DSGVO. Ich lösche diese Daten, sobald sie für den Zweck nicht mehr
+      erforderlich sind und keine gesetzlichen Aufbewahrungspflichten
+      entgegenstehen.
+    </p>
+
+    <h2 class="mono-label">Ihre Rechte</h2>
+    <p>
+      Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16
+      DSGVO), Löschung (Art. 17 DSGVO), Einschränkung der Verarbeitung (Art. 18
+      DSGVO), Datenübertragbarkeit (Art. 20 DSGVO) sowie ein Widerspruchsrecht
+      gegen die Verarbeitung (Art. 21 DSGVO). Wenden Sie sich dafür an die oben
+      genannte Adresse.
+    </p>
+    <p>
+      Ihnen steht zudem ein Beschwerderecht bei einer Aufsichtsbehörde zu.
+      Zuständig ist das Bayerische Landesamt für Datenschutzaufsicht,
+      Promenade 18, 91522 Ansbach.
+    </p>
+  </div>
+</BaseLayout>
+<style>
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 1rem;
+  }
+  .legal {
+    max-width: var(--measure);
+    line-height: 1.7;
+  }
+  .legal h2 {
+    margin-top: 2rem;
+  }
+  .legal a:hover {
+    color: var(--red);
+  }
+</style>

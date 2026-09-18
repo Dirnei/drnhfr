@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { routePath } from '../../../i18n/routes';
+---
+<BaseLayout
+  lang="de"
+  current="contact"
+  title="Kontakt — Christian Dirnhofer"
+  description="So erreichst du Christian Dirnhofer."
+  altHref={routePath('contact', 'en')}
+>
+  <div class="shell contact">
+    <h1>Kontakt</h1>
+    <p>
+      Am schnellsten per E-Mail. Ich antworte in der Regel innerhalb weniger Tage.
+    </p>
+    <ul class="links">
+      <li>
+        <span class="mono-label">E-Mail</span>
+        <a href="mailto:christian@dirnhofer.net">christian@dirnhofer.net</a>
+      </li>
+      <li>
+        <span class="mono-label">LinkedIn</span>
+        <a href="https://www.linkedin.com/in/christian-dirnhofer-a89b4a229/">
+          christian-dirnhofer
+        </a>
+      </li>
+      <li>
+        <span class="mono-label">GitHub</span>
+        <a href="https://github.com/Dirnei">Dirnei</a>
+      </li>
+    </ul>
+  </div>
+</BaseLayout>
+<style>
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 1rem;
+  }
+  .contact p {
+    color: var(--text-muted);
+    max-width: var(--measure);
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+    margin-top: 2rem;
+  }
+  .links li {
+    border-top: 1px solid var(--hairline-soft);
+    padding-block: 0.75rem;
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    align-items: baseline;
+  }
+  .links a:hover {
+    color: var(--red);
+  }
+</style>
