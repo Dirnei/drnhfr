@@ -1,15 +1,19 @@
 ---
 import '../styles/base.css';
 import Logo from '../components/Logo.astro';
+import SiteNav from '../components/SiteNav.astro';
+import type { RouteKey } from '../i18n/routes';
 
 interface Props {
   lang: 'de' | 'en';
   title: string;
   description: string;
   altHref: string;
+  current?: RouteKey;
+  altAvailable?: boolean;
 }
 
-const { lang, title, description, altHref } = Astro.props;
+const { lang, title, description, altHref, current, altAvailable = true } = Astro.props;
 const other = lang === 'de' ? 'en' : 'de';
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -32,7 +36,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <header class="site-header">
       <div class="shell header-inner">
         <a href={`/${lang}/`} aria-label="drnhfr"><Logo size={28} /></a>
-        <nav class="nav"><slot name="nav" /></nav>
+        <nav class="nav">
+          <SiteNav lang={lang} current={current} altHref={altHref} altAvailable={altAvailable} />
+        </nav>
       </div>
     </header>
     <main id="main">

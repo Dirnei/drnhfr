@@ -1,0 +1,43 @@
+---
+import type { Locale } from '../i18n/locales';
+import { otherLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
+interface Props {
+  lang: Locale;
+  href: string;
+  available?: boolean;
+}
+
+const { lang, href, available = true } = Astro.props;
+const target = otherLocale(lang);
+const t = useTranslations(lang);
+---
+<a
+  class="lang-switch"
+  href={href}
+  hreflang={target}
+  lang={target}
+  aria-label={t('lang.switch')}
+  title={available ? undefined : t('lang.missing')}
+>
+  <span class={lang === 'de' ? 'on' : ''}>de</span><span class="sep">|</span><span
+    class={lang === 'en' ? 'on' : ''}>en</span>
+</a>
+<style>
+  .lang-switch {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+  .lang-switch .on {
+    color: var(--text);
+  }
+  .lang-switch:hover .on {
+    color: var(--red);
+  }
+  .sep {
+    padding-inline: 0.25rem;
+  }
+</style>
