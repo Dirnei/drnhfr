@@ -1,0 +1,112 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Prose from '../../../components/Prose.astro';
+import { getProjects, getPostsForProject } from '../../../lib/entries';
+import { slugOf } from '../../../lib/ids';
+import { findCounterpart } from '../../../lib/translations';
+import { useTranslations } from '../../../i18n/ui';
+import { routePath } from '../../../i18n/routes';
+
+export async function getStaticPaths() {
+  const projects = await getProjects('de');
+  return projects.map((project) => ({
+    params: { slug: slugOf(project.id) },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const t = useTranslations('de');
+const { Content } = await render(project);
+
+const englishProjects = await getProjects('en');
+const counterpart = findCounterpart(englishProjects, project.data.translationKey);
+const altHref = counterpart
+  ? `/en/projects/${slugOf(counterpart.id)}/`
+  : routePath('projects', 'en');
+
+const posts = await getPostsForProject(project.id, 'de');
+---
+<BaseLayout
+  lang="de"
+  current="projects"
+  title={`${project.data.title} — Christian Dirnhofer`}
+  description={project.data.summary}
+  altHref={altHref}
+  altAvailable={Boolean(counterpart)}
+>
+  <article class="shell">
+    <p class="mono-label crumb">Projekt</p>
+    <h1>{project.data.title}</h1>
+    <p class="summary">{project.data.summary}</p>
+    <dl class="facts">
+      <dt class="mono-label">{t('projects.role')}</dt>
+      <dd>{project.data.role}</dd>
+      <dt class="mono-label">{t('projects.period')}</dt>
+      <dd>{project.data.period}</dd>
+      <dt class="mono-label">{t('projects.stack')}</dt>
+      <dd>{project.data.stack.join(' · ')}</dd>
+    </dl>
+    {
+      project.data.links.repo && (
+        <p class="mono-label">
+          <a href={project.data.links.repo}>{t('projects.repo')}</a>
+        </p>
+      )
+    }
+    <hr />
+    <Prose><Content /></Prose>
+    {
+      posts.length > 0 && (
+        <section class="related">
+          <h2 class="mono-label">{t('projects.relatedPosts')}</h2>
+          <ul>
+            {posts.map((post) => (
+              <li>
+                <a href={`/de/blog/${slugOf(post.id)}/`}>{post.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+<style>
+  .crumb {
+    color: var(--text-muted);
+    padding-top: 2rem;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 7vw, 3rem);
+    margin-block: 0.75rem;
+  }
+  .summary {
+    color: var(--text-muted);
+    max-width: var(--measure);
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1.5rem;
+    margin-block: 1.5rem;
+  }
+  .facts dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--hairline);
+    margin-block: 1.5rem;
+  }
+  .related ul {
+    list-style: none;
+    padding: 0;
+  }
+  .related a:hover {
+    color: var(--red);
+  }
+</style>

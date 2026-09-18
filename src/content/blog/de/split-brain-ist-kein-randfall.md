@@ -3,6 +3,7 @@ title: 'Split-Brain ist kein Randfall'
 description: 'Warum zwei gesunde Cluster-Hälften das eigentliche Problem sind — und welcher Konfigurationswert wirklich zählt.'
 date: 2026-09-02
 tags: ['akka.net', 'verteilte-systeme']
+project: de/event-sourcing-ohne-reue
 translationKey: 'split-brain'
 ---
 

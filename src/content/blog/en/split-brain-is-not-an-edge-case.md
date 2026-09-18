@@ -3,6 +3,7 @@ title: 'Split-Brain Is Not an Edge Case'
 description: 'Why two healthy cluster halves are the real failure mode — and which single setting actually controls it.'
 date: 2026-09-02
 tags: ['akka.net', 'distributed-systems']
+project: en/event-sourcing-without-regret
 translationKey: 'split-brain'
 ---
 

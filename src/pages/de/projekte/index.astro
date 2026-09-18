@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import EntryRow from '../../../components/EntryRow.astro';
+import { getProjects } from '../../../lib/entries';
+import { slugOf } from '../../../lib/ids';
+import { useTranslations } from '../../../i18n/ui';
+import { routePath } from '../../../i18n/routes';
+
+const t = useTranslations('de');
+const projects = await getProjects('de');
+---
+<BaseLayout
+  lang="de"
+  current="projects"
+  title="Projekte — Christian Dirnhofer"
+  description="Ausgewählte Projekte: Problem, Rolle, Ergebnis."
+  altHref={routePath('projects', 'en')}
+>
+  <div class="shell">
+    <h1>{t('projects.title')}</h1>
+    {projects.length === 0 && <p class="mono-label">{t('projects.empty')}</p>}
+    <ul class="rows">
+      {
+        projects.map((project, index) => (
+          <EntryRow
+            href={`/de/projekte/${slugOf(project.id)}/`}
+            index={index}
+            title={project.data.title}
+            kind="Projekt"
+          />
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>
+<style>
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 1.25rem;
+  }
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--hairline);
+  }
+</style>
