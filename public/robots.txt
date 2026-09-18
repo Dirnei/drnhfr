@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dirnhofer.net/sitemap-index.xml
