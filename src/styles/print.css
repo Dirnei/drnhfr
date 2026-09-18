@@ -1,0 +1,39 @@
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  :root {
+    --ink: #ffffff;
+    --text: #111111;
+    --text-muted: #444444;
+    --hairline: #cccccc;
+    --hairline-soft: #e5e5e5;
+  }
+
+  body {
+    background: #fff;
+    color: #111;
+  }
+
+  .site-header,
+  .site-footer,
+  .skip-link,
+  .print-hide {
+    display: none !important;
+  }
+
+  .cv-station {
+    break-inside: avoid;
+  }
+
+  a {
+    color: #111;
+  }
+
+  .cv a::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.75em;
+    color: #555;
+  }
+}

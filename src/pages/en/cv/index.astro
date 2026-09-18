@@ -1,0 +1,149 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { cvEn } from '../../../data/cv.en';
+import { useTranslations } from '../../../i18n/ui';
+import { routePath } from '../../../i18n/routes';
+import '../../../styles/print.css';
+
+const t = useTranslations('en');
+const cv = cvEn;
+---
+<BaseLayout
+  lang="en"
+  current="cv"
+  title="CV — Christian Dirnhofer"
+  description="Experience, skills, and education of Christian Dirnhofer."
+  altHref={routePath('cv', 'de')}
+>
+  <div class="shell cv">
+    <h1>{t('cv.title')}</h1>
+    <p class="mono-label print-hide">
+      <button type="button" onclick="window.print()">{t('cv.print')}</button>
+    </p>
+
+    <section class="profile">
+      <h2 class="mono-label">{cv.profile.headline}</h2>
+      <p>{cv.profile.summary}</p>
+      <p class="mono-label contact">
+        <a href={`mailto:${cv.profile.email}`}>{cv.profile.email}</a> ·
+        {cv.profile.location} ·
+        <a href={cv.profile.linkedin}>LinkedIn</a>
+      </p>
+    </section>
+
+    <section>
+      <h2 class="mono-label section-head">{t('cv.experience')}</h2>
+      {
+        cv.experience.map((station) => (
+          <article class="cv-station">
+            <p class="mono-label period">{station.period}</p>
+            <h3>{station.title}</h3>
+            <p class="org">{station.organisation}{station.location && <> · {station.location}</>}</p>
+            <ul>
+              {station.bullets.map((bullet) => <li>{bullet}</li>)}
+            </ul>
+          </article>
+        ))
+      }
+    </section>
+
+    <section>
+      <h2 class="mono-label section-head">{t('cv.skills')}</h2>
+      <dl class="skills">
+        {
+          cv.skills.map((group) => (
+            <>
+              <dt class="mono-label">{group.label}</dt>
+              <dd>{group.items.join(' · ')}</dd>
+            </>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section>
+      <h2 class="mono-label section-head">{t('cv.education')}</h2>
+      {
+        cv.education.map((station) => (
+          <article class="cv-station">
+            <p class="mono-label period">{station.period}</p>
+            <h3>{station.title}</h3>
+            <p class="org">{station.organisation}</p>
+          </article>
+        ))
+      }
+    </section>
+
+    <section>
+      <h2 class="mono-label section-head">{t('cv.languages')}</h2>
+      <dl class="skills">
+        {
+          cv.languages.map((entry) => (
+            <>
+              <dt class="mono-label">{entry.language}</dt>
+              <dd>{entry.level}</dd>
+            </>
+          ))
+        }
+      </dl>
+    </section>
+  </div>
+</BaseLayout>
+<style>
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 1rem;
+  }
+  .cv {
+    max-width: 50rem;
+  }
+  .section-head {
+    color: var(--red);
+    border-top: 1px solid var(--hairline);
+    padding-top: 1rem;
+    margin-top: 2rem;
+  }
+  .cv-station {
+    margin-bottom: 1.5rem;
+  }
+  .period {
+    margin: 0;
+  }
+  h3 {
+    font-size: 1rem;
+    margin: 0.3rem 0;
+  }
+  .org {
+    color: var(--text-muted);
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+  }
+  ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    line-height: 1.6;
+  }
+  .skills {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1.5rem;
+    margin: 0;
+  }
+  .skills dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  button {
+    background: none;
+    border: 1px solid var(--hairline);
+    color: var(--text-muted);
+    font: inherit;
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+  }
+  button:hover {
+    color: var(--red);
+    border-color: var(--red);
+  }
+</style>
