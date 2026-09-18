@@ -1,0 +1,82 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Prose from '../../../components/Prose.astro';
+import { getPosts } from '../../../lib/entries';
+import { slugOf } from '../../../lib/ids';
+import { findCounterpart } from '../../../lib/translations';
+import { formatDate } from '../../../lib/format';
+import { readingTimeMinutes } from '../../../lib/reading-time';
+import { useTranslations } from '../../../i18n/ui';
+import { routePath } from '../../../i18n/routes';
+
+export async function getStaticPaths() {
+  const posts = await getPosts('de');
+  return posts.map((post) => ({
+    params: { slug: slugOf(post.id) },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const t = useTranslations('de');
+const { Content } = await render(post);
+
+const englishPosts = await getPosts('en');
+const counterpart = findCounterpart(englishPosts, post.data.translationKey);
+const altHref = counterpart ? `/en/blog/${slugOf(counterpart.id)}/` : routePath('blog', 'en');
+
+const project = post.data.project ? await getEntry(post.data.project) : undefined;
+const minutes = readingTimeMinutes(post.body ?? '');
+---
+<BaseLayout
+  lang="de"
+  current="blog"
+  title={`${post.data.title} — Christian Dirnhofer`}
+  description={post.data.description}
+  altHref={altHref}
+  altAvailable={Boolean(counterpart)}
+>
+  <article class="shell">
+    <p class="mono-label crumb">Blog</p>
+    <h1>{post.data.title}</h1>
+    <p class="mono-label meta">
+      {formatDate(post.data.date, 'de')} · {minutes} {t('blog.readingTime')}
+      {post.data.updated && <> · {t('blog.updated')} {formatDate(post.data.updated, 'de')}</>}
+    </p>
+    <hr />
+    <Prose><Content /></Prose>
+    {
+      project && (
+        <p class="mono-label related">
+          {t('blog.relatedProject')}:
+          <a href={`/de/projekte/${slugOf(project.id)}/`}>{project.data.title}</a>
+        </p>
+      )
+    }
+  </article>
+</BaseLayout>
+<style>
+  .crumb {
+    color: var(--text-muted);
+    padding-top: 2rem;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 7vw, 3rem);
+    margin-block: 0.75rem;
+  }
+  .meta {
+    margin: 0;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--hairline);
+    margin-block: 1.5rem;
+  }
+  .related a {
+    margin-left: 0.4rem;
+  }
+  .related a:hover {
+    color: var(--red);
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+interface Props {
+  href: string;
+  index: number;
+  title: string;
+  kind: string;
+}
+const { href, index, title, kind } = Astro.props;
+const number = String(index + 1).padStart(2, '0');
+---
+<li class="row">
+  <a href={href}>
+    <span class="n">{number}</span>
+    <span class="t">{title}</span>
+    <span class="kind">{kind}</span>
+  </a>
+</li>
+<style>
+  .row {
+    border-bottom: 1px solid var(--hairline-soft);
+  }
+  .row a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 0.75rem;
+    position: relative;
+  }
+  .n {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--text-dim);
+    width: 1.5rem;
+  }
+  .t {
+    font-weight: 800;
+    font-stretch: 75%;
+    text-transform: uppercase;
+    font-size: 1rem;
+  }
+  .kind {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border: 1px solid var(--hairline);
+    padding: 0.25rem 0.4rem;
+  }
+  .row a::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--gutter) * -1);
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: var(--red);
+  }
+  .row a:hover::before,
+  .row a:focus-visible::before {
+    width: 3px;
+  }
+  .row a:hover .n,
+  .row a:focus-visible .n {
+    color: var(--red);
+  }
+  .row a:hover .kind,
+  .row a:focus-visible .kind {
+    color: var(--red);
+    border-color: var(--red);
+  }
+</style>
