@@ -68,7 +68,10 @@ const cv = cvDe;
           <article class="cv-station">
             <p class="mono-label period">{station.period}</p>
             <h3>{station.title}</h3>
-            <p class="org">{station.organisation}</p>
+            <p class="org">{station.organisation}{station.location && <> · {station.location}</>}</p>
+            <ul>
+              {station.bullets.map((bullet) => <li>{bullet}</li>)}
+            </ul>
           </article>
         ))
       }

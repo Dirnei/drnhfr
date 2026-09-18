@@ -36,4 +36,8 @@
     font-size: 0.75em;
     color: #555;
   }
+
+  .cv a[href^="mailto:"]::after {
+    content: none;
+  }
 }
