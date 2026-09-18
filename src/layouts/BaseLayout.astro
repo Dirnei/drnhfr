@@ -30,6 +30,20 @@ const t = useTranslations(lang);
     <link rel="alternate" hreflang={other} href={new URL(altHref, Astro.site)} />
     <link rel="alternate" hreflang={lang} href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`Christian Dirnhofer — Blog (${lang})`}
+      href={`/${lang}/rss.xml`}
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Christian Dirnhofer" />
+    <meta property="og:locale" content={lang === 'de' ? 'de_DE' : 'en_GB'} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(`/og-${lang}.png`, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <a class="skip-link" href="#main">
