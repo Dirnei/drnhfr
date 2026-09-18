@@ -1,5 +1,24 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryRow from '../../components/EntryRow.astro';
+import { getPosts, getProjects } from '../../lib/entries';
+import { slugOf } from '../../lib/ids';
+
+const projects = await getProjects('de');
+const posts = await getPosts('de');
+
+const items = [
+  ...projects.slice(0, 3).map((p) => ({
+    href: `/de/projekte/${slugOf(p.id)}/`,
+    title: p.data.title,
+    kind: 'Projekt',
+  })),
+  ...posts.slice(0, 3).map((p) => ({
+    href: `/de/blog/${slugOf(p.id)}/`,
+    title: p.data.title,
+    kind: 'Artikel',
+  })),
+];
 ---
 <BaseLayout
   lang="de"
@@ -7,7 +26,43 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   description="Verteilte Systeme, .NET und Aktorenmodelle. Projekte, Artikel und Lebenslauf."
   altHref="/en/"
 >
+  <div class="shell hero">
+    <p class="mono-label kicker">// Softwarearchitekt &amp; Tinkerer</p>
+    <h1>Systeme,<br />die halten.</h1>
+    <p class="sub">
+      Verteilte Systeme, .NET, Aktorenmodelle — beruflich.<br />
+      Platinen, Container und ein Keller voller Kabel — abends.
+    </p>
+  </div>
   <div class="shell">
-    <h1>Systeme, die halten.</h1>
+    <ul class="rows">
+      {items.map((item, index) => <EntryRow {...item} index={index} />)}
+    </ul>
   </div>
 </BaseLayout>
+<style>
+  .hero {
+    padding-block: 3rem 1.5rem;
+  }
+  .kicker {
+    color: var(--text-muted);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 12vw, 5.5rem);
+  }
+  .sub {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 44ch;
+    margin-top: 1.25rem;
+  }
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--hairline);
+  }
+</style>

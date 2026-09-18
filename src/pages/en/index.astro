@@ -1,5 +1,24 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryRow from '../../components/EntryRow.astro';
+import { getPosts, getProjects } from '../../lib/entries';
+import { slugOf } from '../../lib/ids';
+
+const projects = await getProjects('en');
+const posts = await getPosts('en');
+
+const items = [
+  ...projects.slice(0, 3).map((p) => ({
+    href: `/en/projects/${slugOf(p.id)}/`,
+    title: p.data.title,
+    kind: 'Project',
+  })),
+  ...posts.slice(0, 3).map((p) => ({
+    href: `/en/blog/${slugOf(p.id)}/`,
+    title: p.data.title,
+    kind: 'Article',
+  })),
+];
 ---
 <BaseLayout
   lang="en"
@@ -7,7 +26,43 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   description="Distributed systems, .NET and actor models. Projects, articles and resume."
   altHref="/de/"
 >
+  <div class="shell hero">
+    <p class="mono-label kicker">// Software architect &amp; tinkerer</p>
+    <h1>Systems<br />that hold.</h1>
+    <p class="sub">
+      Distributed systems, .NET, actor models — professionally.<br />
+      Circuit boards, containers and a basement full of cables — evenings.
+    </p>
+  </div>
   <div class="shell">
-    <h1>Systems that last.</h1>
+    <ul class="rows">
+      {items.map((item, index) => <EntryRow {...item} index={index} />)}
+    </ul>
   </div>
 </BaseLayout>
+<style>
+  .hero {
+    padding-block: 3rem 1.5rem;
+  }
+  .kicker {
+    color: var(--text-muted);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 12vw, 5.5rem);
+  }
+  .sub {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 44ch;
+    margin-top: 1.25rem;
+  }
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--hairline);
+  }
+</style>
