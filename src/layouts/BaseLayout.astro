@@ -2,6 +2,7 @@
 import '../styles/base.css';
 import Logo from '../components/Logo.astro';
 import SiteNav from '../components/SiteNav.astro';
+import BootIntro from '../components/BootIntro.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
 
@@ -12,9 +13,18 @@ interface Props {
   altHref: string;
   current?: RouteKey;
   altAvailable?: boolean;
+  showIntro?: boolean;
 }
 
-const { lang, title, description, altHref, current, altAvailable = true } = Astro.props;
+const {
+  lang,
+  title,
+  description,
+  altHref,
+  current,
+  altAvailable = true,
+  showIntro = false,
+} = Astro.props;
 const other = lang === 'de' ? 'en' : 'de';
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const t = useTranslations(lang);
@@ -46,6 +56,7 @@ const t = useTranslations(lang);
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
+    {showIntro && <BootIntro lang={lang} />}
     <a class="skip-link" href="#main">
       {lang === 'de' ? 'Zum Inhalt springen' : 'Skip to content'}
     </a>

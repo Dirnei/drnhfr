@@ -1,6 +1,7 @@
 @import '@fontsource-variable/open-sans/wdth.css';
 @import '@fontsource-variable/jetbrains-mono';
 @import './tokens.css';
+@import './motion.css';
 
 *,
 *::before,

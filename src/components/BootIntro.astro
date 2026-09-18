@@ -1,0 +1,124 @@
+---
+import Logo from './Logo.astro';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const skipHint = lang === 'de' ? 'esc zum überspringen' : 'esc to skip';
+const lines =
+  lang === 'de'
+    ? ['$ dirnhofer.net --boot', 'identität auflösen .... ok', 'render ................ go']
+    : ['$ dirnhofer.net --boot', 'resolving identity .... ok', 'render ................ go'];
+---
+<div class="intro" id="intro" aria-hidden="true" hidden>
+  <div class="boot" id="intro-boot">
+    {lines.map((line) => <div class="ln">{line}</div>)}
+  </div>
+  <div class="tile" id="intro-tile"><Logo size={104} /></div>
+  <p class="hint">{skipHint}</p>
+</div>
+
+<style>
+  .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--ink);
+  }
+  .boot {
+    padding: 3rem var(--gutter) 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 2;
+    color: var(--text-muted);
+  }
+  .ln {
+    opacity: 0;
+  }
+  .tile {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+  }
+  .hint {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+</style>
+
+<script>
+  const KEY = 'intro-played';
+  const root = document.getElementById('intro');
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const seen = sessionStorage.getItem(KEY) === '1';
+
+  if (!root || reduced || seen) {
+    root?.remove();
+  } else {
+    root.hidden = false;
+    document.body.style.overflow = 'hidden';
+    sessionStorage.setItem(KEY, '1');
+
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+
+    const finish = () => {
+      timers.forEach(clearTimeout);
+      document.body.style.overflow = '';
+      root.style.transition = 'opacity .3s ease';
+      root.style.opacity = '0';
+      window.setTimeout(() => root.remove(), 320);
+    };
+
+    const lines = root.querySelectorAll<HTMLElement>('.ln');
+    lines.forEach((line, index) =>
+      at(90 + index * 130, () => {
+        line.style.transition = 'opacity .09s';
+        line.style.opacity = '1';
+      }),
+    );
+
+    const boot = document.getElementById('intro-boot');
+    const tile = document.getElementById('intro-tile');
+    const start = 90 + lines.length * 130;
+
+    at(start + 60, () => {
+      if (boot) {
+        boot.style.transition = 'opacity .2s';
+        boot.style.opacity = '0';
+      }
+    });
+    at(start + 110, () => {
+      if (tile) {
+        tile.style.transition = 'opacity .2s';
+        tile.style.opacity = '1';
+      }
+    });
+    at(start + 700, () => {
+      if (tile) {
+        tile.style.transition = 'transform .5s cubic-bezier(.5,0,.2,1), opacity .3s ease .3s';
+        tile.style.transform = 'scale(.27)';
+        tile.style.opacity = '0';
+      }
+    });
+    at(start + 1050, finish);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') finish();
+    });
+    root.addEventListener('click', finish);
+    window.addEventListener('scroll', finish, { once: true, passive: true });
+  }
+</script>
