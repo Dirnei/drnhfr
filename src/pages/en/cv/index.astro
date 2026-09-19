@@ -20,7 +20,7 @@ const cv = cvEn;
     <p class="line err">cat: cv: Permission denied</p>
     <p class="line">
       The cv is only reachable through the shell on the <a href="/en/">home page</a>{' '}
-      — unlock it there with <code>login &lt;code&gt;</code>.
+      — unlock it there with <code>su &lt;code&gt;</code>.
     </p>
   </div>
   <div class="shell cv" id="cv-content" hidden>
@@ -180,7 +180,7 @@ const cv = cvEn;
 <script is:inline>
   // This is a toy gate, not access control (see the feature brief): the
   // default — no JS, or JS without the flag — is the locked message, so an
-  // unlock only ever happened via the terminal's "login" command on the
+  // unlock only ever happened via the terminal's "su" command on the
   // home page setting this same sessionStorage key.
   try {
     if (sessionStorage.getItem('cv-unlocked') === '1') {

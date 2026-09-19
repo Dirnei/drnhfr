@@ -13,9 +13,10 @@ interface Props {
 
 const { lang, current, altHref, altAvailable = true } = Astro.props;
 const t = useTranslations(lang);
-// 'cv' is deliberately not listed here: the CV is unlisted-but-not-gone
-// (see routePath('cv', …) elsewhere), reachable only via the terminal's
-// "login" command on the home page.
+// 'cv' is deliberately not in this list: it is unlisted-but-not-gone, and
+// gets its own entry below which ships hidden and is revealed once the
+// visitor has run the terminal's "su" command. The server cannot know
+// whether that happened, so the locked state is what it renders.
 const items: RouteKey[] = ['projects', 'blog', 'contact'];
 ---
 <ul class="nav-list">
@@ -32,8 +33,29 @@ const items: RouteKey[] = ['projects', 'blog', 'contact'];
       </li>
     ))
   }
+  <li id="nav-cv" hidden>
+    <a
+      href={routePath('cv', lang)}
+      class={current === 'cv' ? 'on' : ''}
+      aria-current={current === 'cv' ? 'page' : undefined}
+    >
+      {t('nav.cv')}
+    </a>
+  </li>
   <li><LangSwitch lang={lang} href={altHref} available={altAvailable} /></li>
 </ul>
+<script is:inline>
+  // Reveal the cv link if this session has unlocked it. Same sessionStorage
+  // key the terminal and the cv page use, and the same posture: no flag, or
+  // no JS at all, means the link stays unlisted.
+  try {
+    if (sessionStorage.getItem('cv-unlocked') === '1') {
+      document.getElementById('nav-cv').hidden = false;
+    }
+  } catch {
+    // Not fatal: the cv stays unlisted for this visit.
+  }
+</script>
 <style>
   .nav-list {
     display: flex;
@@ -46,6 +68,10 @@ const items: RouteKey[] = ['projects', 'blog', 'contact'];
     font-size: 0.6875rem;
     letter-spacing: 0.1em;
     text-transform: lowercase;
+  }
+  /* The UA [hidden] rule is not !important everywhere; say it outright. */
+  .nav-list li[hidden] {
+    display: none;
   }
   .nav-list a {
     color: var(--text-muted);

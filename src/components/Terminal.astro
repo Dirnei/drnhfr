@@ -35,7 +35,10 @@ const inputLabel = 'Terminal input';
  * moves around the German site — only the chrome is English.
  */
 const copy = {
+        // Who you are before and after `su`. The locked identity is the one
+        // rendered on the server, so a visitor with no JS is guest.
         promptUser: 'guest@drnhfr',
+        promptUserRoot: 'root@drnhfr',
         introLine: 'type "help" or "?" for a list of commands.',
         reloading: 'reloading …',
         restarting: 'restarting …',
@@ -46,11 +49,13 @@ const copy = {
         catNotFoundPrefix: 'cat: no such file: ',
         catNoDescription: 'no description available.',
         cdNotFoundPrefix: 'cd: no such directory: ',
-        loginMissing: 'login: please supply a code',
-        loginWrong: 'wrong code. nice try.',
-        loginSuccess: 'access granted — loading cv …',
-        logoutDone: 'cv locked again.',
-        logoutIdle: 'not logged in.',
+        suMissing: 'su: please supply the root password',
+        suWrong: 'su: authentication failure. nice try.',
+        suSuccess: 'access granted. you are root.',
+        suHintPrefix: 'the cv is mounted and listed in the nav — or: cd ',
+        cvDescription: 'the cv. root only.',
+        exitDone: 'back to guest. cv locked.',
+        exitIdle: 'already guest.',
         help: [
           'available commands:',
           'help, ?             this list',
@@ -60,8 +65,8 @@ const copy = {
           'whoami              who built this',
           'lang                switch between /de/ and /en/',
           'clear               clear the screen',
-          'login <code>        unlock the cv',
-          'logout              lock the cv again',
+          'su <code>           become root and unlock the cv',
+          'exit                drop back to guest and re-lock the cv',
           'reload              reload the page',
           'restart             reboot — replay the boot sequence, re-lock the cv',
         ],
@@ -90,7 +95,7 @@ const copy = {
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
     <span class="seg seg-err" id="terminal-status" hidden aria-hidden="true">&#10007;</span>
     <span class="seg seg-time" id="terminal-clock" aria-hidden="true">--:--</span>
-    <span class="seg seg-host" aria-hidden="true">{copy.promptUser}</span>
+    <span class="seg seg-host" id="terminal-host" aria-hidden="true">{copy.promptUser}</span>
     <span class="seg seg-path" aria-hidden="true">~</span>
     <span class="seg seg-lang" aria-hidden="true">{lang}</span>
     <span class="seg seg-lock" id="terminal-lock" hidden aria-hidden="true">cv unlocked</span>
@@ -376,6 +381,26 @@ const copy = {
       return entries;
     });
 
+  function isUnlocked() {
+    try {
+      return sessionStorage.getItem(UNLOCK_KEY) === '1';
+    } catch {
+      // Storage blocked: treat as locked, which is the safe default.
+      return false;
+    }
+  }
+
+  /*
+   * The cv is not in the search index — it is unlisted by design — so the
+   * terminal splices it in as a virtual entry, and only once `su` has run.
+   * Everything that walks the filesystem goes through visibleEntries() so
+   * `ls`, `cd` and `cat` agree with each other about what exists.
+   */
+  const cvEntry = { href: cvHref, type: 'page', description: copy.cvDescription };
+  function visibleEntries() {
+    return isUnlocked() ? [...entries, cvEntry] : entries;
+  }
+
   const history = [];
   let historyCursor = 0;
   let draft = '';
@@ -406,7 +431,7 @@ const copy = {
       .replace(/\/+$/, '')
       .toLowerCase();
     if (!needle) return undefined;
-    return entries.find((entry) => nameFromHref(entry.href).toLowerCase() === needle);
+    return visibleEntries().find((entry) => nameFromHref(entry.href).toLowerCase() === needle);
   }
 
   function appendLine(text, className) {
@@ -441,11 +466,12 @@ const copy = {
   }
 
   function cmdLs() {
-    if (entries.length === 0) {
+    const listing = visibleEntries();
+    if (listing.length === 0) {
       printOut(copy.emptyLs);
       return;
     }
-    const rows = entries
+    const rows = listing
       .map((entry) => ({
         name: nameFromHref(entry.href) + (isPageType(entry.type) ? '/' : ''),
         kind: TYPE_LABEL[entry.type] ?? entry.kind,
@@ -496,7 +522,7 @@ const copy = {
   //   2026-09-20 01:xx  ->  90 02 62 01  ->  "90026201"
   //
   // The hour is the finest unit, so one code holds for the whole hour.
-  // cmdLogin also accepts the code from a minute ago, which covers typing it
+  // cmdSu also accepts the code from a minute ago, which covers typing it
   // out across an hour boundary.
   function codeFor(date) {
     const rev = (value) => String(value).padStart(2, '0').split('').reverse().join('');
@@ -504,10 +530,10 @@ const copy = {
     return rev(date.getMonth() + 1) + rev(date.getDate()) + rev(date.getFullYear() % 100) + hh;
   }
 
-  function cmdLogin(arg) {
+  function cmdSu(arg) {
     const code = arg.trim();
     if (!code) {
-      printErr(copy.loginMissing);
+      printErr(copy.suMissing);
       return;
     }
     const now = new Date();
@@ -518,31 +544,35 @@ const copy = {
       } catch {
         // Not fatal: worst case the cv re-locks itself on the next visit.
       }
-      printOut(copy.loginSuccess);
-      window.location.href = cvHref;
+      // Deliberately no redirect: being dropped onto another page is a
+      // jarring reward for typing a command. The cv is now listed in the
+      // header and navigable from here, and run() refreshes the strip, so
+      // the prompt turns into root as the next line is drawn.
+      printOut(copy.suSuccess);
+      printOut(copy.suHintPrefix + nameFromHref(cvHref));
     } else {
-      printErr(copy.loginWrong);
+      printErr(copy.suWrong);
     }
   }
 
   /*
-   * Drops the same sessionStorage flag that login sets. The cv page re-reads
-   * it on every load, so clearing it here is the whole logout — there is no
-   * server-side session to end, and nothing to navigate away from: the
-   * terminal only exists on the home page.
+   * Drops the same sessionStorage flag that `su` sets, which demotes the
+   * prompt back to guest. The cv page re-reads the flag on every load, so
+   * clearing it here is the whole of it — there is no server-side session to
+   * end, and nothing to navigate away from: the terminal only exists on the
+   * home page.
    *
-   * Logging out when nobody is logged in is not a failure, so it reports
-   * rather than errors and leaves the status segment alone.
+   * Exiting when you are already guest is not a failure, so it reports rather
+   * than errors and leaves the status segment alone.
    */
-  function cmdLogout() {
-    let wasUnlocked = false;
+  function cmdExit() {
+    const wasUnlocked = isUnlocked();
     try {
-      wasUnlocked = sessionStorage.getItem(UNLOCK_KEY) === '1';
       sessionStorage.removeItem(UNLOCK_KEY);
     } catch {
       // Storage blocked: nothing was ever stored, so nothing to clear.
     }
-    printOut(wasUnlocked ? copy.logoutDone : copy.logoutIdle);
+    printOut(wasUnlocked ? copy.exitDone : copy.exitIdle);
   }
 
   function parse(raw) {
@@ -604,11 +634,11 @@ const copy = {
       case 'clear':
         log.replaceChildren();
         break;
-      case 'login':
-        cmdLogin(rest);
+      case 'su':
+        cmdSu(rest);
         break;
-      case 'logout':
-        cmdLogout();
+      case 'exit':
+        cmdExit();
         break;
       case 'reload':
         cmdReboot(false);
@@ -649,20 +679,20 @@ const copy = {
 
   const lockEl = document.getElementById('terminal-lock');
   const statusEl = document.getElementById('terminal-status');
+  const hostEl = document.getElementById('terminal-host');
 
-  /* The strip reports real state: whether the last command failed, and
-     whether the CV is unlocked this session. Nothing decorative. */
+  /* The strip reports real state: whether the last command failed, and who
+     you are this session. `su` promotes guest to root, `exit` demotes
+     again, and the prompt has to say so — that is the point of a prompt. */
   function refreshStatus(failed) {
     if (statusEl) statusEl.hidden = !failed;
-    if (lockEl) {
-      let unlocked = false;
-      try {
-        unlocked = sessionStorage.getItem(UNLOCK_KEY) === '1';
-      } catch {
-        /* storage blocked: treat as locked */
-      }
-      lockEl.hidden = !unlocked;
-    }
+    const unlocked = isUnlocked();
+    if (lockEl) lockEl.hidden = !unlocked;
+    if (hostEl) hostEl.textContent = unlocked ? copy.promptUserRoot : copy.promptUser;
+    // The header is rendered by SiteNav, which reveals this on page load.
+    // su and exit have to keep it honest without a reload.
+    const navCv = document.getElementById('nav-cv');
+    if (navCv) navCv.hidden = !unlocked;
   }
 
   refreshStatus(false);
@@ -703,7 +733,7 @@ const copy = {
       const spaceIndex = value.indexOf(' ');
       const commands = [
         'help', 'ls', 'cd', 'cat', 'whoami', 'lang', 'clear',
-        'login', 'logout', 'reload', 'restart',
+        'su', 'exit', 'reload', 'restart',
       ];
       if (spaceIndex === -1) {
         const matches = commands.filter((c) => c.startsWith(value.toLowerCase()) && value.length > 0);

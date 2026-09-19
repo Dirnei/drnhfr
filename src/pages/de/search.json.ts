@@ -39,7 +39,7 @@ export async function GET(_context: APIContext) {
       description: 'Datenschutzerklärung dieser Website.',
     },
     // Der Lebenslauf ist absichtlich nicht Teil dieses Index: er ist nur
-    // über den "login"-Befehl im Terminal erreichbar, siehe Terminal.astro.
+    // über den "su"-Befehl im Terminal erreichbar, siehe Terminal.astro.
     ...projects.map((p) => ({
       title: p.data.title,
       href: `/de/projekte/${slugOf(p.id)}/`,
