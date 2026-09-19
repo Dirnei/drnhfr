@@ -98,7 +98,13 @@ const copy = {
     />
   </form>
   <div class="statusline" aria-hidden="true">
-    <span class="pl-sep"></span><span class="pl-time" id="terminal-clock">--:--</span>
+    <span class="seg seg-host">{copy.promptUser}</span>
+    <span class="seg seg-path">~</span>
+    <span class="seg seg-lang">{lang}</span>
+    <span class="seg seg-lock" id="terminal-lock" hidden>cv unlocked</span>
+    <span class="seg-spacer"></span>
+    <span class="seg seg-err" id="terminal-status" hidden>&#10007;</span>
+    <span class="seg seg-time" id="terminal-clock">--:--</span>
   </div>
 </section>
 
@@ -179,34 +185,87 @@ const copy = {
   }
 
   /*
-   * Powerline-style status strip closing the terminal. The separator is drawn with
-   * clip-path rather than the usual  glyph: that character lives in
-   * Nerd-Font-patched fonts, and this site self-hosts plain JetBrains Mono,
-   * so the glyph would render as tofu. A CSS triangle always renders.
+   * Powerline status line closing the terminal. Segments abut and each one's
+   * wedge is drawn in the PREVIOUS segment's colour via --prev, which is what
+   * makes a powerline read as one continuous bar rather than detached tabs.
    *
-   * aria-hidden because it rewrites itself every second — announcing that to
-   * a screen reader once per second would make the page unusable. It is
-   * decoration, and the time is not information the page owes anyone.
+   * The wedge is clip-path, not the usual  glyph: that character only exists
+   * in Nerd-Font-patched fonts and this site self-hosts plain JetBrains Mono,
+   * so it would render as tofu.
+   *
+   * Every background is color-mix()'d from existing tokens, so the whole strip
+   * follows a palette change rather than drifting from it. Each pairing was
+   * measured against WCAG AA: the error segment sits at a 12% red mix rather
+   * than the 22% that looked better, because anything stronger dropped red-on-
+   * red below 4.5:1.
+   *
+   * aria-hidden: it restates what the page already says and rewrites itself
+   * as you type. It is chrome, not content.
    */
   .statusline {
     display: flex;
-    justify-content: flex-end;
     align-items: stretch;
     border-top: 1px solid var(--hairline-soft);
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.08em;
+    --prev: transparent;
   }
-  .pl-sep {
-    width: 0.6em;
-    background: var(--surface);
-    clip-path: polygon(100% 0, 100% 100%, 0 50%);
+  .seg-spacer {
+    flex: 1;
   }
-  .pl-time {
-    background: var(--surface);
-    color: var(--boot-info);
-    padding: 0.25rem 0.5rem 0.25rem 0.2rem;
+  .seg {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 0.3rem 0.55rem 0.3rem 0.85rem;
+    white-space: nowrap;
+  }
+  .seg::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0.5em;
+    background: var(--prev);
+    clip-path: polygon(0 0, 0 100%, 100% 50%);
+  }
+  .seg-host {
+    --bg: var(--surface);
+    --fg: var(--text-muted);
+  }
+  .seg-path {
+    --bg: color-mix(in srgb, var(--surface) 55%, var(--ink));
+    --prev: var(--surface);
+    --fg: var(--text-muted);
+  }
+  .seg-lang {
+    --bg: color-mix(in srgb, var(--boot-info) 16%, var(--surface));
+    --prev: color-mix(in srgb, var(--surface) 55%, var(--ink));
+    --fg: var(--boot-info);
+    text-transform: uppercase;
+  }
+  .seg-lock {
+    --bg: color-mix(in srgb, var(--boot-ok) 16%, var(--surface));
+    --prev: color-mix(in srgb, var(--boot-info) 16%, var(--surface));
+    --fg: var(--boot-ok);
+  }
+  .seg-err {
+    --bg: color-mix(in srgb, var(--red-text) 12%, var(--surface));
+    --fg: var(--red-text);
+  }
+  .seg-time {
+    --bg: var(--surface);
+    --prev: color-mix(in srgb, var(--red-text) 12%, var(--surface));
+    --fg: var(--boot-info);
     font-variant-numeric: tabular-nums;
+    padding-right: 0.7rem;
+  }
+  .seg-err[hidden] + .seg-time {
+    --prev: transparent;
   }
   .prompt {
     color: var(--boot-info);
@@ -319,7 +378,10 @@ const copy = {
     appendLine(text, 'out');
   }
 
+  let lastFailed = false;
+
   function printErr(text) {
+    lastFailed = true;
     appendLine(text, 'err');
   }
 
@@ -439,6 +501,7 @@ const copy = {
     await entriesPromise;
     const [cmdRaw, rest] = parse(raw);
     const cmd = cmdRaw.toLowerCase();
+    lastFailed = false;
     switch (cmd) {
       case 'help':
         printOut(copy.help.join('\n'));
@@ -474,6 +537,7 @@ const copy = {
         printErr(`${cmdRaw}: ${copy.cmdNotFoundSuffix}`);
     }
     stampClock();
+    refreshStatus(lastFailed);
   }
 
   /*
@@ -496,6 +560,26 @@ const copy = {
   }
 
   stampClock();
+
+  const lockEl = document.getElementById('terminal-lock');
+  const statusEl = document.getElementById('terminal-status');
+
+  /* The strip reports real state: whether the last command failed, and
+     whether the CV is unlocked this session. Nothing decorative. */
+  function refreshStatus(failed) {
+    if (statusEl) statusEl.hidden = !failed;
+    if (lockEl) {
+      let unlocked = false;
+      try {
+        unlocked = sessionStorage.getItem(UNLOCK_KEY) === '1';
+      } catch {
+        /* storage blocked: treat as locked */
+      }
+      lockEl.hidden = !unlocked;
+    }
+  }
+
+  refreshStatus(false);
 
   function runFromChip(command) {
     if (input.disabled) return;
