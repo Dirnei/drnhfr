@@ -4,7 +4,6 @@ import Logo from '../components/Logo.astro';
 import SiteNav from '../components/SiteNav.astro';
 import BootIntro from '../components/BootIntro.astro';
 import TerminalShortcut from '../components/TerminalShortcut.astro';
-import StatusBar from '../components/StatusBar.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
 
@@ -32,6 +31,11 @@ const {
 const other = lang === 'de' ? 'en' : 'de';
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const t = useTranslations(lang);
+// The footer's one piece of non-link content: how to get back to the
+// terminal. Ctrl on everything that is not a Mac, which is the only place
+// the distinction is worth a line of code.
+const shortcutKey = lang === 'de' ? 'Strg K' : 'Ctrl K';
+const shortcutHint = lang === 'de' ? 'zum terminal' : 'for terminal';
 // x-default must name the German member of this page's own hreflang
 // cluster: on a German page that is the page itself, on an English page
 // with a counterpart that is the counterpart, and on an English page with
@@ -98,13 +102,13 @@ const xDefaultHref =
       <slot />
     </main>
     <footer class="site-footer">
-      <div class="shell">
+      <div class="shell footer-inner">
         <ul class="footer-list">
           <li><a href={routePath('imprint', lang)}>{t('nav.imprint')}</a></li>
           <li><a href={routePath('privacy', lang)}>{t('nav.privacy')}</a></li>
           <li><a href="mailto:christian@dirnhofer.net">christian@dirnhofer.net</a></li>
         </ul>
-        <StatusBar lang={lang} />
+        <p class="footer-hint"><kbd>/</kbd> <kbd>{shortcutKey}</kbd> {shortcutHint}</p>
       </div>
     </footer>
     <TerminalShortcut lang={lang} />
@@ -159,6 +163,17 @@ const xDefaultHref =
     margin-top: 4rem;
     padding-block: 1.25rem;
   }
+  /*
+   * One row: the legal links on the left, the shortcut hint pushed right.
+   * It wraps to two rows on a phone rather than shrinking the type, which
+   * is the same trade the header makes at the same breakpoint.
+   */
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
   .footer-list {
     display: flex;
     gap: 1rem;
@@ -172,5 +187,23 @@ const xDefaultHref =
   }
   .footer-list a:hover {
     color: var(--red);
+  }
+  .footer-hint {
+    margin: 0 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    color: var(--text-dim);
+  }
+  .footer-hint kbd {
+    font-family: inherit;
+    border: 1px solid var(--hairline);
+    padding: 0 0.25rem;
+  }
+  @media (max-width: 37.5rem) {
+    .footer-hint {
+      margin-left: 0;
+    }
   }
 </style>

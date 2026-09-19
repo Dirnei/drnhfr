@@ -1,15 +1,5 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { execSync } from 'node:child_process';
-
-const commit = (() => {
-  try {
-    return execSync('git rev-parse --short HEAD').toString().trim();
-  } catch {
-    return 'dev';
-  }
-})();
-
 export default defineConfig({
   site: 'https://dirnhofer.net',
   trailingSlash: 'always',
@@ -36,14 +26,9 @@ export default defineConfig({
     // BaseLayout.astro are the correct, per-page source of truth instead.
     sitemap({
       // The CV is unlisted on purpose (reachable only via the terminal's
-      // "login" command) — the sitemap must not be the thing that hands it
+      // "su" command) — the sitemap must not be the thing that hands it
       // back to every crawler.
       filter: (page) => !/\/(lebenslauf|cv)\/$/.test(page),
     }),
   ],
-  vite: {
-    define: {
-      'import.meta.env.PUBLIC_COMMIT': JSON.stringify(commit),
-    },
-  },
 });
