@@ -31,7 +31,6 @@ function card({ headline, kicker }) {
   <rect width="1200" height="630" fill="${INK}"/>
   <g transform="translate(80,80) scale(1.6)">
     <g transform="matrix(0.99473665,0,0,0.99473665,29.007099,11.13324)">
-      <rect fill="#000000" width="78.412704" height="78.41272" x="-29.160578" y="-11.192151"></rect>
       <g transform="matrix(0.91039998,0,0,0.91039998,2.2729228,3.8828866)">
         <rect fill="${RED}" width="63.362091" height="5.7501087" x="-23.143202" y="-6.1346841"></rect>
         <rect fill="${RED}" width="63.362091" height="5.7501087" x="-23.143202" y="53.397144"></rect>
