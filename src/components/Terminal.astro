@@ -23,47 +23,18 @@ const introFallbackMs =
     computeBootSchedule(bootTiming, bootLines('de').length).finishAt,
     computeBootSchedule(bootTiming, bootLines('en').length).finishAt,
   ) + DECODE_FALLBACK_MARGIN_MS;
-const terminalLabel = lang === 'de' ? 'Interaktives Terminal' : 'Interactive terminal';
+const terminalLabel = 'Interactive terminal';
 const logLabel = lang === 'de' ? 'Terminal-Ausgabe' : 'Terminal output';
-const inputLabel = lang === 'de' ? 'Terminal-Eingabe' : 'Terminal input';
+const inputLabel = 'Terminal input';
 
-const copy =
-  lang === 'de'
-    ? {
-        promptUser: 'gast@drnhfr',
-        introLine: 'tippe "help" für eine liste der befehle.',
-        reloading: 'lade neu …',
-        restarting: 'starte neu …',
-        whoami: 'christian dirnhofer. baut verteilte systeme für geld, aktoren und platinen zum spaß.',
-        emptyLs: '(leer)',
-        cmdNotFoundSuffix: 'befehl nicht gefunden',
-        catMissing: 'cat: fehlender dateiname',
-        catNotFoundPrefix: 'cat: keine solche datei: ',
-        catNoDescription: 'keine beschreibung vorhanden.',
-        cdNotFoundPrefix: 'cd: kein solches verzeichnis: ',
-        loginMissing: 'login: bitte einen code angeben',
-        loginWrong: 'falscher code. schön versucht.',
-        loginSuccess: 'zugang gewährt — lade lebenslauf …',
-        help: [
-          'verfügbare befehle:',
-          'help                diese liste',
-          'ls                  aktuelles verzeichnis anzeigen',
-          'cd <ziel>           zu <ziel> wechseln — ".." und "/" gehen zurück',
-          'cat <ziel>          kurzbeschreibung von <ziel> anzeigen',
-          'whoami              wer das hier gebaut hat',
-          'lang                zwischen /de/ und /en/ wechseln',
-          'clear               bildschirm leeren',
-          'login <code>        lebenslauf freischalten',
-          'reload              seite neu laden',
-          'restart            neu starten — bootsequenz und sperre zurücksetzen',
-        ],
-        chips: [
-          { label: 'ls', run: 'ls' },
-          { label: 'cd blog', run: 'cd blog' },
-          { label: 'help', run: 'help' },
-        ],
-      }
-    : {
+/*
+ * The terminal is English-only by design: its commands are English words,
+ * and German help text wrapped around `ls` and `cd` reads as neither one
+ * language nor the other. The `lang` prop still drives which search index
+ * is fetched and where `cd` navigates, so a German page's terminal still
+ * moves around the German site — only the chrome is English.
+ */
+const copy = {
         promptUser: 'guest@drnhfr',
         introLine: 'type "help" for a list of commands.',
         reloading: 'reloading …',
@@ -99,7 +70,7 @@ const copy =
       };
 ---
 
-<section class="terminal" id="terminal" aria-label={terminalLabel}>
+<section class="terminal" id="terminal" lang="en" aria-label={terminalLabel}>
   <div class="chips" id="terminal-chips">
     {
       copy.chips.map((chip) => (
@@ -267,11 +238,18 @@ const copy =
     return parts[parts.length - 1] || '';
   }
 
-  function isPageKind(kind) {
-    return kind === 'Seite' || kind === 'Page';
-  }
+  /*
+   * `kind` in the search index is a localized label the command palette shows
+   * to the visitor; `type` is the stable key. The terminal keys off `type`, so
+   * a German index still prints English labels here and nothing breaks if the
+   * German wording is ever reworded.
+   */
+  const TYPE_LABEL = { page: 'Page', project: 'Project', post: 'Article' };
+  const TYPE_ORDER = { page: 0, project: 1, post: 2 };
 
-  const KIND_ORDER = { Seite: 0, Page: 0, Projekt: 1, Project: 1, Artikel: 2, Article: 2 };
+  function isPageType(type) {
+    return type === 'page';
+  }
 
   function findEntry(argRaw) {
     const needle = argRaw
@@ -318,11 +296,12 @@ const copy =
     }
     const rows = entries
       .map((entry) => ({
-        name: nameFromHref(entry.href) + (isPageKind(entry.kind) ? '/' : ''),
-        kind: entry.kind,
+        name: nameFromHref(entry.href) + (isPageType(entry.type) ? '/' : ''),
+        kind: TYPE_LABEL[entry.type] ?? entry.kind,
+        type: entry.type,
       }))
       .sort((a, b) => {
-        const order = (KIND_ORDER[a.kind] ?? 9) - (KIND_ORDER[b.kind] ?? 9);
+        const order = (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
         return order !== 0 ? order : a.name.localeCompare(b.name);
       });
     const width = Math.max(...rows.map((row) => row.name.length)) + 2;
