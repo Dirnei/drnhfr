@@ -85,7 +85,13 @@ const copy = {
   </div>
   <form class="term-form" id="terminal-form">
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
-    <span class="prompt" aria-hidden="true">{copy.promptUser}:~$</span>
+    <span class="seg seg-time" id="terminal-clock" aria-hidden="true">--:--</span>
+    <span class="seg seg-err" id="terminal-status" hidden aria-hidden="true">&#10007;</span>
+    <span class="seg seg-host" aria-hidden="true">{copy.promptUser}</span>
+    <span class="seg seg-path" aria-hidden="true">~</span>
+    <span class="seg seg-lang" aria-hidden="true">{lang}</span>
+    <span class="seg seg-lock" id="terminal-lock" hidden aria-hidden="true">cv unlocked</span>
+    <span class="seg-cap" aria-hidden="true"></span>
     <input
       type="text"
       id="terminal-input"
@@ -97,15 +103,6 @@ const copy = {
       disabled
     />
   </form>
-  <div class="statusline" aria-hidden="true">
-    <span class="seg seg-host">{copy.promptUser}</span>
-    <span class="seg seg-path">~</span>
-    <span class="seg seg-lang">{lang}</span>
-    <span class="seg seg-lock" id="terminal-lock" hidden>cv unlocked</span>
-    <span class="seg-spacer"></span>
-    <span class="seg seg-err" id="terminal-status" hidden>&#10007;</span>
-    <span class="seg seg-time" id="terminal-clock">--:--</span>
-  </div>
 </section>
 
 <style>
@@ -175,23 +172,31 @@ const copy = {
   .line.err {
     color: var(--red-text);
   }
+  /*
+   * The prompt row IS the powerline: segments, the closing wedge, then the
+   * input running to the end of the row. Nothing is stated twice, and only
+   * the input flexes, so the segments never compete with it for width.
+   *
+   * Clock and error sit at the FRONT rather than the far right. A right-
+   * aligned clock needs a flex spacer, and a spacer and a flexing input then
+   * fight over the same free space.
+   */
   .term-form {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    align-items: stretch;
     border: 1px solid var(--hairline);
     border-top: 0;
-    padding: 0.6rem 1rem;
+    --prev: transparent;
   }
 
   /*
-   * Powerline status line closing the terminal. Segments abut and each one's
-   * wedge is drawn in the PREVIOUS segment's colour via --prev, which is what
-   * makes a powerline read as one continuous bar rather than detached tabs.
+   * Segments abut and each one's wedge is drawn in the PREVIOUS segment's
+   * colour via --prev, which is what makes a powerline read as one continuous
+   * bar rather than detached tabs.
    *
-   * The wedge is clip-path, not the usual  glyph: that character only exists
-   * in Nerd-Font-patched fonts and this site self-hosts plain JetBrains Mono,
-   * so it would render as tofu.
+   * The wedge is clip-path, not the usual Nerd Font wedge glyph: that
+   * character only exists in patched fonts and this site self-hosts plain
+   * JetBrains Mono, so it would render as tofu.
    *
    * Every background is color-mix()'d from existing tokens, so the whole strip
    * follows a palette change rather than drifting from it. Each pairing was
@@ -199,32 +204,25 @@ const copy = {
    * than the 22% that looked better, because anything stronger dropped red-on-
    * red below 4.5:1.
    *
-   * aria-hidden: it restates what the page already says and rewrites itself
-   * as you type. It is chrome, not content.
+   * aria-hidden sits on each segment, not on the form: the form holds the
+   * input, which has to stay reachable. The segments restate what the page
+   * already says, so they are chrome, not content.
    */
-  .statusline {
-    display: flex;
-    align-items: stretch;
-    border-top: 1px solid var(--hairline-soft);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    --prev: transparent;
-  }
-  .seg-spacer {
-    flex: 1;
-  }
   .seg {
     position: relative;
     display: inline-flex;
     align-items: center;
+    flex: none;
     background: var(--bg);
     color: var(--fg);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
     padding: 0.3rem 0.55rem 0.3rem 0.85rem;
     white-space: nowrap;
   }
-  /* .seg sets display, which beats the UA [hidden] rule wherever that
-     rule is not !important. Without this the conditional segments show. */
+  /* .seg sets display, which beats the UA [hidden] rule wherever that rule
+     is not !important. Without this the conditional segments show. */
   .seg[hidden] {
     display: none;
   }
@@ -238,9 +236,27 @@ const copy = {
     background: var(--prev);
     clip-path: polygon(0 0, 0 100%, 100% 50%);
   }
+  /* First in the row, so there is nothing behind it to wedge into. */
+  .seg-time {
+    --bg: var(--surface);
+    --prev: transparent;
+    --fg: var(--boot-info);
+    font-variant-numeric: tabular-nums;
+    padding-left: 0.7rem;
+  }
+  .seg-err {
+    --bg: color-mix(in srgb, var(--red-text) 12%, var(--surface));
+    --prev: var(--surface);
+    --fg: var(--red-text);
+  }
   .seg-host {
     --bg: var(--surface);
+    --prev: color-mix(in srgb, var(--red-text) 12%, var(--surface));
     --fg: var(--text-muted);
+  }
+  /* Usual case: no error segment, so the host abuts the clock directly. */
+  .seg-err[hidden] + .seg-host {
+    --prev: var(--surface);
   }
   .seg-path {
     --bg: color-mix(in srgb, var(--surface) 55%, var(--ink));
@@ -258,27 +274,38 @@ const copy = {
     --prev: color-mix(in srgb, var(--boot-info) 16%, var(--surface));
     --fg: var(--boot-ok);
   }
-  .seg-err {
-    --bg: color-mix(in srgb, var(--red-text) 12%, var(--surface));
-    --fg: var(--red-text);
+  /*
+   * The closing wedge. It is a wedge in its own right rather than a segment's
+   * ::before, because what follows is the <input>, and a replaced element has
+   * no pseudo-elements to hang one on.
+   */
+  .seg-cap {
+    flex: none;
+    width: 0.35rem;
+    background: var(--prev);
+    clip-path: polygon(0 0, 0 100%, 100% 50%);
+    --prev: color-mix(in srgb, var(--boot-info) 16%, var(--surface));
   }
-  .seg-time {
-    --bg: var(--surface);
-    --prev: color-mix(in srgb, var(--red-text) 12%, var(--surface));
-    --fg: var(--boot-info);
-    font-variant-numeric: tabular-nums;
-    padding-right: 0.7rem;
+  .seg-lock:not([hidden]) ~ .seg-cap {
+    --prev: color-mix(in srgb, var(--boot-ok) 16%, var(--surface));
   }
-  .seg-err[hidden] + .seg-time {
-    --prev: transparent;
-  }
-  .prompt {
-    color: var(--boot-info);
-    white-space: nowrap;
+  /*
+   * Phone widths: the tilde carries the least information and goes first,
+   * which buys the input about four characters. Dropping it re-points the
+   * language segment's wedge at the host colour now behind it.
+   */
+  @media (max-width: 30rem) {
+    .seg-path {
+      display: none;
+    }
+    .seg-lang {
+      --prev: var(--surface);
+    }
   }
   .term-input {
     flex: 1;
     min-width: 0;
+    padding: 0.5rem 0.75rem;
     background: transparent;
     border: 0;
     color: var(--text);
@@ -373,7 +400,7 @@ const copy = {
     const promptSpan = document.createElement('span');
     promptSpan.className = 'prompt-mini';
     promptSpan.setAttribute('aria-hidden', 'true');
-    promptSpan.textContent = `${copy.promptUser}:~$`;
+    promptSpan.textContent = '$';
     el.append(promptSpan, raw);
     log.append(el);
     log.scrollTop = log.scrollHeight;
