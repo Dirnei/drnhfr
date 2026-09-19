@@ -1,5 +1,14 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { execSync } from 'node:child_process';
+
+const commit = (() => {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'dev';
+  }
+})();
 
 export default defineConfig({
   site: 'https://dirnhofer.net',
@@ -26,4 +35,9 @@ export default defineConfig({
       },
     }),
   ],
+  vite: {
+    define: {
+      'import.meta.env.PUBLIC_COMMIT': JSON.stringify(commit),
+    },
+  },
 });

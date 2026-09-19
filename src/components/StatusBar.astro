@@ -1,0 +1,51 @@
+---
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const commit = import.meta.env.PUBLIC_COMMIT ?? 'dev';
+const hint = lang === 'de' ? 'für befehle' : 'for commands';
+const statusLabel = lang === 'de' ? 'status' : 'status';
+---
+<div class="status">
+  <div>{statusLabel} <b>&#9679; online</b></div>
+  <div>build <b>{commit}</b></div>
+  <div class="push"><kbd>/</kbd> {hint}</div>
+</div>
+<style>
+  .status {
+    display: flex;
+    font-family: var(--font-mono);
+    font-size: 0.5938rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-top: 1px solid var(--hairline-soft);
+    margin-top: 1rem;
+  }
+  .status div {
+    padding: 0.55rem 0.7rem;
+    border-right: 1px solid var(--hairline-soft);
+  }
+  .status b {
+    /*
+     * The "online" marker is decorative flavour text, not a live state
+     * indicator, so it stays in the same muted tone as everything else in
+     * the bar. --red is reserved for state/action per the palette rules
+     * (hover, focus, active selection) and must not be spent here.
+     */
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .push {
+    margin-left: auto;
+    border-right: 0;
+  }
+  kbd {
+    font-family: inherit;
+    border: 1px solid var(--hairline);
+    padding: 0 0.25rem;
+  }
+</style>

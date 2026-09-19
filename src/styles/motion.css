@@ -3,3 +3,37 @@
     display: none !important;
   }
 }
+
+/*
+ * CRT scanline veil. Static (no animation), so it is intentionally left
+ * outside the prefers-reduced-motion rule above: reduced-motion targets
+ * animated/parallax motion that can trigger vestibular discomfort, and this
+ * overlay never moves or changes, so hiding it would not serve that need.
+ * `pointer-events: none` is mandatory — this sits above the whole document
+ * and must never steal a click. It is excluded from print so the CV comes
+ * out clean.
+ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  /*
+   * The darkening bands use color-mix() against --ink rather than a literal
+   * rgb(0 0 0 / …) value, so this stays a token-derived texture instead of
+   * a hard-coded hex/rgb colour, per the "colours from custom properties
+   * only" rule. --ink at ~10% opacity reads the same as a soft black line.
+   */
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 2px,
+    color-mix(in srgb, var(--ink) 10%, transparent) 2px 3px
+  );
+}
+
+@media print {
+  body::after {
+    display: none;
+  }
+}
