@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  lang="de"
+  title="404 — dirnhofer.net"
+  description="Seite nicht gefunden / Page not found."
+  altHref="/en/"
+  altAvailable={false}
+>
+  <div class="shell not-found">
+    <p class="mono-label code">404</p>
+    <h1>nicht gefunden / not found</h1>
+    <section>
+      <p class="mono-label">
+        $ Diese Seite existiert nicht (mehr). <a href="/de/">Zur deutschen Startseite</a>.
+      </p>
+      <p class="mono-label">
+        $ This page does not exist (anymore). <a href="/en/">Go to the English home page</a>.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+<style>
+  .not-found {
+    padding-block: 4rem 3rem;
+  }
+  .code {
+    color: var(--red-text);
+    font-size: 0.8125rem;
+    margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    margin: 0 0 2rem;
+  }
+  section p {
+    margin: 0 0 0.75rem;
+  }
+  section a {
+    border-bottom: 1px solid var(--hairline);
+  }
+  section a:hover {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+</style>
