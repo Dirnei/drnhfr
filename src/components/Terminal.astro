@@ -292,7 +292,16 @@ const copy = {
    */
   .seg-cap {
     flex: none;
-    width: 0.35rem;
+    /*
+     * Same one-pixel overlap as .seg::before, and for the same reason: the
+     * left edge lands on a fractional pixel and the page ground survives in
+     * it as a hairline. A negative margin rather than a negative offset,
+     * because this one is a flex item and not a positioned pseudo-element.
+     * The overlapped pixel is painted in the previous segment's own colour,
+     * so it cannot be seen there.
+     */
+    margin-left: -1px;
+    width: calc(0.35rem + 1px);
     background: var(--prev);
     clip-path: polygon(0 0, 0 100%, 100% 50%);
     --prev: color-mix(in srgb, var(--boot-info) 16%, var(--surface));
