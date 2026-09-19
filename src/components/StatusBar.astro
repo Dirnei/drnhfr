@@ -8,11 +8,12 @@ const { lang } = Astro.props;
 const commit = import.meta.env.PUBLIC_COMMIT ?? 'dev';
 const hint = lang === 'de' ? 'für befehle' : 'for commands';
 const statusLabel = lang === 'de' ? 'status' : 'status';
+const secondKey = lang === 'de' ? 'Strg K' : 'Ctrl K';
 ---
 <div class="status">
   <div>{statusLabel} <b>&#9679; online</b></div>
-  <div>build <b>{commit}</b></div>
-  <div class="push"><kbd>/</kbd> {hint}</div>
+  <div>build <b class="commit">{commit}</b></div>
+  <div class="push"><kbd>/</kbd> <kbd>{secondKey}</kbd> {hint}</div>
 </div>
 <style>
   .status {
@@ -38,6 +39,14 @@ const statusLabel = lang === 'de' ? 'status' : 'status';
      */
     color: var(--text-muted);
     font-weight: 400;
+  }
+  .commit {
+    /*
+     * Short git hashes are conventionally lowercase hex, and this is the
+     * one string in the bar someone might actually copy — the surrounding
+     * .status uppercase transform must not turn it into e.g. "F5C0A3F".
+     */
+    text-transform: none;
   }
   .push {
     margin-left: auto;
