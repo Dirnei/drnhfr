@@ -8,6 +8,9 @@ const { text, delay = 0 } = Astro.props;
 <span class="decode" data-text={text} data-delay={delay}>{text}</span>
 
 <script>
+  import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
+  import { bootTiming, bootLines } from '../data/boot';
+
   const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>[]{}#*+=-';
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -40,8 +43,18 @@ const { text, delay = 0 } = Astro.props;
     // A full-screen boot intro may still be covering the page. Starting the
     // decode now would let it finish unseen underneath the overlay, so wait
     // for the intro to announce completion — with a safety timeout in case
-    // the event never arrives.
+    // the event never arrives. This component doesn't know which locale's
+    // intro is running, so the fallback is computed for both and the worse
+    // (longer) of the two is used, plus a margin — derived from the same
+    // boot-timing.ts arithmetic that drives BootIntro itself, rather than a
+    // hard-coded number that a boot.json retune could silently outgrow.
     if (document.documentElement.dataset.intro === 'running') {
+      const fallbackMs =
+        Math.max(
+          computeBootSchedule(bootTiming, bootLines('de').length).finishAt,
+          computeBootSchedule(bootTiming, bootLines('en').length).finishAt,
+        ) + DECODE_FALLBACK_MARGIN_MS;
+
       let done = false;
       let timeoutId: number;
       const start = () => {
@@ -51,7 +64,7 @@ const { text, delay = 0 } = Astro.props;
         run();
       };
       document.addEventListener('intro:finished', start, { once: true });
-      timeoutId = window.setTimeout(start, 5000);
+      timeoutId = window.setTimeout(start, fallbackMs);
     } else {
       run();
     }

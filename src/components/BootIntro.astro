@@ -2,6 +2,7 @@
 import Logo from './Logo.astro';
 import type { Locale } from '../i18n/locales';
 import { bootLines, bootTiming } from '../data/boot';
+import { computeBootSchedule } from '../lib/boot-timing';
 
 interface Props {
   lang: Locale;
@@ -10,6 +11,7 @@ const { lang } = Astro.props;
 const skipHint = lang === 'de' ? 'esc zum überspringen' : 'esc to skip';
 const lines = bootLines(lang);
 const timing = bootTiming;
+const schedule = computeBootSchedule(timing, lines.length);
 
 // Column width for the "[ TAG ]" markers is derived from the longest tag in
 // the data, so a future "WARN" or "ERROR" line still lines up.
@@ -29,8 +31,10 @@ function padTag(tag: string): string {
   aria-hidden="true"
   hidden
   data-line-step={timing.lineStepMs}
-  data-logo-hold={timing.logoHoldMs}
   data-fade={timing.fadeMs}
+  data-assembly-start={schedule.assemblyStart}
+  data-condense-start={schedule.condenseStart}
+  data-finish-at={schedule.finishAt}
 >
   <div class="boot" id="intro-boot">
     {
@@ -72,7 +76,7 @@ function padTag(tag: string): string {
     opacity: 0;
   }
   .tag {
-    color: var(--red);
+    color: var(--red-text);
   }
   .tile {
     position: absolute;
@@ -106,16 +110,28 @@ function padTag(tag: string): string {
   const root = document.getElementById('intro');
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const seen = sessionStorage.getItem(KEY) === '1';
+  // Guarded the same way as the write below: sessionStorage.getItem can
+  // throw in private browsing, when storage is blocked, or over quota.
+  let seen = false;
+  try {
+    seen = sessionStorage.getItem(KEY) === '1';
+  } catch {
+    // Not fatal: worst case the intro plays again on this load.
+  }
 
   if (!root || reduced || seen) {
     root?.remove();
   } else {
-    // Timing comes from the boot log data (src/data/boot.json), not from
-    // constants in this script, so editing the data reshapes the sequence.
+    // Timing comes from the boot log data (src/data/boot.json) via
+    // src/lib/boot-timing.ts's computeBootSchedule(), run once at build time
+    // in the frontmatter above — not recomputed here — so editing the data
+    // reshapes the sequence without this script needing its own copy of the
+    // arithmetic.
     const lineStepMs = Number(root.dataset.lineStep);
-    const logoHoldMs = Number(root.dataset.logoHold);
     const fadeMs = Number(root.dataset.fade);
+    const assemblyStart = Number(root.dataset.assemblyStart);
+    const condenseStart = Number(root.dataset.condenseStart);
+    const finishAt = Number(root.dataset.finishAt);
 
     root.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -146,11 +162,6 @@ function padTag(tag: string): string {
     // be dismissed and the `data-intro` marker can still be cleared,
     // instead of getting stuck forever with no way to reach finish().
     const lines = root.querySelectorAll('.ln');
-    const lineRevealMs = lines.length * lineStepMs;
-    // After the last line: hold, then run the logo assembly, then fade.
-    const assemblyStart = lineRevealMs + logoHoldMs;
-    const condenseStart = assemblyStart + fadeMs;
-    const finishAt = condenseStart + fadeMs;
     at(finishAt, finish);
 
     document.addEventListener('keydown', onKeydown);
