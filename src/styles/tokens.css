@@ -32,6 +32,15 @@
    * on the selected-row background.
    */
   --red-text: #ff6868;
+
+  /*
+   * Boot-log status colours. These follow terminal convention rather than
+   * the site palette: green = success, cyan = informational, and --red-text
+   * stays the failure colour. Used only inside BootIntro.
+   * Contrast on --ink: ok 8.74:1, info 9.51:1.
+   */
+  --boot-ok: #56d364;
+  --boot-info: #56d4dd;
   --code-bg: #101217;
 
   --font-display: 'Open Sans Variable', system-ui, sans-serif;

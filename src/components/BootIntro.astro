@@ -45,7 +45,7 @@ function padTag(tag: string): string {
         <div class="ln" data-hold={line.holdUntilVisible || undefined}>
           {line.tag ? (
             <>
-              <span class="tag">[{padTag(line.tag)}]</span>
+              <span class="tag" data-tag={line.tag}>[{padTag(line.tag)}]</span>
               {' '}
               {line.text}
               {line.holdUntilVisible ? (
@@ -81,8 +81,24 @@ function padTag(tag: string): string {
   .ln {
     opacity: 0;
   }
+  /*
+   * Boot-log status markers follow terminal convention, not the site palette:
+   * green means success, cyan means informational, and red is reserved for
+   * failure. Red for [ OK ] would say the opposite of what it means. This is
+   * a quotation of a terminal's own colour language inside the intro, and is
+   * the one place on the site where an accent other than --red appears.
+   * The default below is deliberately red, so an unrecognised tag (a future
+   * FAIL or ERROR) is red without anyone having to remember to add a rule.
+   */
   .tag {
     color: var(--red-text);
+  }
+  .tag[data-tag='OK'] {
+    color: var(--boot-ok);
+  }
+  .tag[data-tag='WAIT'],
+  .tag[data-tag='INFO'] {
+    color: var(--boot-info);
   }
   .wait-cue {
     display: none;
