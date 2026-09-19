@@ -228,13 +228,21 @@ const copy = {
   .seg[hidden] {
     display: none;
   }
+  /*
+   * The wedge starts one pixel INSIDE the previous segment rather than at
+   * this one's edge. Segment boundaries land on fractional pixels, and at
+   * left: 0 this segment's own background antialiases into the boundary
+   * pixel before the wedge covers it — a hairline of the wrong colour at
+   * every arrow. The overlap is painted in the previous segment's own
+   * colour, so it is invisible there and covers the sliver here.
+   */
   .seg::before {
     content: '';
     position: absolute;
-    left: 0;
+    left: -1px;
     top: 0;
     bottom: 0;
-    width: 0.5em;
+    width: calc(0.5em + 1px);
     background: var(--prev);
     clip-path: polygon(0 0, 0 100%, 100% 50%);
   }
