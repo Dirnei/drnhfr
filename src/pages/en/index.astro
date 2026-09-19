@@ -1,25 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import EntryRow from '../../components/EntryRow.astro';
 import DecodeText from '../../components/DecodeText.astro';
-import { getPosts, getProjects } from '../../lib/entries';
-import { slugOf } from '../../lib/ids';
-
-const projects = await getProjects('en');
-const posts = await getPosts('en');
-
-const items = [
-  ...projects.slice(0, 3).map((p) => ({
-    href: `/en/projects/${slugOf(p.id)}/`,
-    title: p.data.title,
-    kind: 'Project',
-  })),
-  ...posts.slice(0, 3).map((p) => ({
-    href: `/en/blog/${slugOf(p.id)}/`,
-    title: p.data.title,
-    kind: 'Article',
-  })),
-];
+import Terminal from '../../components/Terminal.astro';
 ---
 <BaseLayout
   lang="en"
@@ -36,11 +18,7 @@ const items = [
       Circuit boards, containers and a basement full of cables, at home.
     </p>
   </div>
-  <div class="shell">
-    <ul class="rows">
-      {items.map((item, index) => <EntryRow {...item} index={index} />)}
-    </ul>
-  </div>
+  <Terminal lang="en" />
 </BaseLayout>
 <style>
   .hero {
@@ -60,11 +38,5 @@ const items = [
     color: var(--text-muted);
     max-width: 44ch;
     margin-top: 1.25rem;
-  }
-  .rows {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-top: 1px solid var(--hairline);
   }
 </style>

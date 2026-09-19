@@ -1,0 +1,531 @@
+---
+import type { Locale } from '../i18n/locales';
+import { otherLocale } from '../i18n/locales';
+import { routePath } from '../i18n/routes';
+import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
+import { bootTiming, bootLines } from '../data/boot';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+
+const cvHref = routePath('cv', lang);
+const otherHomeHref = `/${otherLocale(lang)}/`;
+const searchHref = `/${lang}/search.json`;
+// Computed at build time (see DecodeText.astro for the same pattern) so the
+// client script below — which uses define:vars and therefore cannot import
+// boot-timing.ts itself — still gets a safety-timeout fallback in case
+// `intro:finished` never fires (e.g. a tab parked on BootIntro's
+// holdUntilVisible line and never switched back to).
+const introFallbackMs =
+  Math.max(
+    computeBootSchedule(bootTiming, bootLines('de').length).finishAt,
+    computeBootSchedule(bootTiming, bootLines('en').length).finishAt,
+  ) + DECODE_FALLBACK_MARGIN_MS;
+const terminalLabel = lang === 'de' ? 'Interaktives Terminal' : 'Interactive terminal';
+const logLabel = lang === 'de' ? 'Terminal-Ausgabe' : 'Terminal output';
+const inputLabel = lang === 'de' ? 'Terminal-Eingabe' : 'Terminal input';
+
+const copy =
+  lang === 'de'
+    ? {
+        promptUser: 'gast@drnhfr',
+        introLine: 'tippe "help" für eine liste der befehle.',
+        whoami: 'christian dirnhofer. baut verteilte systeme für geld, aktoren und platinen zum spaß.',
+        emptyLs: '(leer)',
+        cmdNotFoundSuffix: 'befehl nicht gefunden',
+        catMissing: 'cat: fehlender dateiname',
+        catNotFoundPrefix: 'cat: keine solche datei: ',
+        catNoDescription: 'keine beschreibung vorhanden.',
+        cdNotFoundPrefix: 'cd: kein solches verzeichnis: ',
+        loginMissing: 'login: bitte einen code angeben',
+        loginWrong: 'falscher code. schön versucht.',
+        loginSuccess: 'zugang gewährt — lade lebenslauf …',
+        help: [
+          'verfügbare befehle:',
+          'help                diese liste',
+          'ls                  aktuelles verzeichnis anzeigen',
+          'cd <ziel>           zu <ziel> wechseln — ".." und "/" gehen zurück',
+          'cat <ziel>          kurzbeschreibung von <ziel> anzeigen',
+          'whoami              wer das hier gebaut hat',
+          'lang                zwischen /de/ und /en/ wechseln',
+          'clear               bildschirm leeren',
+          'login <code>        lebenslauf freischalten',
+        ],
+        chips: [
+          { label: 'ls', run: 'ls' },
+          { label: 'cd blog', run: 'cd blog' },
+          { label: 'help', run: 'help' },
+        ],
+      }
+    : {
+        promptUser: 'guest@drnhfr',
+        introLine: 'type "help" for a list of commands.',
+        whoami: 'christian dirnhofer. builds distributed systems for a living, actors and circuit boards for fun.',
+        emptyLs: '(empty)',
+        cmdNotFoundSuffix: 'command not found',
+        catMissing: 'cat: missing operand',
+        catNotFoundPrefix: 'cat: no such file: ',
+        catNoDescription: 'no description available.',
+        cdNotFoundPrefix: 'cd: no such directory: ',
+        loginMissing: 'login: please supply a code',
+        loginWrong: 'wrong code. nice try.',
+        loginSuccess: 'access granted — loading cv …',
+        help: [
+          'available commands:',
+          'help                this list',
+          'ls                  list the current directory',
+          'cd <target>         move to <target> — ".." and "/" go back',
+          'cat <target>        show a short description of <target>',
+          'whoami              who built this',
+          'lang                switch between /de/ and /en/',
+          'clear               clear the screen',
+          'login <code>        unlock the cv',
+        ],
+        chips: [
+          { label: 'ls', run: 'ls' },
+          { label: 'cd blog', run: 'cd blog' },
+          { label: 'help', run: 'help' },
+        ],
+      };
+---
+
+<section class="terminal" id="terminal" aria-label={terminalLabel}>
+  <div class="chips" id="terminal-chips">
+    {
+      copy.chips.map((chip) => (
+        <button type="button" class="chip" data-run={chip.run} disabled>
+          {chip.label}
+        </button>
+      ))
+    }
+  </div>
+  <div class="log" id="terminal-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={logLabel}>
+    <p class="line hint">{copy.introLine}</p>
+  </div>
+  <form class="term-form" id="terminal-form">
+    <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
+    <span class="prompt" aria-hidden="true">{copy.promptUser}:~$</span>
+    <input
+      type="text"
+      id="terminal-input"
+      class="term-input"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      enterkeyhint="go"
+      disabled
+    />
+  </form>
+</section>
+
+<style>
+  .terminal {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding-inline: var(--gutter);
+    padding-block: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .chips {
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  @media (max-width: 37.5rem) {
+    .chips {
+      display: flex;
+    }
+  }
+  .chip {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    cursor: pointer;
+  }
+  .chip:hover,
+  .chip:focus-visible {
+    color: var(--red-text);
+    border-color: var(--red-text);
+  }
+  .chip:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .log {
+    border: 1px solid var(--hairline);
+    padding: 1rem;
+    min-height: 8rem;
+    max-height: 24rem;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+  }
+  .line {
+    margin: 0 0 0.4rem;
+  }
+  .line:last-child {
+    margin-bottom: 0;
+  }
+  .line.hint {
+    color: var(--text-dim);
+  }
+  .line.echo {
+    color: var(--text-muted);
+  }
+  .line.echo .prompt-mini {
+    color: var(--boot-info);
+    margin-right: 0.4em;
+  }
+  .line.err {
+    color: var(--red-text);
+  }
+  .term-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--hairline);
+    border-top: 0;
+    padding: 0.6rem 1rem;
+  }
+  .prompt {
+    color: var(--boot-info);
+    white-space: nowrap;
+  }
+  .term-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .term-input:focus {
+    outline: none;
+  }
+  .term-input:disabled {
+    color: var(--text-dim);
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+
+<script define:vars={{ lang, cvHref, otherHomeHref, searchHref, copy, introFallbackMs }}>
+  const UNLOCK_KEY = 'cv-unlocked';
+
+  const section = document.getElementById('terminal');
+  const log = document.getElementById('terminal-log');
+  const form = document.getElementById('terminal-form');
+  const input = document.getElementById('terminal-input');
+  const chipsRow = document.getElementById('terminal-chips');
+  const chipButtons = Array.from(chipsRow.querySelectorAll('.chip'));
+
+  let entries = [];
+  const entriesPromise = fetch(searchHref)
+    .then((response) => response.json())
+    .then((data) => {
+      entries = Array.isArray(data) ? data.filter((entry) => entry.href !== `/${lang}/`) : [];
+      return entries;
+    })
+    .catch(() => {
+      entries = [];
+      return entries;
+    });
+
+  const history = [];
+  let historyCursor = 0;
+  let draft = '';
+
+  function nameFromHref(href) {
+    const trimmed = href.replace(/\/+$/, '');
+    const parts = trimmed.split('/').filter(Boolean);
+    return parts[parts.length - 1] || '';
+  }
+
+  function isPageKind(kind) {
+    return kind === 'Seite' || kind === 'Page';
+  }
+
+  const KIND_ORDER = { Seite: 0, Page: 0, Projekt: 1, Project: 1, Artikel: 2, Article: 2 };
+
+  function findEntry(argRaw) {
+    const needle = argRaw
+      .trim()
+      .replace(/^\/+/, '')
+      .replace(/\/+$/, '')
+      .toLowerCase();
+    if (!needle) return undefined;
+    return entries.find((entry) => nameFromHref(entry.href).toLowerCase() === needle);
+  }
+
+  function appendLine(text, className) {
+    const el = document.createElement('p');
+    el.className = `line ${className}`;
+    el.textContent = text;
+    log.append(el);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function echo(raw) {
+    const el = document.createElement('p');
+    el.className = 'line echo';
+    const promptSpan = document.createElement('span');
+    promptSpan.className = 'prompt-mini';
+    promptSpan.setAttribute('aria-hidden', 'true');
+    promptSpan.textContent = `${copy.promptUser}:~$`;
+    el.append(promptSpan, raw);
+    log.append(el);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function printOut(text) {
+    appendLine(text, 'out');
+  }
+
+  function printErr(text) {
+    appendLine(text, 'err');
+  }
+
+  function cmdLs() {
+    if (entries.length === 0) {
+      printOut(copy.emptyLs);
+      return;
+    }
+    const rows = entries
+      .map((entry) => ({
+        name: nameFromHref(entry.href) + (isPageKind(entry.kind) ? '/' : ''),
+        kind: entry.kind,
+      }))
+      .sort((a, b) => {
+        const order = (KIND_ORDER[a.kind] ?? 9) - (KIND_ORDER[b.kind] ?? 9);
+        return order !== 0 ? order : a.name.localeCompare(b.name);
+      });
+    const width = Math.max(...rows.map((row) => row.name.length)) + 2;
+    printOut(rows.map((row) => row.name.padEnd(width) + row.kind).join('\n'));
+  }
+
+  function cmdCd(arg) {
+    const trimmed = arg.trim();
+    if (!trimmed || trimmed === '.' || trimmed === '..' || trimmed === '/' || trimmed === '~') {
+      // Flat filesystem: there is nowhere to go but here, so this is a
+      // silent no-op — exactly what a real shell does with `cd ..` at `/`.
+      return;
+    }
+    const entry = findEntry(trimmed);
+    if (!entry) {
+      printErr(copy.cdNotFoundPrefix + trimmed);
+      return;
+    }
+    window.location.href = entry.href;
+  }
+
+  function cmdCat(arg) {
+    const trimmed = arg.trim();
+    if (!trimmed) {
+      printErr(copy.catMissing);
+      return;
+    }
+    const entry = findEntry(trimmed);
+    if (!entry) {
+      printErr(copy.catNotFoundPrefix + trimmed);
+      return;
+    }
+    printOut(entry.description || copy.catNoDescription);
+  }
+
+  // The unlock code is computed client-side from wall-clock time and the
+  // formula lives right here, in plain sight — this is a toy, not access
+  // control, see the feature brief. Accepted for the current minute and the
+  // one before it, so typing it out doesn't get punished by the clock
+  // ticking over mid-keystroke.
+  function codeFor(date) {
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    return mm + hh + yy.split('').reverse().join('');
+  }
+
+  function cmdLogin(arg) {
+    const code = arg.trim();
+    if (!code) {
+      printErr(copy.loginMissing);
+      return;
+    }
+    const now = new Date();
+    const prevMinute = new Date(now.getTime() - 60000);
+    if (code === codeFor(now) || code === codeFor(prevMinute)) {
+      try {
+        sessionStorage.setItem(UNLOCK_KEY, '1');
+      } catch {
+        // Not fatal: worst case the cv re-locks itself on the next visit.
+      }
+      printOut(copy.loginSuccess);
+      window.location.href = cvHref;
+    } else {
+      printErr(copy.loginWrong);
+    }
+  }
+
+  function parse(raw) {
+    const trimmed = raw.trim();
+    const spaceIndex = trimmed.indexOf(' ');
+    if (spaceIndex === -1) return [trimmed, ''];
+    return [trimmed.slice(0, spaceIndex), trimmed.slice(spaceIndex + 1)];
+  }
+
+  async function run(raw) {
+    echo(raw);
+    if (!raw.trim()) return;
+    await entriesPromise;
+    const [cmdRaw, rest] = parse(raw);
+    const cmd = cmdRaw.toLowerCase();
+    switch (cmd) {
+      case 'help':
+        printOut(copy.help.join('\n'));
+        break;
+      case 'ls':
+        cmdLs();
+        break;
+      case 'cd':
+        cmdCd(rest);
+        break;
+      case 'cat':
+        cmdCat(rest);
+        break;
+      case 'whoami':
+        printOut(copy.whoami);
+        break;
+      case 'lang':
+        window.location.href = otherHomeHref;
+        break;
+      case 'clear':
+        log.replaceChildren();
+        break;
+      case 'login':
+        cmdLogin(rest);
+        break;
+      default:
+        printErr(`${cmdRaw}: ${copy.cmdNotFoundSuffix}`);
+    }
+  }
+
+  function runFromChip(command) {
+    if (input.disabled) return;
+    input.value = command;
+    form.requestSubmit();
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const raw = input.value;
+    input.value = '';
+    if (raw.trim()) {
+      history.push(raw);
+      historyCursor = history.length;
+    }
+    run(raw);
+  });
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') {
+      if (history.length === 0) return;
+      event.preventDefault();
+      if (historyCursor === history.length) draft = input.value;
+      historyCursor = Math.max(0, historyCursor - 1);
+      input.value = history[historyCursor];
+      input.setSelectionRange(input.value.length, input.value.length);
+    } else if (event.key === 'ArrowDown') {
+      if (history.length === 0) return;
+      event.preventDefault();
+      historyCursor = Math.min(history.length, historyCursor + 1);
+      input.value = historyCursor === history.length ? draft : history[historyCursor];
+      input.setSelectionRange(input.value.length, input.value.length);
+    } else if (event.key === 'Tab') {
+      const value = input.value;
+      const spaceIndex = value.indexOf(' ');
+      const commands = ['help', 'ls', 'cd', 'cat', 'whoami', 'lang', 'clear', 'login'];
+      if (spaceIndex === -1) {
+        const matches = commands.filter((c) => c.startsWith(value.toLowerCase()) && value.length > 0);
+        if (matches.length === 1) {
+          event.preventDefault();
+          input.value = `${matches[0]} `;
+        }
+      } else {
+        const cmd = value.slice(0, spaceIndex).toLowerCase();
+        if (cmd === 'cd' || cmd === 'cat') {
+          const partial = value.slice(spaceIndex + 1).toLowerCase();
+          const matches = entries
+            .map((entry) => nameFromHref(entry.href))
+            .filter((name, index, all) => all.indexOf(name) === index && name.toLowerCase().startsWith(partial));
+          if (matches.length === 1) {
+            event.preventDefault();
+            input.value = `${cmd} ${matches[0]}`;
+          }
+        }
+      }
+    }
+  });
+
+  chipButtons.forEach((button) => {
+    button.addEventListener('click', () => runFromChip(button.dataset.run ?? ''));
+  });
+
+  // Clicking anywhere in the terminal focuses the input, unless the click
+  // already landed on something interactive (a chip) that handles itself.
+  section.addEventListener('click', (event) => {
+    if (input.disabled) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest('.chip')) return;
+    input.focus();
+  });
+
+  // Deliberately no autofocus on load (see BaseLayout/Terminal usage): that
+  // would pop the keyboard on mobile unprompted and steal a screen-reader
+  // user's position. Instead, typing anywhere with nothing else focused
+  // focuses the terminal input and lets the keystroke land there.
+  document.addEventListener('keydown', (event) => {
+    if (input.disabled) return;
+    if (document.activeElement !== document.body) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key.length !== 1) return;
+    // '/' and ctrl/cmd+k are the command palette's global shortcuts — never
+    // steal those, even though the guard above already excludes ctrl/cmd+k.
+    if (event.key === '/') return;
+    input.focus();
+  });
+
+  // The prompt only becomes available once the boot intro is done playing —
+  // see BootIntro.astro. If the intro isn't running at all (already seen
+  // this session, or prefers-reduced-motion), enable immediately.
+  if (document.documentElement.dataset.intro === 'running') {
+    let enabled = false;
+    const enable = () => {
+      if (enabled) return;
+      enabled = true;
+      input.disabled = false;
+      chipButtons.forEach((button) => button.removeAttribute('disabled'));
+    };
+    document.addEventListener('intro:finished', enable, { once: true });
+    window.setTimeout(enable, introFallbackMs);
+  } else {
+    input.disabled = false;
+    chipButtons.forEach((button) => button.removeAttribute('disabled'));
+  }
+</script>
