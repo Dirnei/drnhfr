@@ -23,7 +23,7 @@
     --hairline-soft: #e5e5e5;
     --code-bg: #f0f0f0;
     /* Keep the darker, print-legible red rather than the screen's lighter
-       --red-text (#ff4d4d), which is only 3.27:1 on white. */
+       --red-text (#ff6868), which is only 2.83:1 on white. */
     --red-text: #da1515;
   }
 
