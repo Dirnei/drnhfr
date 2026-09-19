@@ -32,6 +32,8 @@ const copy =
     ? {
         promptUser: 'gast@drnhfr',
         introLine: 'tippe "help" für eine liste der befehle.',
+        reloading: 'lade neu …',
+        restarting: 'starte neu …',
         whoami: 'christian dirnhofer. baut verteilte systeme für geld, aktoren und platinen zum spaß.',
         emptyLs: '(leer)',
         cmdNotFoundSuffix: 'befehl nicht gefunden',
@@ -52,6 +54,8 @@ const copy =
           'lang                zwischen /de/ und /en/ wechseln',
           'clear               bildschirm leeren',
           'login <code>        lebenslauf freischalten',
+          'reload              seite neu laden',
+          'restart            neu starten — bootsequenz und sperre zurücksetzen',
         ],
         chips: [
           { label: 'ls', run: 'ls' },
@@ -62,6 +66,8 @@ const copy =
     : {
         promptUser: 'guest@drnhfr',
         introLine: 'type "help" for a list of commands.',
+        reloading: 'reloading …',
+        restarting: 'restarting …',
         whoami: 'christian dirnhofer. builds distributed systems for a living, actors and circuit boards for fun.',
         emptyLs: '(empty)',
         cmdNotFoundSuffix: 'command not found',
@@ -82,6 +88,8 @@ const copy =
           'lang                switch between /de/ and /en/',
           'clear               clear the screen',
           'login <code>        unlock the cv',
+          'reload              reload the page',
+          'restart             reboot — replay the boot sequence, re-lock the cv',
         ],
         chips: [
           { label: 'ls', run: 'ls' },
@@ -390,6 +398,28 @@ const copy =
     return [trimmed.slice(0, spaceIndex), trimmed.slice(spaceIndex + 1)];
   }
 
+  /*
+   * reload just reloads. restart is the fun one: it clears the session flags
+   * so the boot sequence plays again and the CV re-locks, which is otherwise
+   * only possible by opening a private window. Both print a line first and
+   * pause briefly so the message is actually readable before the page goes —
+   * except under reduced motion, where the pause is pointless theatre.
+   */
+  function cmdReboot(full) {
+    if (full) {
+      try {
+        sessionStorage.removeItem('intro-played');
+        sessionStorage.removeItem(UNLOCK_KEY);
+      } catch {
+        /* private mode or blocked storage: nothing to clear, reload anyway */
+      }
+    }
+    printOut(full ? copy.restarting : copy.reloading);
+    input.disabled = true;
+    const settle = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450;
+    window.setTimeout(() => window.location.reload(), settle);
+  }
+
   async function run(raw) {
     echo(raw);
     if (!raw.trim()) return;
@@ -420,6 +450,12 @@ const copy =
         break;
       case 'login':
         cmdLogin(rest);
+        break;
+      case 'reload':
+        cmdReboot(false);
+        break;
+      case 'restart':
+        cmdReboot(true);
         break;
       default:
         printErr(`${cmdRaw}: ${copy.cmdNotFoundSuffix}`);
@@ -460,7 +496,7 @@ const copy =
     } else if (event.key === 'Tab') {
       const value = input.value;
       const spaceIndex = value.indexOf(' ');
-      const commands = ['help', 'ls', 'cd', 'cat', 'whoami', 'lang', 'clear', 'login'];
+      const commands = ['help', 'ls', 'cd', 'cat', 'whoami', 'lang', 'clear', 'login', 'reload', 'restart'];
       if (spaceIndex === -1) {
         const matches = commands.filter((c) => c.startsWith(value.toLowerCase()) && value.length > 0);
         if (matches.length === 1) {
