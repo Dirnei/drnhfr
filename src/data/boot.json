@@ -1,0 +1,31 @@
+{
+  "timing": { "lineStepMs": 95, "logoHoldMs": 700, "fadeMs": 350 },
+  "de": [
+    { "text": "$ dirnhofer.net --boot" },
+    { "tag": "OK", "text": "Kernel geladen" },
+    { "tag": "OK", "text": "Dateisystem geprüft" },
+    { "tag": "OK", "text": "/projekte eingehängt" },
+    { "tag": "OK", "text": "/blog eingehängt" },
+    { "tag": "OK", "text": "/lebenslauf eingehängt" },
+    { "tag": "OK", "text": "Schriftart open-sans[wdth=75] geladen" },
+    { "tag": "OK", "text": "Locale gesetzt: de_DE.UTF-8" },
+    { "tag": "OK", "text": "Ziel erreicht: Softwarearchitekt" },
+    { "tag": "OK", "text": "Ziel erreicht: Tinkerer" },
+    { "tag": "INFO", "text": "Kaffee: heiß" },
+    { "tag": "OK", "text": "dirnhofer.net gestartet" }
+  ],
+  "en": [
+    { "text": "$ dirnhofer.net --boot" },
+    { "tag": "OK", "text": "Kernel loaded" },
+    { "tag": "OK", "text": "Filesystem checked" },
+    { "tag": "OK", "text": "Mounted /projects" },
+    { "tag": "OK", "text": "Mounted /blog" },
+    { "tag": "OK", "text": "Mounted /cv" },
+    { "tag": "OK", "text": "Loaded typeface open-sans[wdth=75]" },
+    { "tag": "OK", "text": "Locale set: en_GB.UTF-8" },
+    { "tag": "OK", "text": "Reached target: software architect" },
+    { "tag": "OK", "text": "Reached target: tinkerer" },
+    { "tag": "INFO", "text": "Coffee: hot" },
+    { "tag": "OK", "text": "Started dirnhofer.net" }
+  ]
+}

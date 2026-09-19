@@ -1,20 +1,53 @@
 ---
 import Logo from './Logo.astro';
 import type { Locale } from '../i18n/locales';
+import { bootLines, bootTiming } from '../data/boot';
 
 interface Props {
   lang: Locale;
 }
 const { lang } = Astro.props;
 const skipHint = lang === 'de' ? 'esc zum überspringen' : 'esc to skip';
-const lines =
-  lang === 'de'
-    ? ['$ dirnhofer.net --boot', 'identität auflösen .... ok', 'render ................ go']
-    : ['$ dirnhofer.net --boot', 'resolving identity .... ok', 'render ................ go'];
+const lines = bootLines(lang);
+const timing = bootTiming;
+
+// Column width for the "[ TAG ]" markers is derived from the longest tag in
+// the data, so a future "WARN" or "ERROR" line still lines up.
+const taggedLines = lines.filter((line) => line.tag);
+const tagWidth =
+  taggedLines.length > 0 ? Math.max(...taggedLines.map((line) => line.tag!.length)) + 2 : 0;
+function padTag(tag: string): string {
+  const gap = tagWidth - tag.length;
+  const left = Math.ceil(gap / 2);
+  const right = Math.floor(gap / 2);
+  return `${' '.repeat(left)}${tag}${' '.repeat(right)}`;
+}
 ---
-<div class="intro" id="intro" aria-hidden="true" hidden>
+<div
+  class="intro"
+  id="intro"
+  aria-hidden="true"
+  hidden
+  data-line-step={timing.lineStepMs}
+  data-logo-hold={timing.logoHoldMs}
+  data-fade={timing.fadeMs}
+>
   <div class="boot" id="intro-boot">
-    {lines.map((line) => <div class="ln">{line}</div>)}
+    {
+      lines.map((line) => (
+        <div class="ln">
+          {line.tag ? (
+            <>
+              <span class="tag">[{padTag(line.tag)}]</span>
+              {' '}
+              {line.text}
+            </>
+          ) : (
+            line.text
+          )}
+        </div>
+      ))
+    }
   </div>
   <div class="tile" id="intro-tile"><Logo size={104} /></div>
   <p class="hint">{skipHint}</p>
@@ -33,9 +66,13 @@ const lines =
     font-size: 0.75rem;
     line-height: 2;
     color: var(--text-muted);
+    white-space: pre;
   }
   .ln {
     opacity: 0;
+  }
+  .tag {
+    color: var(--red);
   }
   .tile {
     position: absolute;
@@ -67,6 +104,12 @@ const lines =
   if (!root || reduced || seen) {
     root?.remove();
   } else {
+    // Timing comes from the boot log data (src/data/boot.json), not from
+    // constants in this script, so editing the data reshapes the sequence.
+    const lineStepMs = Number(root.dataset.lineStep);
+    const logoHoldMs = Number(root.dataset.logoHold);
+    const fadeMs = Number(root.dataset.fade);
+
     root.hidden = false;
     document.body.style.overflow = 'hidden';
     sessionStorage.setItem(KEY, '1');
@@ -74,51 +117,58 @@ const lines =
     const timers: number[] = [];
     const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
 
+    function onKeydown(event: KeyboardEvent) {
+      if (event.key === 'Escape') finish();
+    }
+
     const finish = () => {
       timers.forEach(clearTimeout);
+      document.removeEventListener('keydown', onKeydown);
       document.body.style.overflow = '';
-      root.style.transition = 'opacity .3s ease';
+      root.style.transition = `opacity ${fadeMs}ms ease`;
       root.style.opacity = '0';
-      window.setTimeout(() => root.remove(), 320);
+      window.setTimeout(() => root.remove(), fadeMs);
     };
 
     const lines = root.querySelectorAll<HTMLElement>('.ln');
+    const lineRevealMs = lines.length * lineStepMs;
     lines.forEach((line, index) =>
-      at(90 + index * 130, () => {
-        line.style.transition = 'opacity .09s';
+      at(index * lineStepMs, () => {
+        line.style.transition = `opacity ${lineStepMs}ms`;
         line.style.opacity = '1';
       }),
     );
 
     const boot = document.getElementById('intro-boot');
     const tile = document.getElementById('intro-tile');
-    const start = 90 + lines.length * 130;
 
-    at(start + 60, () => {
+    // After the last line: hold, then run the logo assembly, then fade.
+    const assemblyStart = lineRevealMs + logoHoldMs;
+    const condenseStart = assemblyStart + fadeMs;
+    const finishAt = condenseStart + fadeMs;
+
+    at(assemblyStart, () => {
       if (boot) {
-        boot.style.transition = 'opacity .2s';
+        boot.style.transition = `opacity ${fadeMs}ms`;
         boot.style.opacity = '0';
       }
-    });
-    at(start + 110, () => {
       if (tile) {
-        tile.style.transition = 'opacity .2s';
+        tile.style.transition = `opacity ${fadeMs}ms`;
         tile.style.opacity = '1';
       }
     });
-    at(start + 700, () => {
+    at(condenseStart, () => {
       if (tile) {
-        tile.style.transition = 'transform .5s cubic-bezier(.5,0,.2,1), opacity .3s ease .3s';
+        tile.style.transition = `transform ${fadeMs}ms cubic-bezier(.5,0,.2,1), opacity ${fadeMs}ms ease`;
         tile.style.transform = 'scale(.27)';
         tile.style.opacity = '0';
       }
     });
-    at(start + 1050, finish);
+    at(finishAt, finish);
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') finish();
-    });
+    document.addEventListener('keydown', onKeydown);
     root.addEventListener('click', finish);
-    window.addEventListener('scroll', finish, { once: true, passive: true });
+    window.addEventListener('wheel', finish, { once: true, passive: true });
+    window.addEventListener('touchmove', finish, { once: true, passive: true });
   }
 </script>
