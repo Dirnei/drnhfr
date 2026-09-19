@@ -13,7 +13,10 @@ interface Props {
 
 const { lang, current, altHref, altAvailable = true } = Astro.props;
 const t = useTranslations(lang);
-const items: RouteKey[] = ['projects', 'blog', 'cv', 'contact'];
+// 'cv' is deliberately not listed here: the CV is unlisted-but-not-gone
+// (see routePath('cv', …) elsewhere), reachable only via the terminal's
+// "login" command on the home page.
+const items: RouteKey[] = ['projects', 'blog', 'contact'];
 ---
 <ul class="nav-list">
   {

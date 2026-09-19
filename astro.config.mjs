@@ -34,7 +34,12 @@ export default defineConfig({
     // themselves (/de/projekte/ vs /en/projects/), so that pairing would be
     // wrong for most routes. The <head> hreflang alternates in
     // BaseLayout.astro are the correct, per-page source of truth instead.
-    sitemap(),
+    sitemap({
+      // The CV is unlisted on purpose (reachable only via the terminal's
+      // "login" command) — the sitemap must not be the thing that hands it
+      // back to every crawler.
+      filter: (page) => !/\/(lebenslauf|cv)\/$/.test(page),
+    }),
   ],
   vite: {
     define: {
