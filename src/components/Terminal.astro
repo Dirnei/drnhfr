@@ -36,7 +36,7 @@ const inputLabel = 'Terminal input';
  */
 const copy = {
         promptUser: 'guest@drnhfr',
-        introLine: 'type "help" for a list of commands.',
+        introLine: 'type "help" or "?" for a list of commands.',
         reloading: 'reloading …',
         restarting: 'restarting …',
         whoami: 'christian dirnhofer. builds distributed systems for a living, actors and circuit boards for fun.',
@@ -51,7 +51,7 @@ const copy = {
         loginSuccess: 'access granted — loading cv …',
         help: [
           'available commands:',
-          'help                this list',
+          'help, ?             this list',
           'ls                  list the current directory',
           'cd <target>         move to <target> — ".." and "/" go back',
           'cat <target>        show a short description of <target>',
@@ -85,8 +85,8 @@ const copy = {
   </div>
   <form class="term-form" id="terminal-form">
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
-    <span class="seg seg-time" id="terminal-clock" aria-hidden="true">--:--</span>
     <span class="seg seg-err" id="terminal-status" hidden aria-hidden="true">&#10007;</span>
+    <span class="seg seg-time" id="terminal-clock" aria-hidden="true">--:--</span>
     <span class="seg seg-host" aria-hidden="true">{copy.promptUser}</span>
     <span class="seg seg-path" aria-hidden="true">~</span>
     <span class="seg seg-lang" aria-hidden="true">{lang}</span>
@@ -184,6 +184,7 @@ const copy = {
   .term-form {
     display: flex;
     align-items: stretch;
+    gap: 0;
     border: 1px solid var(--hairline);
     border-top: 0;
     --prev: transparent;
@@ -211,6 +212,7 @@ const copy = {
   .seg {
     position: relative;
     display: inline-flex;
+    margin: 0;
     align-items: center;
     flex: none;
     background: var(--bg);
@@ -236,31 +238,32 @@ const copy = {
     background: var(--prev);
     clip-path: polygon(0 0, 0 100%, 100% 50%);
   }
-  /* First in the row, so there is nothing behind it to wedge into. */
-  .seg-time {
-    --bg: var(--surface);
-    --prev: transparent;
-    --fg: var(--boot-info);
-    font-variant-numeric: tabular-nums;
-    padding-left: 0.7rem;
-  }
+  /* Leads the row when it shows, so nothing sits behind it to wedge into. */
   .seg-err {
     --bg: color-mix(in srgb, var(--red-text) 12%, var(--surface));
-    --prev: var(--surface);
+    --prev: transparent;
     --fg: var(--red-text);
+    padding-left: 0.7rem;
+  }
+  .seg-time {
+    --bg: color-mix(in srgb, var(--surface) 55%, var(--ink));
+    --prev: color-mix(in srgb, var(--red-text) 12%, var(--surface));
+    --fg: var(--boot-info);
+    font-variant-numeric: tabular-nums;
+  }
+  /* Usual case: no error, so the clock leads the row instead. */
+  .seg-err[hidden] + .seg-time {
+    --prev: transparent;
+    padding-left: 0.7rem;
   }
   .seg-host {
-    --bg: var(--surface);
-    --prev: color-mix(in srgb, var(--red-text) 12%, var(--surface));
-    --fg: var(--text-muted);
-  }
-  /* Usual case: no error segment, so the host abuts the clock directly. */
-  .seg-err[hidden] + .seg-host {
-    --prev: var(--surface);
+    --bg: var(--hairline);
+    --prev: color-mix(in srgb, var(--surface) 55%, var(--ink));
+    --fg: var(--text-body);
   }
   .seg-path {
     --bg: color-mix(in srgb, var(--surface) 55%, var(--ink));
-    --prev: var(--surface);
+    --prev: var(--hairline);
     --fg: var(--text-muted);
   }
   .seg-lang {
@@ -536,6 +539,7 @@ const copy = {
     lastFailed = false;
     switch (cmd) {
       case 'help':
+      case '?':
         printOut(copy.help.join('\n'));
         break;
       case 'ls':
@@ -566,7 +570,10 @@ const copy = {
         cmdReboot(true);
         break;
       default:
+        // Still an error, so the status segment lights up — but a dead end
+        // with no way out is worse than a dead end that hands you the map.
         printErr(`${cmdRaw}: ${copy.cmdNotFoundSuffix}`);
+        printOut(copy.help.join('\n'));
     }
     stampClock();
     refreshStatus(lastFailed);
