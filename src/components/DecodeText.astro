@@ -43,13 +43,15 @@ const { text, delay = 0 } = Astro.props;
     // the event never arrives.
     if (document.documentElement.dataset.intro === 'running') {
       let done = false;
+      let timeoutId: number;
       const start = () => {
         if (done) return;
         done = true;
+        clearTimeout(timeoutId);
         run();
       };
       document.addEventListener('intro:finished', start, { once: true });
-      window.setTimeout(start, 5000);
+      timeoutId = window.setTimeout(start, 5000);
     } else {
       run();
     }

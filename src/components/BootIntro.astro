@@ -120,7 +120,6 @@ function padTag(tag: string): string {
     root.hidden = false;
     document.body.style.overflow = 'hidden';
     document.documentElement.dataset.intro = 'running';
-    sessionStorage.setItem(KEY, '1');
 
     const timers = [];
     const at = (ms, fn) => timers.push(window.setTimeout(fn, ms));
@@ -140,8 +139,35 @@ function padTag(tag: string): string {
       document.dispatchEvent(new CustomEvent('intro:finished', { bubbles: true }));
     };
 
+    // Wire every exit route — the natural end-of-sequence timer and all
+    // four dismissal listeners — before scheduling the rest of the visual
+    // choreography below. Everything from here down is just line-reveal
+    // and logo-assembly styling; if any of it throws, the intro can still
+    // be dismissed and the `data-intro` marker can still be cleared,
+    // instead of getting stuck forever with no way to reach finish().
     const lines = root.querySelectorAll('.ln');
     const lineRevealMs = lines.length * lineStepMs;
+    // After the last line: hold, then run the logo assembly, then fade.
+    const assemblyStart = lineRevealMs + logoHoldMs;
+    const condenseStart = assemblyStart + fadeMs;
+    const finishAt = condenseStart + fadeMs;
+    at(finishAt, finish);
+
+    document.addEventListener('keydown', onKeydown);
+    root.addEventListener('click', finish);
+    window.addEventListener('wheel', finish, { once: true, passive: true });
+    window.addEventListener('touchmove', finish, { once: true, passive: true });
+
+    // sessionStorage.setItem can throw (private browsing, quota, storage
+    // blocked) — kept after every exit route is wired so a throw here still
+    // leaves the intro dismissible and the natural end-of-sequence timer
+    // still able to clear the marker.
+    try {
+      sessionStorage.setItem(KEY, '1');
+    } catch {
+      // Not fatal: worst case the intro replays on the next load.
+    }
+
     lines.forEach((line, index) =>
       at(index * lineStepMs, () => {
         line.style.transition = `opacity ${lineStepMs}ms`;
@@ -151,11 +177,6 @@ function padTag(tag: string): string {
 
     const boot = document.getElementById('intro-boot');
     const tile = document.getElementById('intro-tile');
-
-    // After the last line: hold, then run the logo assembly, then fade.
-    const assemblyStart = lineRevealMs + logoHoldMs;
-    const condenseStart = assemblyStart + fadeMs;
-    const finishAt = condenseStart + fadeMs;
 
     at(assemblyStart, () => {
       if (boot) {
@@ -174,11 +195,5 @@ function padTag(tag: string): string {
         tile.style.opacity = '0';
       }
     });
-    at(finishAt, finish);
-
-    document.addEventListener('keydown', onKeydown);
-    root.addEventListener('click', finish);
-    window.addEventListener('wheel', finish, { once: true, passive: true });
-    window.addEventListener('touchmove', finish, { once: true, passive: true });
   }
 </script>
