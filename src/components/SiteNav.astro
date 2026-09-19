@@ -54,4 +54,16 @@ const items: RouteKey[] = ['projects', 'blog', 'cv', 'contact'];
     color: var(--text);
     border-bottom-color: var(--red);
   }
+  /*
+   * Tightens the gap once the nav has wrapped onto its own row (see
+   * BaseLayout's .header-inner breakpoint) so the five items sit
+   * comfortably in the narrower single row instead of running right up
+   * to the edge of what fits.
+   */
+  @media (max-width: 37.5rem) {
+    .nav-list {
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+  }
 </style>

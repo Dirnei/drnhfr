@@ -120,6 +120,25 @@ const xDefaultHref =
   .nav {
     margin-left: auto;
   }
+  /*
+   * At phone widths the logo plus the full five-item nav (four links +
+   * lang switch) cannot share one row without shrinking type past
+   * legibility. Wrapping the nav onto its own row under the logo keeps
+   * every item at full size and reachable, with no JS and no change
+   * above this breakpoint.
+   */
+  @media (max-width: 37.5rem) {
+    .header-inner {
+      flex-wrap: wrap;
+    }
+    .nav {
+      margin-left: 0;
+      flex-basis: 100%;
+    }
+    .footer-list {
+      flex-wrap: wrap;
+    }
+  }
   .site-footer {
     border-top: 1px solid var(--hairline);
     margin-top: 4rem;
