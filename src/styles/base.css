@@ -1,6 +1,14 @@
 @import './tokens.css';
 @import './motion.css';
+@import './print.css';
 
+/*
+ * Only the *-latin-*.woff2 files are preloaded in BaseLayout's <head>. The
+ * *-latin-ext-*.woff2 files below still ship (for the unicode-range browsers
+ * that need them), but every character the DE/EN site content actually uses
+ * falls in the latin subset, so preloading latin-ext would just cost bytes
+ * on the critical path for no visible benefit.
+ */
 /* open-sans-latin-ext-wdth-normal */
 @font-face {
   font-family: 'Open Sans Variable';

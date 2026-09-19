@@ -3,17 +3,33 @@
     margin: 16mm;
   }
 
+  /*
+   * Every colour token gets a print-safe override here, not just the ones a
+   * given page happens to use today. Browsers do not print background
+   * colours by default, and this stylesheet used to cover only --ink,
+   * --text, --text-muted and the two hairlines — a page using --text-body,
+   * --text-dim, --surface, --code-bg or --red-text (e.g. any article, not
+   * just the CV) printed those in their screen (dark-ground) values, which
+   * come out illegible or invisible on white paper.
+   */
   :root {
     --ink: #ffffff;
+    --surface: #ffffff;
     --text: #111111;
+    --text-body: #111111;
     --text-muted: #444444;
+    --text-dim: #444444;
     --hairline: #cccccc;
     --hairline-soft: #e5e5e5;
+    --code-bg: #f0f0f0;
+    /* Keep the darker, print-legible red rather than the screen's lighter
+       --red-text (#ff4d4d), which is only 3.27:1 on white. */
+    --red-text: #da1515;
   }
 
   body {
-    background: #fff;
-    color: #111;
+    background: var(--ink);
+    color: var(--text);
   }
 
   .site-header,
@@ -28,13 +44,13 @@
   }
 
   a {
-    color: #111;
+    color: var(--text);
   }
 
   .cv a::after {
     content: ' (' attr(href) ')';
     font-size: 0.75em;
-    color: #555;
+    color: var(--text-muted);
   }
 
   .cv a[href^="mailto:"]::after {
