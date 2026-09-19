@@ -56,4 +56,20 @@
   .cv a[href^="mailto:"]::after {
     content: none;
   }
+
+  /*
+   * Shiki emits inline styles on the <pre> it generates (e.g.
+   * style="background-color:#0d1117;color:#e6edf3"), which outrank the
+   * screen-mode `.prose pre { background: var(--code-bg) }` rule and are
+   * not touched by the :root overrides above. The !important here is
+   * required to beat that inline style — do not remove it as unnecessary.
+   */
+  .prose pre,
+  .prose pre code,
+  .prose pre span,
+  .astro-code,
+  .astro-code span {
+    background: var(--code-bg) !important;
+    color: var(--text) !important;
+  }
 }
