@@ -62,9 +62,11 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
     overflow-y: auto;
   }
   /*
-   * The result <li>/<a> nodes are inserted at runtime via innerHTML (see
-   * script below), so they never receive Astro's per-build
-   * data-astro-cid-* scoping attribute. A scoped selector like
+   * The result <li>/<a> nodes are built at runtime with
+   * document.createElement (see script below), so they never receive
+   * Astro's per-build data-astro-cid-* scoping attribute — that attribute
+   * is only ever added to markup present at build time, regardless of
+   * which DOM API creates the element later. A scoped selector like
    * ".palette-results li a" compiles to requiring that attribute on every
    * element in the chain, which those dynamic nodes can never have — so
    * the rule would silently never match. ":global()" on the dynamic part
@@ -98,7 +100,7 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
   .palette-results :global(li a):focus-visible,
   .palette-results :global(li[aria-selected='true'] a) {
     background: color-mix(in srgb, var(--red) 14%, var(--surface));
-    color: var(--red);
+    color: var(--red-text);
     outline: none;
   }
   .palette-empty {
@@ -168,15 +170,31 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
       ? entries.filter((entry) => entry.title.toLowerCase().includes(needle))
       : entries;
 
-    list.innerHTML = matches
-      .slice(0, 8)
-      .map(
-        (entry, index) =>
-          `<li role="option" id="palette-option-${index}" aria-selected="false">` +
-          `<a href="${entry.href}" tabindex="-1">${entry.title}<span class="kind">${entry.kind}</span></a>` +
-          `</li>`,
-      )
-      .join('');
+    // Built with createElement/textContent rather than innerHTML: entry.title
+    // is build-time frontmatter, not attacker input, but a title containing
+    // "<" (e.g. "List<T>") would parse as markup under innerHTML and swallow
+    // the following .kind span, silently truncating the row.
+    list.replaceChildren(
+      ...matches.slice(0, 8).map((entry, index) => {
+        const item = document.createElement('li');
+        item.setAttribute('role', 'option');
+        item.id = `palette-option-${index}`;
+        item.setAttribute('aria-selected', 'false');
+
+        const link = document.createElement('a');
+        link.href = entry.href;
+        link.tabIndex = -1;
+        link.append(entry.title);
+
+        const kind = document.createElement('span');
+        kind.className = 'kind';
+        kind.textContent = entry.kind;
+        link.append(kind);
+
+        item.append(link);
+        return item;
+      }),
+    );
     empty.hidden = matches.length > 0;
     input.setAttribute('aria-expanded', matches.length > 0 ? 'true' : 'false');
     select(0);
@@ -217,8 +235,8 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
       await load();
       input.value = '';
       render('');
-      document.body.style.overflow = 'hidden';
       dialog.showModal();
+      document.body.style.overflow = 'hidden';
       input.focus();
     } catch (error) {
       opening = false;
@@ -236,11 +254,13 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
       target instanceof HTMLElement &&
       (['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable);
 
+    const noModifier = !event.metaKey && !event.ctrlKey && !event.altKey;
+
     if (
       !opening &&
       !typingElsewhere &&
       !isIntroRunning() &&
-      (event.key === '/' || (event.key === 'k' && (event.metaKey || event.ctrlKey)))
+      ((event.key === '/' && noModifier) || (event.key === 'k' && (event.metaKey || event.ctrlKey)))
     ) {
       event.preventDefault();
       open();
