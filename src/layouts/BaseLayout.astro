@@ -111,7 +111,19 @@ const xDefaultHref =
   </body>
 </html>
 <style>
+  /*
+   * Sticky header. Two things it needs beyond position/top, both of which
+   * look broken if omitted: an opaque background, because the page scrolls
+   * underneath it and the body ground would otherwise show through; and a
+   * z-index above page content. The boot intro (100) and the command
+   * palette (a native <dialog>, top layer) still sit above it, and the
+   * skip link (50) still clears it when focused.
+   */
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--ink);
     border-bottom: 1px solid var(--hairline);
   }
   .header-inner {

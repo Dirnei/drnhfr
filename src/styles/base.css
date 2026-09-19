@@ -62,6 +62,22 @@ html {
   color-scheme: dark;
 }
 
+/*
+ * With a sticky header, anything scrolled to by an anchor (the skip link's
+ * #main, or a future heading link) would land underneath it. scroll-padding
+ * reserves the header's height so targets stop below it instead. The larger
+ * value at narrow widths accounts for the header wrapping onto two rows.
+ */
+html {
+  scroll-padding-top: 5rem;
+}
+
+@media (max-width: 37.5rem) {
+  html {
+    scroll-padding-top: 8rem;
+  }
+}
+
 body {
   display: flex;
   flex-direction: column;
