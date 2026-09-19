@@ -64,7 +64,26 @@ const { text, delay = 0 } = Astro.props;
         run();
       };
       document.addEventListener('intro:finished', start, { once: true });
-      timeoutId = window.setTimeout(start, fallbackMs);
+
+      // The fallback countdown is armed on first visibility, not here at
+      // script load: a tab parked in the background (see BootIntro's
+      // holdUntilVisible line) can sit hidden far longer than fallbackMs.
+      // Arming immediately would trip the fallback unseen, decode the
+      // headings under the still-hidden overlay, and then have the intro
+      // play over an already-finished page once the visitor arrives.
+      const armFallback = () => {
+        timeoutId = window.setTimeout(start, fallbackMs);
+      };
+      if (document.visibilityState === 'visible') {
+        armFallback();
+      } else {
+        const onVisible = () => {
+          if (document.visibilityState !== 'visible') return;
+          document.removeEventListener('visibilitychange', onVisible);
+          armFallback();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      }
     } else {
       run();
     }

@@ -15,11 +15,11 @@ describe('computeBootSchedule', () => {
     expect(schedule.finishAt).toBe(1400);
   });
 
-  it('matches the current boot.json timing for both locales (2,540ms)', () => {
+  it('matches the current boot.json timing for both locales (2,730ms)', () => {
     const de = computeBootSchedule(bootData.timing, bootData.de.length);
     const en = computeBootSchedule(bootData.timing, bootData.en.length);
-    expect(de.finishAt).toBe(2540);
-    expect(en.finishAt).toBe(2540);
+    expect(de.finishAt).toBe(2730);
+    expect(en.finishAt).toBe(2730);
   });
 
   it("DecodeText's derived fallback always exceeds the current schedule", () => {
@@ -31,14 +31,14 @@ describe('computeBootSchedule', () => {
   });
 
   it('keeps the fallback ahead of the schedule even if boot.json is retuned slower', () => {
-    // The exact scenario I6 called out: raising lineStepMs from 95 to 300 on
-    // the current 12-line data lands the schedule at precisely the old
-    // hard-coded 5000ms fallback, which would have fired underneath the
-    // still-running intro. The fallback is no longer a fixed number, so it
-    // grows with the schedule instead of being silently outgrown by it.
+    // The scenario I6 called out: raising lineStepMs from 95 to 300 pushes
+    // the schedule well past the old hard-coded 5000ms fallback, which
+    // would have fired underneath the still-running intro. The fallback is
+    // no longer a fixed number, so it grows with the schedule instead of
+    // being silently outgrown by it.
     const retuned = { ...bootData.timing, lineStepMs: 300 };
     const schedule = computeBootSchedule(retuned, bootData.de.length);
-    expect(schedule.finishAt).toBe(5000);
+    expect(schedule.finishAt).toBe(5600);
     expect(schedule.finishAt + DECODE_FALLBACK_MARGIN_MS).toBeGreaterThan(schedule.finishAt);
   });
 });

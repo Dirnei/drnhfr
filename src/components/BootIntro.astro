@@ -31,20 +31,25 @@ function padTag(tag: string): string {
   aria-hidden="true"
   hidden
   data-line-step={timing.lineStepMs}
+  data-logo-hold={timing.logoHoldMs}
   data-fade={timing.fadeMs}
   data-assembly-start={schedule.assemblyStart}
   data-condense-start={schedule.condenseStart}
   data-finish-at={schedule.finishAt}
+  data-tag-width={tagWidth}
 >
   <div class="boot" id="intro-boot">
     {
       lines.map((line) => (
-        <div class="ln">
+        <div class="ln" data-hold={line.holdUntilVisible || undefined}>
           {line.tag ? (
             <>
               <span class="tag">[{padTag(line.tag)}]</span>
               {' '}
               {line.text}
+              {line.holdUntilVisible ? (
+                <span class="wait-cue" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span>
+              ) : null}
             </>
           ) : (
             line.text
@@ -77,6 +82,41 @@ function padTag(tag: string): string {
   }
   .tag {
     color: var(--red-text);
+  }
+  .wait-cue {
+    display: none;
+    margin-left: 0.3em;
+  }
+  /*
+   * Only the parked WAIT line gets the animated cue, and only once the
+   * script actually decides to park (see the inline script below) — a
+   * visible-tab pass-through never adds .parked, so the line just reads as
+   * a normal, brief log entry.
+   */
+  .ln[data-hold].parked .wait-cue {
+    display: inline-block;
+  }
+  .wait-cue i {
+    display: inline-block;
+    font-style: normal;
+    opacity: 0.2;
+    animation: wait-dot 1.4s ease-in-out infinite;
+  }
+  .wait-cue i:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .wait-cue i:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  @keyframes wait-dot {
+    0%,
+    80%,
+    100% {
+      opacity: 0.2;
+    }
+    40% {
+      opacity: 1;
+    }
   }
   .tile {
     position: absolute;
@@ -122,16 +162,17 @@ function padTag(tag: string): string {
   if (!root || reduced || seen) {
     root?.remove();
   } else {
-    // Timing comes from the boot log data (src/data/boot.json) via
-    // src/lib/boot-timing.ts's computeBootSchedule(), run once at build time
-    // in the frontmatter above — not recomputed here — so editing the data
-    // reshapes the sequence without this script needing its own copy of the
-    // arithmetic.
+    // Timing constants come from the boot log data (src/data/boot.json) via
+    // data attributes set from src/lib/boot-timing.ts's computeBootSchedule()
+    // in the frontmatter above, so editing the data reshapes the sequence
+    // without this script needing its own copy of boot.json. The schedule
+    // itself (when each phase fires) is still computed here for the part of
+    // the sequence after the holdUntilVisible line, since that part's start
+    // time depends on when the visitor actually arrives — see
+    // resumeAfterHold() below.
     const lineStepMs = Number(root.dataset.lineStep);
+    const logoHoldMs = Number(root.dataset.logoHold);
     const fadeMs = Number(root.dataset.fade);
-    const assemblyStart = Number(root.dataset.assemblyStart);
-    const condenseStart = Number(root.dataset.condenseStart);
-    const finishAt = Number(root.dataset.finishAt);
 
     root.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -140,6 +181,11 @@ function padTag(tag: string): string {
     const timers = [];
     const at = (ms, fn) => timers.push(window.setTimeout(fn, ms));
 
+    // Set while the sequence is parked on the holdUntilVisible line, so
+    // finish() (dismissal) can tear it down even if the visitor never
+    // switches back to this tab.
+    let onHoldVisible = null;
+
     function onKeydown(event) {
       if (event.key === 'Escape') finish();
     }
@@ -147,49 +193,53 @@ function padTag(tag: string): string {
     const finish = () => {
       timers.forEach(clearTimeout);
       document.removeEventListener('keydown', onKeydown);
+      if (onHoldVisible) {
+        document.removeEventListener('visibilitychange', onHoldVisible);
+        onHoldVisible = null;
+      }
       document.body.style.overflow = '';
       delete document.documentElement.dataset.intro;
       root.style.transition = `opacity ${fadeMs}ms ease`;
       root.style.opacity = '0';
       window.setTimeout(() => root.remove(), fadeMs);
       document.dispatchEvent(new CustomEvent('intro:finished', { bubbles: true }));
+      // Written here, at actual completion or dismissal — not at intro
+      // start — so a tab that parks on the holdUntilVisible line and is
+      // never switched to does not burn the "seen this session" flag.
+      // Guarded like the read above: setItem can throw in private
+      // browsing, when storage is blocked, or over quota.
+      try {
+        sessionStorage.setItem(KEY, '1');
+      } catch {
+        // Not fatal: worst case the intro replays on the next load.
+      }
     };
 
-    // Wire every exit route — the natural end-of-sequence timer and all
-    // four dismissal listeners — before scheduling the rest of the visual
-    // choreography below. Everything from here down is just line-reveal
-    // and logo-assembly styling; if any of it throws, the intro can still
-    // be dismissed and the `data-intro` marker can still be cleared,
-    // instead of getting stuck forever with no way to reach finish().
-    const lines = root.querySelectorAll('.ln');
-    at(finishAt, finish);
+    // Wire every exit route — the natural end-of-sequence timer (scheduled
+    // below, once the schedule is known) and all four dismissal listeners —
+    // before scheduling the rest of the visual choreography. Everything
+    // from here down is just line-reveal and logo-assembly styling; if any
+    // of it throws, the intro can still be dismissed and the `data-intro`
+    // marker can still be cleared, instead of getting stuck forever with no
+    // way to reach finish().
+    const lines = Array.from(root.querySelectorAll('.ln'));
+    const holdLine = root.querySelector('.ln[data-hold]');
+    const holdIndex = holdLine ? lines.indexOf(holdLine) : -1;
 
     document.addEventListener('keydown', onKeydown);
     root.addEventListener('click', finish);
     window.addEventListener('wheel', finish, { once: true, passive: true });
     window.addEventListener('touchmove', finish, { once: true, passive: true });
 
-    // sessionStorage.setItem can throw (private browsing, quota, storage
-    // blocked) — kept after every exit route is wired so a throw here still
-    // leaves the intro dismissible and the natural end-of-sequence timer
-    // still able to clear the marker.
-    try {
-      sessionStorage.setItem(KEY, '1');
-    } catch {
-      // Not fatal: worst case the intro replays on the next load.
+    function revealLine(line) {
+      line.style.transition = `opacity ${lineStepMs}ms`;
+      line.style.opacity = '1';
     }
-
-    lines.forEach((line, index) =>
-      at(index * lineStepMs, () => {
-        line.style.transition = `opacity ${lineStepMs}ms`;
-        line.style.opacity = '1';
-      }),
-    );
 
     const boot = document.getElementById('intro-boot');
     const tile = document.getElementById('intro-tile');
 
-    at(assemblyStart, () => {
+    function assembleLogo() {
       if (boot) {
         boot.style.transition = `opacity ${fadeMs}ms`;
         boot.style.opacity = '0';
@@ -198,13 +248,88 @@ function padTag(tag: string): string {
         tile.style.transition = `opacity ${fadeMs}ms`;
         tile.style.opacity = '1';
       }
-    });
-    at(condenseStart, () => {
+    }
+
+    function condenseLogo() {
       if (tile) {
         tile.style.transition = `transform ${fadeMs}ms cubic-bezier(.5,0,.2,1), opacity ${fadeMs}ms ease`;
         tile.style.transform = 'scale(.27)';
         tile.style.opacity = '0';
       }
-    });
+    }
+
+    // Rewrites the parked line's tag from WAIT to OK, reusing the same
+    // centered-padding rule the Astro frontmatter used to build it, so the
+    // "[ TAG ]" column stays aligned.
+    function flipHoldTag() {
+      const tagWidth = Number(root.dataset.tagWidth);
+      const tag = holdLine.querySelector('.tag');
+      if (!tag || !tagWidth) return;
+      const gap = tagWidth - 'OK'.length;
+      const left = ' '.repeat(Math.ceil(gap / 2));
+      const right = ' '.repeat(Math.floor(gap / 2));
+      tag.textContent = `[${left}OK${right}]`;
+    }
+
+    // Schedules everything after the holdUntilVisible line — remaining
+    // lines, logo assembly, condense, finish — relative to *now*, i.e. the
+    // moment the hold condition is satisfied (either immediately, if the
+    // tab was already visible when the sequence reached that line, or on
+    // the visibilitychange that ends a park). This is the same arithmetic
+    // computeBootSchedule() uses, just re-based on "now" instead of script
+    // start, treating the already-revealed hold line as that mini
+    // sequence's first line.
+    function resumeAfterHold() {
+      const remaining = lines.slice(holdIndex + 1);
+      remaining.forEach((line, index) => at((index + 1) * lineStepMs, () => revealLine(line)));
+      const lineRevealMs = (remaining.length + 1) * lineStepMs;
+      const assemblyStart = lineRevealMs + logoHoldMs;
+      const condenseStart = assemblyStart + fadeMs;
+      const finishAt = condenseStart + fadeMs;
+      at(assemblyStart, assembleLogo);
+      at(condenseStart, condenseLogo);
+      at(finishAt, finish);
+    }
+
+    if (holdIndex === -1) {
+      // Defensive fallback if boot.json ever ships without a
+      // holdUntilVisible line: behave exactly as before, using the
+      // schedule computed at build time from the full line count.
+      const assemblyStart = Number(root.dataset.assemblyStart);
+      const condenseStart = Number(root.dataset.condenseStart);
+      const finishAt = Number(root.dataset.finishAt);
+      lines.forEach((line, index) => at(index * lineStepMs, () => revealLine(line)));
+      at(assemblyStart, assembleLogo);
+      at(condenseStart, condenseLogo);
+      at(finishAt, finish);
+    } else {
+      lines
+        .slice(0, holdIndex)
+        .forEach((line, index) => at(index * lineStepMs, () => revealLine(line)));
+
+      at(holdIndex * lineStepMs, () => {
+        revealLine(holdLine);
+        if (document.hidden) {
+          // Park here instead of guessing: the rest of the sequence would
+          // run unseen, and background-tab timer throttling would mangle
+          // it anyway. The cue makes the pause read as "waiting", not
+          // "stuck".
+          holdLine.classList.add('parked');
+          onHoldVisible = () => {
+            if (document.hidden) return;
+            document.removeEventListener('visibilitychange', onHoldVisible);
+            onHoldVisible = null;
+            holdLine.classList.remove('parked');
+            flipHoldTag();
+            resumeAfterHold();
+          };
+          document.addEventListener('visibilitychange', onHoldVisible);
+        } else {
+          // Already visible: pass straight through, no delay — the common
+          // case must not be slowed down by this line's existence.
+          resumeAfterHold();
+        }
+      });
+    }
   }
 </script>
