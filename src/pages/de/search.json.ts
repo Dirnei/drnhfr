@@ -12,6 +12,8 @@ export async function GET(_context: APIContext) {
     { title: 'Blog', href: routePath('blog', 'de'), kind: 'Seite' },
     { title: 'Lebenslauf', href: routePath('cv', 'de'), kind: 'Seite' },
     { title: 'Kontakt', href: routePath('contact', 'de'), kind: 'Seite' },
+    { title: 'Impressum', href: routePath('imprint', 'de'), kind: 'Seite' },
+    { title: 'Datenschutz', href: routePath('privacy', 'de'), kind: 'Seite' },
     ...projects.map((p) => ({
       title: p.data.title,
       href: `/de/projekte/${slugOf(p.id)}/`,
