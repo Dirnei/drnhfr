@@ -86,9 +86,6 @@ const copy = {
   <form class="term-form" id="terminal-form">
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
     <span class="prompt" aria-hidden="true">{copy.promptUser}:~$</span>
-    <span class="powerline" aria-hidden="true">
-      <span class="pl-sep"></span><span class="pl-time" id="terminal-clock">--:--:--</span>
-    </span>
     <input
       type="text"
       id="terminal-input"
@@ -100,6 +97,9 @@ const copy = {
       disabled
     />
   </form>
+  <div class="statusline" aria-hidden="true">
+    <span class="pl-sep"></span><span class="pl-time" id="terminal-clock">--:--</span>
+  </div>
 </section>
 
 <style>
@@ -179,7 +179,7 @@ const copy = {
   }
 
   /*
-   * Powerline-style clock on the prompt row. The separator is drawn with
+   * Powerline-style status strip closing the terminal. The separator is drawn with
    * clip-path rather than the usual  glyph: that character lives in
    * Nerd-Font-patched fonts, and this site self-hosts plain JetBrains Mono,
    * so the glyph would render as tofu. A CSS triangle always renders.
@@ -188,11 +188,11 @@ const copy = {
    * a screen reader once per second would make the page unusable. It is
    * decoration, and the time is not information the page owes anyone.
    */
-  .powerline {
-    margin-left: auto;
-    display: inline-flex;
+  .statusline {
+    display: flex;
+    justify-content: flex-end;
     align-items: stretch;
-    flex: none;
+    border-top: 1px solid var(--hairline-soft);
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.08em;
@@ -473,6 +473,7 @@ const copy = {
       default:
         printErr(`${cmdRaw}: ${copy.cmdNotFoundSuffix}`);
     }
+    stampClock();
   }
 
   /*
@@ -481,15 +482,20 @@ const copy = {
    * clock, not the visitor's.
    */
   const clockEl = document.getElementById('terminal-clock');
-  if (clockEl) {
-    const tick = () => {
-      const d = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    };
-    tick();
-    window.setInterval(tick, 1000);
+
+  /*
+   * Stamped when a prompt is drawn, not ticked on a timer — which is what a
+   * real shell does: the prompt shows the time it was printed. No interval,
+   * nothing mutating the DOM while the page sits idle.
+   */
+  function stampClock() {
+    if (!clockEl) return;
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
+
+  stampClock();
 
   function runFromChip(command) {
     if (input.disabled) return;
