@@ -13,6 +13,12 @@ function read(relPath: string): string {
   return readFileSync(join(process.cwd(), relPath), 'utf8');
 }
 
+// Strips /* ... */ block comments so assertions below can't be satisfied by
+// prose that merely mentions the selector — they must match code.
+function stripComments(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
 // T3a — motion contract. BootIntro, DecodeText, EntryRow and CommandPalette
 // are coupled only by two string literals that nothing else type-checks or
 // greps: the `data-intro="running"` marker BootIntro sets on <html> while
@@ -37,8 +43,11 @@ describe('motion contract: data-intro / running / intro:finished', () => {
   });
 
   it("EntryRow gates the row stagger on the [data-intro='running'] attribute", () => {
-    const src = read(FILES.entryRow);
-    expect(src).toContain("data-intro='running'");
+    // Matched against the comment-stripped source: the same string sits in
+    // an explanatory comment a few lines above the real selector, so a rename
+    // of the selector alone (leaving the comment stale) must still fail this.
+    const src = stripComments(read(FILES.entryRow));
+    expect(src).toMatch(/:not\(\[data-intro=(['"])running\1\]\)\s*\.row/);
   });
 
   it('CommandPalette gates opening on the running marker', () => {
