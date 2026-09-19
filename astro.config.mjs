@@ -28,12 +28,13 @@ export default defineConfig({
     },
   },
   integrations: [
-    sitemap({
-      i18n: {
-        defaultLocale: 'de',
-        locales: { de: 'de-DE', en: 'en-US' },
-      },
-    }),
+    // No `i18n` option here: @astrojs/sitemap's i18n mode pairs URLs by
+    // matching the path after the locale prefix, which only works when both
+    // locales use the same segment names. This site localises the segments
+    // themselves (/de/projekte/ vs /en/projects/), so that pairing would be
+    // wrong for most routes. The <head> hreflang alternates in
+    // BaseLayout.astro are the correct, per-page source of truth instead.
+    sitemap(),
   ],
   vite: {
     define: {
