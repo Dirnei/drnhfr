@@ -55,6 +55,13 @@ const posts = await getPostsForProject(project.id, 'en');
         </p>
       )
     }
+    {
+      project.data.links.demo && (
+        <p class="mono-label">
+          <a href={project.data.links.demo}>{t('projects.demo')}</a>
+        </p>
+      )
+    }
     <hr />
     <Prose><Content /></Prose>
     {
