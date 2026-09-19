@@ -478,14 +478,18 @@ const copy = {
 
   // The unlock code is computed client-side from wall-clock time and the
   // formula lives right here, in plain sight — this is a toy, not access
-  // control, see the feature brief. Accepted for the current minute and the
-  // one before it, so typing it out doesn't get punished by the clock
-  // ticking over mid-keystroke.
+  // control, see the feature brief.
+  //
+  // Month, day and year each reversed, then the hour straight:
+  //   2026-09-20 01:xx  ->  90 02 62 01  ->  "90026201"
+  //
+  // The hour is the finest unit, so one code holds for the whole hour.
+  // cmdLogin also accepts the code from a minute ago, which covers typing it
+  // out across an hour boundary.
   function codeFor(date) {
-    const mm = String(date.getMinutes()).padStart(2, '0');
+    const rev = (value) => String(value).padStart(2, '0').split('').reverse().join('');
     const hh = String(date.getHours()).padStart(2, '0');
-    const yy = String(date.getFullYear() % 100).padStart(2, '0');
-    return mm + hh + yy.split('').reverse().join('');
+    return rev(date.getMonth() + 1) + rev(date.getDate()) + rev(date.getFullYear() % 100) + hh;
   }
 
   function cmdLogin(arg) {
