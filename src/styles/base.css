@@ -97,7 +97,15 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid var(--red);
+  /*
+   * --red-text, not --red: this is a global rule, so it has to hold up
+   * everywhere it could apply, including any future a/button drawn on a
+   * --surface background (e.g. inside the command palette or an inline
+   * <code> span) — and plain --red is only 2.96:1 there, under the 3:1
+   * non-text bar. --red-text clears 3:1 with headroom on both --ink
+   * (5.96:1) and --surface (5.36:1).
+   */
+  outline: 2px solid var(--red-text);
   outline-offset: 2px;
 }
 

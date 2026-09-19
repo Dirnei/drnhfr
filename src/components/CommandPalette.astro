@@ -52,7 +52,14 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
   }
   .palette-input:focus {
     outline: none;
-    border-bottom-color: var(--red);
+    /*
+     * --red-text, not --red: this border sits directly on --surface (the
+     * palette's own background), where plain --red is only 2.96:1 — under
+     * the 3:1 non-text/focus-indicator bar. --red-text clears it at
+     * 5.36:1, and this is the site's keyboard-first search entry point, so
+     * its own focus affordance must not be the one that's marginal.
+     */
+    border-bottom-color: var(--red-text);
   }
   .palette-results {
     list-style: none;
