@@ -223,6 +223,11 @@ const copy = {
     padding: 0.3rem 0.55rem 0.3rem 0.85rem;
     white-space: nowrap;
   }
+  /* .seg sets display, which beats the UA [hidden] rule wherever that
+     rule is not !important. Without this the conditional segments show. */
+  .seg[hidden] {
+    display: none;
+  }
   .seg::before {
     content: '';
     position: absolute;
