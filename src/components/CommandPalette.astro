@@ -86,10 +86,18 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
     text-transform: uppercase;
     color: var(--text-dim);
   }
-  .palette-results :global(li a):hover,
+  /*
+   * No separate :hover rule: hovering a row moves the same `cursor` that
+   * the keyboard uses (see the "mouseover" listener below), which sets
+   * aria-selected itself. That keeps exactly one row ever styled as
+   * selected, whether the last input was a key or the mouse, instead of a
+   * hover rule and a selected-state rule disagreeing about which row is
+   * "active". :focus-visible stays as a defensive fallback since these
+   * anchors are tabindex="-1" in normal use.
+   */
   .palette-results :global(li a):focus-visible,
   .palette-results :global(li[aria-selected='true'] a) {
-    background: var(--surface);
+    background: color-mix(in srgb, var(--red) 14%, var(--surface));
     color: var(--red);
     outline: none;
   }
@@ -109,14 +117,49 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
   const empty = document.getElementById('palette-empty');
 
   let entries = [];
-  let loaded = false;
+  // Caches the in-flight/completed fetch itself, not just a boolean, so
+  // concurrent callers (see the `opening` guard below — belt and braces if
+  // load() is ever reached from more than one path) all await the same
+  // request instead of each firing their own.
+  let fetchPromise = null;
   let cursor = 0;
 
-  async function load() {
-    if (loaded) return;
-    const response = await fetch(`/${lang}/search.json`);
-    entries = await response.json();
-    loaded = true;
+  function load() {
+    if (!fetchPromise) {
+      fetchPromise = fetch(`/${lang}/search.json`)
+        .then((response) => response.json())
+        .then((data) => {
+          entries = data;
+          return data;
+        })
+        .catch((error) => {
+          // Let a failed load be retried on the next open attempt instead
+          // of permanently caching a rejection.
+          fetchPromise = null;
+          throw error;
+        });
+    }
+    return fetchPromise;
+  }
+
+  // Single source of truth for which row is selected: every path that
+  // changes the selection (initial render, arrow keys, mouse hover) goes
+  // through this function, so `cursor`, the `aria-selected` attribute that
+  // drives the red styling, and `aria-activedescendant` can never disagree
+  // about which row is active.
+  function select(index) {
+    const items = list.querySelectorAll('li');
+    if (items.length === 0) {
+      cursor = 0;
+      input.removeAttribute('aria-activedescendant');
+      return;
+    }
+    cursor = ((index % items.length) + items.length) % items.length;
+    items.forEach((item, i) => {
+      item.setAttribute('aria-selected', i === cursor ? 'true' : 'false');
+    });
+    items[cursor].scrollIntoView({ block: 'nearest' });
+    input.setAttribute('aria-activedescendant', items[cursor].id);
   }
 
   function render(query) {
@@ -125,39 +168,39 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
       ? entries.filter((entry) => entry.title.toLowerCase().includes(needle))
       : entries;
 
-    cursor = 0;
     list.innerHTML = matches
       .slice(0, 8)
       .map(
         (entry, index) =>
-          `<li role="option" id="palette-option-${index}" aria-selected="${index === 0}">` +
+          `<li role="option" id="palette-option-${index}" aria-selected="false">` +
           `<a href="${entry.href}" tabindex="-1">${entry.title}<span class="kind">${entry.kind}</span></a>` +
           `</li>`,
       )
       .join('');
     empty.hidden = matches.length > 0;
     input.setAttribute('aria-expanded', matches.length > 0 ? 'true' : 'false');
-    const first = list.querySelector('li');
-    if (first) {
-      input.setAttribute('aria-activedescendant', first.id);
-    } else {
-      input.removeAttribute('aria-activedescendant');
-    }
+    select(0);
   }
 
   function move(step) {
-    const items = list.querySelectorAll('li');
-    if (items.length === 0) return;
-    items[cursor]?.setAttribute('aria-selected', 'false');
-    cursor = (cursor + step + items.length) % items.length;
-    items[cursor].setAttribute('aria-selected', 'true');
-    items[cursor].scrollIntoView({ block: 'nearest' });
-    input.setAttribute('aria-activedescendant', items[cursor].id);
+    select(cursor + step);
   }
 
   function isIntroRunning() {
     return document.documentElement.dataset.intro === 'running';
   }
+
+  // Set synchronously before the first `await` below, and only cleared on
+  // the dialog's "close" event (or if load() throws before the dialog ever
+  // opens). That closes the window a double-tap of "/" or Ctrl+K used to
+  // land in: previously the guard was `!dialog.open`, but dialog.open only
+  // becomes true *after* showModal(), which runs after `await load()`
+  // resolves — so a second trigger fired while the first fetch was still
+  // pending passed the guard, issued its own fetch, and then threw
+  // InvalidStateError calling showModal() on an already-open dialog. With
+  // `opening` set before any awaiting happens, a second trigger during that
+  // window now sees it's already true and is a no-op.
+  let opening = false;
 
   // showModal() traps focus and Escape/backdrop handling for free, but it
   // does not reliably stop the page behind it from scrolling on wheel
@@ -168,13 +211,19 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
   // can never fight — the intro guard above also means they never run at
   // the same time.
   async function open() {
-    if (isIntroRunning()) return;
-    await load();
-    input.value = '';
-    render('');
-    document.body.style.overflow = 'hidden';
-    dialog.showModal();
-    input.focus();
+    if (isIntroRunning() || opening) return;
+    opening = true;
+    try {
+      await load();
+      input.value = '';
+      render('');
+      document.body.style.overflow = 'hidden';
+      dialog.showModal();
+      input.focus();
+    } catch (error) {
+      opening = false;
+      console.error('command palette: failed to load search index', error);
+    }
   }
 
   function close() {
@@ -188,7 +237,7 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
       (['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable);
 
     if (
-      !dialog.open &&
+      !opening &&
       !typingElsewhere &&
       !isIntroRunning() &&
       (event.key === '/' || (event.key === 'k' && (event.metaKey || event.ctrlKey)))
@@ -214,11 +263,20 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
   });
 
   input.addEventListener('input', () => render(input.value));
-  list.addEventListener('click', (event) => {
+  // Hovering a row moves the selection through the same `select()` used by
+  // the keyboard, so the mouse and the keyboard can never disagree about
+  // which row is active — there's no separate click handler for "which row
+  // did I land on": the row a click lands on is, by the time the click
+  // fires, already the selected one, and clicking its real <a href> just
+  // navigates natively. A dedicated click handler that only recorded
+  // `cursor` would earn nothing on top of that (and was the source of the
+  // ctrl/cmd-click desync), so there isn't one.
+  list.addEventListener('mouseover', (event) => {
     const item = event.target instanceof Element ? event.target.closest('li') : null;
     if (!item) return;
     const items = Array.from(list.querySelectorAll('li'));
-    cursor = items.indexOf(item);
+    const index = items.indexOf(item);
+    if (index !== -1 && index !== cursor) select(index);
   });
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) close();
@@ -230,5 +288,6 @@ const resultsLabel = lang === 'de' ? 'Ergebnisse' : 'Results';
   dialog.addEventListener('close', () => {
     input.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
+    opening = false;
   });
 </script>
