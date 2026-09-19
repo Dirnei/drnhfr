@@ -8,7 +8,7 @@ interface Props {
 const { href, index, title, kind } = Astro.props;
 const number = String(index + 1).padStart(2, '0');
 ---
-<li class="row">
+<li class="row" style={`--row-index:${index}`}>
   <a href={href}>
     <span class="n">{number}</span>
     <span class="t">{title}</span>
@@ -69,5 +69,32 @@ const number = String(index + 1).padStart(2, '0');
   .row a:focus-visible .kind {
     color: var(--red);
     border-color: var(--red);
+  }
+
+  /*
+   * The row entrance is gated on the boot intro's marker rather than on
+   * document load: `:root[data-intro='running']` is present while the
+   * full-screen intro overlay covers the page, so this rule simply does
+   * not match yet. A CSS animation starts the instant its element begins
+   * matching the selector that triggers it, so removing the attribute
+   * (BootIntro's finish()) is what starts these animations — no JS needed
+   * here, and rows would otherwise finish unseen under the overlay.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-intro='running']) .row {
+      animation: row-in 0.42s cubic-bezier(0.16, 0.84, 0.26, 1) both;
+      animation-delay: calc(var(--row-index, 0) * 90ms);
+    }
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(9px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 </style>

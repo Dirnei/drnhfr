@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import EntryRow from '../../components/EntryRow.astro';
+import DecodeText from '../../components/DecodeText.astro';
 import { getPosts, getProjects } from '../../lib/entries';
 import { slugOf } from '../../lib/ids';
 
@@ -29,7 +30,7 @@ const items = [
 >
   <div class="shell hero">
     <p class="mono-label kicker">// Softwarearchitekt &amp; Tinkerer</p>
-    <h1>Systeme,<br />die halten.</h1>
+    <h1><DecodeText text="Systeme," /><br /><DecodeText text="die halten." delay={210} /></h1>
     <p class="sub">
       Verteilte Systeme, .NET, Aktorenmodelle — beruflich.<br />
       Platinen, Container und ein Keller voller Kabel — abends.

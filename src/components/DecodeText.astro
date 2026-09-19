@@ -1,0 +1,57 @@
+---
+interface Props {
+  text: string;
+  delay?: number;
+}
+const { text, delay = 0 } = Astro.props;
+---
+<span class="decode" data-text={text} data-delay={delay}>{text}</span>
+
+<script>
+  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>[]{}#*+=-';
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const run = () => {
+      for (const element of document.querySelectorAll<HTMLElement>('.decode')) {
+        const final = element.dataset.text ?? '';
+        const delay = Number(element.dataset.delay ?? 0);
+        const duration = 620;
+        const start = performance.now() + delay;
+
+        const frame = (now: number) => {
+          if (now < start) {
+            requestAnimationFrame(frame);
+            return;
+          }
+          const progress = Math.min(1, (now - start) / duration);
+          const settled = Math.floor(progress * final.length);
+          let out = final.slice(0, settled);
+          for (let i = settled; i < final.length; i++) {
+            out += final[i] === ' ' ? ' ' : CHARS[Math.floor(Math.random() * CHARS.length)];
+          }
+          element.textContent = out;
+          if (progress < 1) requestAnimationFrame(frame);
+        };
+
+        requestAnimationFrame(frame);
+      }
+    };
+
+    // A full-screen boot intro may still be covering the page. Starting the
+    // decode now would let it finish unseen underneath the overlay, so wait
+    // for the intro to announce completion — with a safety timeout in case
+    // the event never arrives.
+    if (document.documentElement.dataset.intro === 'running') {
+      let done = false;
+      const start = () => {
+        if (done) return;
+        done = true;
+        run();
+      };
+      document.addEventListener('intro:finished', start, { once: true });
+      window.setTimeout(start, 5000);
+    } else {
+      run();
+    }
+  }
+</script>

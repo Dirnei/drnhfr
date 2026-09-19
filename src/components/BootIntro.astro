@@ -94,7 +94,14 @@ function padTag(tag: string): string {
   }
 </style>
 
-<script>
+<script is:inline>
+  // Synchronous (not type="module") and placed right after the markup
+  // above: it runs the instant the parser reaches this point, before the
+  // rest of the page (header, main, list rows) is even parsed. That
+  // matters because the row-stagger CSS is gated on `data-intro="running"`
+  // being present on <html> — setting it any later (e.g. from a deferred
+  // module script) would leave a window where later elements paint before
+  // the marker exists, letting their entrance animation start early.
   const KEY = 'intro-played';
   const root = document.getElementById('intro');
 
@@ -112,12 +119,13 @@ function padTag(tag: string): string {
 
     root.hidden = false;
     document.body.style.overflow = 'hidden';
+    document.documentElement.dataset.intro = 'running';
     sessionStorage.setItem(KEY, '1');
 
-    const timers: number[] = [];
-    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    const timers = [];
+    const at = (ms, fn) => timers.push(window.setTimeout(fn, ms));
 
-    function onKeydown(event: KeyboardEvent) {
+    function onKeydown(event) {
       if (event.key === 'Escape') finish();
     }
 
@@ -125,12 +133,14 @@ function padTag(tag: string): string {
       timers.forEach(clearTimeout);
       document.removeEventListener('keydown', onKeydown);
       document.body.style.overflow = '';
+      delete document.documentElement.dataset.intro;
       root.style.transition = `opacity ${fadeMs}ms ease`;
       root.style.opacity = '0';
       window.setTimeout(() => root.remove(), fadeMs);
+      document.dispatchEvent(new CustomEvent('intro:finished', { bubbles: true }));
     };
 
-    const lines = root.querySelectorAll<HTMLElement>('.ln');
+    const lines = root.querySelectorAll('.ln');
     const lineRevealMs = lines.length * lineStepMs;
     lines.forEach((line, index) =>
       at(index * lineStepMs, () => {
