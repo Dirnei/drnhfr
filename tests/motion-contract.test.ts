@@ -6,7 +6,7 @@ const FILES = {
   bootIntro: 'src/components/BootIntro.astro',
   decodeText: 'src/components/DecodeText.astro',
   entryRow: 'src/components/EntryRow.astro',
-  commandPalette: 'src/components/CommandPalette.astro',
+  terminalShortcut: 'src/components/TerminalShortcut.astro',
 };
 
 function read(relPath: string): string {
@@ -19,15 +19,15 @@ function stripComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, '');
 }
 
-// T3a — motion contract. BootIntro, DecodeText, EntryRow and CommandPalette
-// are coupled only by two string literals that nothing else type-checks or
-// greps: the `data-intro="running"` marker BootIntro sets on <html> while
-// the boot overlay plays, and the `intro:finished` event it dispatches when
-// done. A rename of either string in one file — with the others left
-// unchanged — would silently and permanently kill the row stagger
-// (EntryRow), the decode/intro handshake (DecodeText), and/or the command
-// palette's "don't open under the intro" guard (CommandPalette). Nothing
-// else in the build would fail.
+// T3a — motion contract. BootIntro, DecodeText, EntryRow and
+// TerminalShortcut are coupled only by two string literals that nothing else
+// type-checks or greps: the `data-intro="running"` marker BootIntro sets on
+// <html> while the boot overlay plays, and the `intro:finished` event it
+// dispatches when done. A rename of either string in one file — with the
+// others left unchanged — would silently and permanently kill the row
+// stagger (EntryRow), the decode/intro handshake (DecodeText), and/or the
+// "don't jump to a dead prompt under the intro" guard (TerminalShortcut).
+// Nothing else in the build would fail.
 describe('motion contract: data-intro / running / intro:finished', () => {
   it('BootIntro sets the running marker and dispatches intro:finished', () => {
     const src = read(FILES.bootIntro);
@@ -50,8 +50,8 @@ describe('motion contract: data-intro / running / intro:finished', () => {
     expect(src).toMatch(/:not\(\[data-intro=(['"])running\1\]\)\s*\.row/);
   });
 
-  it('CommandPalette gates opening on the running marker', () => {
-    const src = read(FILES.commandPalette);
+  it('TerminalShortcut gates the jump on the running marker', () => {
+    const src = read(FILES.terminalShortcut);
     expect(src).toContain('dataset.intro');
     expect(src).toContain("'running'");
   });

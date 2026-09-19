@@ -779,11 +779,31 @@ const copy = {
     if (document.activeElement !== document.body) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     if (event.key.length !== 1) return;
-    // '/' and ctrl/cmd+k are the command palette's global shortcuts — never
-    // steal those, even though the guard above already excludes ctrl/cmd+k.
+    // '/' and ctrl/cmd+k belong to TerminalShortcut, which focuses this
+    // prompt from anywhere on the site. Leave them alone.
     if (event.key === '/') return;
     input.focus();
   });
+
+  /*
+   * TerminalShortcut sets this when "/" or Ctrl+K is pressed on another
+   * page, right before sending the visitor here. Focus has to wait until the
+   * prompt is actually enabled, which is why it hangs off the same handover
+   * as everything else rather than running at script load.
+   */
+  const FOCUS_KEY = 'focus-terminal';
+  function focusIfRequested() {
+    let wanted = false;
+    try {
+      wanted = sessionStorage.getItem(FOCUS_KEY) === '1';
+      sessionStorage.removeItem(FOCUS_KEY);
+    } catch {
+      // Storage blocked: nothing asked for focus, so nothing to do.
+    }
+    if (!wanted) return;
+    input.scrollIntoView({ block: 'center' });
+    input.focus();
+  }
 
   // The prompt only becomes available once the boot intro is done playing —
   // see BootIntro.astro. If the intro isn't running at all (already seen
@@ -795,11 +815,13 @@ const copy = {
       enabled = true;
       input.disabled = false;
       chipButtons.forEach((button) => button.removeAttribute('disabled'));
+      focusIfRequested();
     };
     document.addEventListener('intro:finished', enable, { once: true });
     window.setTimeout(enable, introFallbackMs);
   } else {
     input.disabled = false;
     chipButtons.forEach((button) => button.removeAttribute('disabled'));
+    focusIfRequested();
   }
 </script>

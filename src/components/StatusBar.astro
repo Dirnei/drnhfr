@@ -6,7 +6,7 @@ interface Props {
 }
 const { lang } = Astro.props;
 const commit = import.meta.env.PUBLIC_COMMIT ?? 'dev';
-const hint = lang === 'de' ? 'für befehle' : 'for commands';
+const hint = lang === 'de' ? 'zum terminal' : 'for terminal';
 const statusLabel = 'status';
 const secondKey = lang === 'de' ? 'Strg K' : 'Ctrl K';
 ---

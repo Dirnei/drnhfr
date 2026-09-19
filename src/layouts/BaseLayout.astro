@@ -3,7 +3,7 @@ import '../styles/base.css';
 import Logo from '../components/Logo.astro';
 import SiteNav from '../components/SiteNav.astro';
 import BootIntro from '../components/BootIntro.astro';
-import CommandPalette from '../components/CommandPalette.astro';
+import TerminalShortcut from '../components/TerminalShortcut.astro';
 import StatusBar from '../components/StatusBar.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
@@ -107,7 +107,7 @@ const xDefaultHref =
         <StatusBar lang={lang} />
       </div>
     </footer>
-    <CommandPalette lang={lang} />
+    <TerminalShortcut lang={lang} />
   </body>
 </html>
 <style>
