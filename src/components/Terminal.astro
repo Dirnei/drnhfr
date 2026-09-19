@@ -86,6 +86,9 @@ const copy = {
   <form class="term-form" id="terminal-form">
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
     <span class="prompt" aria-hidden="true">{copy.promptUser}:~$</span>
+    <span class="powerline" aria-hidden="true">
+      <span class="pl-sep"></span><span class="pl-time" id="terminal-clock">--:--:--</span>
+    </span>
     <input
       type="text"
       id="terminal-input"
@@ -173,6 +176,37 @@ const copy = {
     border: 1px solid var(--hairline);
     border-top: 0;
     padding: 0.6rem 1rem;
+  }
+
+  /*
+   * Powerline-style clock on the prompt row. The separator is drawn with
+   * clip-path rather than the usual  glyph: that character lives in
+   * Nerd-Font-patched fonts, and this site self-hosts plain JetBrains Mono,
+   * so the glyph would render as tofu. A CSS triangle always renders.
+   *
+   * aria-hidden because it rewrites itself every second — announcing that to
+   * a screen reader once per second would make the page unusable. It is
+   * decoration, and the time is not information the page owes anyone.
+   */
+  .powerline {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: stretch;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+  }
+  .pl-sep {
+    width: 0.6em;
+    background: var(--surface);
+    clip-path: polygon(100% 0, 100% 100%, 0 50%);
+  }
+  .pl-time {
+    background: var(--surface);
+    color: var(--boot-info);
+    padding: 0.25rem 0.5rem 0.25rem 0.2rem;
+    font-variant-numeric: tabular-nums;
   }
   .prompt {
     color: var(--boot-info);
@@ -439,6 +473,22 @@ const copy = {
       default:
         printErr(`${cmdRaw}: ${copy.cmdNotFoundSuffix}`);
     }
+  }
+
+  /*
+   * Rendered as --:--:-- on the server and filled in on the client: this is a
+   * static site, so anything baked in at build time would show the build's
+   * clock, not the visitor's.
+   */
+  const clockEl = document.getElementById('terminal-clock');
+  if (clockEl) {
+    const tick = () => {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+    tick();
+    window.setInterval(tick, 1000);
   }
 
   function runFromChip(command) {
