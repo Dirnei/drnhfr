@@ -49,6 +49,8 @@ const copy = {
         loginMissing: 'login: please supply a code',
         loginWrong: 'wrong code. nice try.',
         loginSuccess: 'access granted — loading cv …',
+        logoutDone: 'cv locked again.',
+        logoutIdle: 'not logged in.',
         help: [
           'available commands:',
           'help, ?             this list',
@@ -59,6 +61,7 @@ const copy = {
           'lang                switch between /de/ and /en/',
           'clear               clear the screen',
           'login <code>        unlock the cv',
+          'logout              lock the cv again',
           'reload              reload the page',
           'restart             reboot — replay the boot sequence, re-lock the cv',
         ],
@@ -522,6 +525,26 @@ const copy = {
     }
   }
 
+  /*
+   * Drops the same sessionStorage flag that login sets. The cv page re-reads
+   * it on every load, so clearing it here is the whole logout — there is no
+   * server-side session to end, and nothing to navigate away from: the
+   * terminal only exists on the home page.
+   *
+   * Logging out when nobody is logged in is not a failure, so it reports
+   * rather than errors and leaves the status segment alone.
+   */
+  function cmdLogout() {
+    let wasUnlocked = false;
+    try {
+      wasUnlocked = sessionStorage.getItem(UNLOCK_KEY) === '1';
+      sessionStorage.removeItem(UNLOCK_KEY);
+    } catch {
+      // Storage blocked: nothing was ever stored, so nothing to clear.
+    }
+    printOut(wasUnlocked ? copy.logoutDone : copy.logoutIdle);
+  }
+
   function parse(raw) {
     const trimmed = raw.trim();
     const spaceIndex = trimmed.indexOf(' ');
@@ -583,6 +606,9 @@ const copy = {
         break;
       case 'login':
         cmdLogin(rest);
+        break;
+      case 'logout':
+        cmdLogout();
         break;
       case 'reload':
         cmdReboot(false);
@@ -675,7 +701,10 @@ const copy = {
     } else if (event.key === 'Tab') {
       const value = input.value;
       const spaceIndex = value.indexOf(' ');
-      const commands = ['help', 'ls', 'cd', 'cat', 'whoami', 'lang', 'clear', 'login', 'reload', 'restart'];
+      const commands = [
+        'help', 'ls', 'cd', 'cat', 'whoami', 'lang', 'clear',
+        'login', 'logout', 'reload', 'restart',
+      ];
       if (spaceIndex === -1) {
         const matches = commands.filter((c) => c.startsWith(value.toLowerCase()) && value.length > 0);
         if (matches.length === 1) {
