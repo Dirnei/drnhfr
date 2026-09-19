@@ -11,11 +11,74 @@ const { text, delay = 0 } = Astro.props;
   import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
   import { bootTiming, bootLines } from '../data/boot';
 
-  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>[]{}#*+=-';
+  /*
+   * Substitutes are drawn from the character's OWN class rather than one flat
+   * alphabet. The pool used to be uppercase-only, so a lowercase heading was
+   * scrambled into something systematically wider in a proportional face —
+   * wide enough to wrap onto a second line, which shoved every block below it
+   * (the terminal) down by a line height on every frame until the text
+   * settled. Matching the class keeps each placeholder near the width of the
+   * character it stands in for; spaces, punctuation and accented letters are
+   * left alone, which costs nothing and pins the widest offenders.
+   */
+  const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+  const DIGITS = '0123456789';
+
+  const pick = (pool: string) => pool[Math.floor(Math.random() * pool.length)];
+  const scramble = (ch: string) => {
+    if (ch >= 'a' && ch <= 'z') return pick(LOWER);
+    if (ch >= 'A' && ch <= 'Z') return pick(UPPER);
+    if (ch >= '0' && ch <= '9') return pick(DIGITS);
+    return ch;
+  };
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const run = () => {
-      for (const element of document.querySelectorAll<HTMLElement>('.decode')) {
+      const elements = [...document.querySelectorAll<HTMLElement>('.decode')];
+
+      /*
+       * Freeze the height of each BLOCK that contains decoding text, for as
+       * long as any text inside it is still settling.
+       *
+       * Substitutes never match the real glyph widths in a proportional face,
+       * so the line count changes mid-animation: the German heading wraps to
+       * two lines but scrambles narrow enough to briefly un-wrap to one, and
+       * everything below it — on the home page, the terminal — jumps a full
+       * line height and back.
+       *
+       * The block is the right thing to pin, not the span. Pinning the span
+       * means making it inline-block, and then its height and overflow both
+       * feed back into the parent's line box through the baseline, which
+       * moves the very content we are trying to hold still. A block box has
+       * no such coupling: fix its height and nothing below it can move.
+       *
+       * Measured here rather than at build time because it depends on the
+       * viewport and on the webfont, which has loaded by the time the intro
+       * hands over.
+       */
+      const holders = new Map<HTMLElement, number>();
+      for (const element of elements) {
+        const holder = element.closest<HTMLElement>('h1, h2, h3, p, li') ?? element.parentElement;
+        if (holder) holders.set(holder, (holders.get(holder) ?? 0) + 1);
+      }
+      for (const holder of holders.keys()) {
+        holder.style.height = `${holder.getBoundingClientRect().height}px`;
+        holder.style.overflow = 'hidden';
+      }
+      const releaseHolder = (element: HTMLElement) => {
+        const holder = element.closest<HTMLElement>('h1, h2, h3, p, li') ?? element.parentElement;
+        if (!holder) return;
+        const left = (holders.get(holder) ?? 1) - 1;
+        holders.set(holder, left);
+        // Two decodes can share one heading, and the later one is still
+        // running when the first finishes.
+        if (left > 0) return;
+        holder.style.height = '';
+        holder.style.overflow = '';
+      };
+
+      for (const element of elements) {
         const final = element.dataset.text ?? '';
         const delay = Number(element.dataset.delay ?? 0);
         const duration = 620;
@@ -29,11 +92,10 @@ const { text, delay = 0 } = Astro.props;
           const progress = Math.min(1, (now - start) / duration);
           const settled = Math.floor(progress * final.length);
           let out = final.slice(0, settled);
-          for (let i = settled; i < final.length; i++) {
-            out += final[i] === ' ' ? ' ' : CHARS[Math.floor(Math.random() * CHARS.length)];
-          }
+          for (let i = settled; i < final.length; i++) out += scramble(final[i]);
           element.textContent = out;
           if (progress < 1) requestAnimationFrame(frame);
+          else releaseHolder(element);
         };
 
         requestAnimationFrame(frame);
