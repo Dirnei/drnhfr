@@ -13,8 +13,17 @@ const cv = cvDe;
   title="Lebenslauf — Christian Dirnhofer"
   description="Stationen, Fähigkeiten und Ausbildung von Christian Dirnhofer."
   altHref={routePath('cv', 'en')}
+  noindex
 >
-  <div class="shell cv">
+  <div class="shell cv-locked" id="cv-locked">
+    <p class="line">$ cat lebenslauf</p>
+    <p class="line err">cat: lebenslauf: Zugriff verweigert</p>
+    <p class="line">
+      Der Lebenslauf ist nur über die Shell auf der <a href="/de/">Startseite</a>{' '}
+      erreichbar — dort mit <code>login &lt;code&gt;</code> freischalten.
+    </p>
+  </div>
+  <div class="shell cv" id="cv-content" hidden>
     <h1>{t('cv.title')}</h1>
     <p class="mono-label print-hide">
       <button type="button" onclick="window.print()">{t('cv.print')}</button>
@@ -148,4 +157,37 @@ const cv = cvDe;
     color: var(--red);
     border-color: var(--red);
   }
+  .cv-locked {
+    max-width: 50rem;
+    padding-block: 3rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.8;
+  }
+  .cv-locked .line {
+    margin: 0;
+  }
+  .cv-locked .err {
+    color: var(--red-text);
+  }
+  .cv-locked a {
+    color: var(--boot-info);
+  }
+  .cv-locked a:hover {
+    color: var(--red-text);
+  }
 </style>
+<script is:inline>
+  // This is a toy gate, not access control (see the feature brief): the
+  // default — no JS, or JS without the flag — is the locked message, so an
+  // unlock only ever happened via the terminal's "login" command on the
+  // home page setting this same sessionStorage key.
+  try {
+    if (sessionStorage.getItem('cv-unlocked') === '1') {
+      document.getElementById('cv-locked').hidden = true;
+      document.getElementById('cv-content').hidden = false;
+    }
+  } catch {
+    // Not fatal: worst case the cv stays locked for this visit.
+  }
+</script>

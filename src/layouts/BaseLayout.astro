@@ -16,6 +16,7 @@ interface Props {
   current?: RouteKey;
   altAvailable?: boolean;
   showIntro?: boolean;
+  noindex?: boolean;
 }
 
 const {
@@ -26,6 +27,7 @@ const {
   current,
   altAvailable = true,
   showIntro = false,
+  noindex = false,
 } = Astro.props;
 const other = lang === 'de' ? 'en' : 'de';
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -58,6 +60,7 @@ const xDefaultHref =
     />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     {altAvailable && <link rel="alternate" hreflang={other} href={new URL(altHref, Astro.site)} />}
     <link rel="alternate" hreflang={lang} href={canonical} />
