@@ -31,6 +31,7 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      - run: npm run check:gdpr
       - run: npm run check:links
       - name: Build site
         uses: withastro/action@v6
