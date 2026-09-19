@@ -1,11 +1,13 @@
 ---
-title: 'Split-Brain Is Not an Edge Case'
-description: 'Why two healthy cluster halves are the real failure mode — and which single setting actually controls it.'
+title: 'PLACEHOLDER: Split-Brain Is Not an Edge Case'
+description: 'PLACEHOLDER: Why two healthy cluster halves are the real failure mode — and which single setting actually controls it.'
 date: 2026-09-02
 tags: ['akka.net', 'distributed-systems']
 project: en/event-sourcing-without-regret
 translationKey: 'split-brain'
 ---
+
+*Placeholder — this post will be replaced by a real one.*
 
 Most of the cluster incidents I have debugged were not outages at all.
 They were **two perfectly healthy halves**, each one convinced it was

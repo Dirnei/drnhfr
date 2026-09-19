@@ -1,11 +1,13 @@
 ---
-title: 'Split-Brain ist kein Randfall'
-description: 'Warum zwei gesunde Cluster-Hälften das eigentliche Problem sind — und welcher Konfigurationswert wirklich zählt.'
+title: 'PLATZHALTER: Split-Brain ist kein Randfall'
+description: 'PLATZHALTER: Warum zwei gesunde Cluster-Hälften das eigentliche Problem sind — und welcher Konfigurationswert wirklich zählt.'
 date: 2026-09-02
 tags: ['akka.net', 'verteilte-systeme']
 project: de/event-sourcing-ohne-reue
 translationKey: 'split-brain'
 ---
+
+*Platzhalter — dieser Beitrag wird durch einen echten ersetzt.*
 
 Die meisten Cluster-Ausfälle, die ich gesehen habe, waren keine Ausfälle.
 Es waren **zwei gesunde Hälften**, die beide überzeugt waren, die einzig
