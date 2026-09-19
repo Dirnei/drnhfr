@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 permissions:
   contents: read
   pages: write
@@ -16,6 +20,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      # Run the same gates as ci.yml before deploying, so a push that
+      # breaks the type check, tests, build or link check cannot reach the
+      # live domain even though this workflow runs independently of ci.yml.
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:links
       - name: Build site
         uses: withastro/action@v6
 
