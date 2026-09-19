@@ -1,14 +1,14 @@
 :root {
-  --ink: #0a0a0b;
-  --surface: #0d0d0f;
-  --hairline: #2a2c33;
+  --ink: #131418;
+  --surface: #1a1c21;
+  --hairline: #31343c;
   --hairline-soft: #1e1f24;
-  --text: #f2f2f2;
-  --text-muted: #8d919b;
+  --text: #e9ebef;
+  --text-muted: #979ba5;
   --text-dim: #55575f;
-  --text-body: #d3d5db;
+  --text-body: #cfd3da;
   --red: #da1515;
-  --code-bg: #000000;
+  --code-bg: #0b0c0f;
 
   --font-display: 'Open Sans Variable', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
