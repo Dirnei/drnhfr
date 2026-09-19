@@ -3,7 +3,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { cvDe } from '../../../data/cv.de';
 import { useTranslations } from '../../../i18n/ui';
 import { routePath } from '../../../i18n/routes';
-import '../../../styles/print.css';
 
 const t = useTranslations('de');
 const cv = cvDe;
@@ -101,7 +100,7 @@ const cv = cvDe;
     max-width: 50rem;
   }
   .section-head {
-    color: var(--red);
+    color: var(--red-text);
     border-top: 1px solid var(--hairline);
     padding-top: 1rem;
     margin-top: 2rem;

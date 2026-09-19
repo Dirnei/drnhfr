@@ -5,9 +5,16 @@
   --hairline-soft: #1e1f24;
   --text: #e9ebef;
   --text-muted: #979ba5;
-  --text-dim: #55575f;
+  --text-dim: #82858f;
   --text-body: #cfd3da;
   --red: #da1515;
+  /*
+   * --red at 3.59:1 on --ink clears the 3:1 threshold for non-text UI (bars,
+   * borders, focus outlines) but fails 4.5:1 for text. --red-text is a
+   * lighter red for red used as text; --red stays as-is for everything else
+   * per the "red is only for state and action" rule.
+   */
+  --red-text: #ff4d4d;
   --code-bg: #0b0c0f;
 
   --font-display: 'Open Sans Variable', system-ui, sans-serif;
