@@ -53,11 +53,20 @@ import { routePath } from '../../../i18n/routes';
     <h2 class="mono-label">Local browser storage</h2>
     <p>
       A short intro animation is shown the first time the site is opened in a
-      browser session. To prevent it from repeating, a single entry is stored
-      in your browser's <code>sessionStorage</code>. This entry contains no
-      personal data, is never transmitted to me, and is deleted when the
-      browser tab is closed. The legal basis is § 25 Abs. 2 Nr. 2 TDDG, as the
-      entry is strictly necessary to provide the presentation you requested.
+      browser session. To prevent it from repeating, an entry is stored in
+      your browser's <code>sessionStorage</code>.
+    </p>
+    <p>
+      The home page also contains a terminal, which can unlock the cv via a
+      <code>login</code> command. On a successful entry, a second
+      <code>sessionStorage</code> entry is stored, so the cv page knows it was
+      unlocked when it is opened.
+    </p>
+    <p>
+      Both entries contain no personal data, are never transmitted to me, and
+      are deleted when the browser tab is closed. The legal basis is § 25
+      Abs. 2 Nr. 2 TDDG, as both entries are strictly necessary to provide the
+      respective presentation you requested.
     </p>
 
     <h2 class="mono-label">Contacting me by email</h2>
