@@ -13,7 +13,8 @@ export interface BootLine {
 }
 
 export interface BootTiming {
-  lineStepMs: number;
+  lineStepMinMs: number;
+  lineStepMaxMs: number;
   logoHoldMs: number;
   fadeMs: number;
 }

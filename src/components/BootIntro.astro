@@ -30,7 +30,8 @@ function padTag(tag: string): string {
   id="intro"
   aria-hidden="true"
   hidden
-  data-line-step={timing.lineStepMs}
+  data-line-step-min={timing.lineStepMinMs}
+  data-line-step-max={timing.lineStepMaxMs}
   data-logo-hold={timing.logoHoldMs}
   data-fade={timing.fadeMs}
   data-assembly-start={schedule.assemblyStart}
@@ -170,7 +171,8 @@ function padTag(tag: string): string {
     // the sequence after the holdUntilVisible line, since that part's start
     // time depends on when the visitor actually arrives — see
     // resumeAfterHold() below.
-    const lineStepMs = Number(root.dataset.lineStep);
+    const lineStepMinMs = Number(root.dataset.lineStepMin);
+    const lineStepMaxMs = Number(root.dataset.lineStepMax);
     const logoHoldMs = Number(root.dataset.logoHold);
     const fadeMs = Number(root.dataset.fade);
 
@@ -232,8 +234,33 @@ function padTag(tag: string): string {
     window.addEventListener('touchmove', finish, { once: true, passive: true });
 
     function revealLine(line) {
-      line.style.transition = `opacity ${lineStepMs}ms`;
+      // The fade-in itself stays a fixed, snappy length — it's the *gap*
+      // between reveals (rollStep(), below) that is irregular, not the
+      // reveal animation each line plays when its turn comes.
+      line.style.transition = `opacity ${lineStepMinMs}ms`;
       line.style.opacity = '1';
+    }
+
+    // Mirrors rollLineStepMs() in src/lib/boot-timing.ts. Duplicated here
+    // because this script is intentionally non-module (see the comment at
+    // the top of this file) and so cannot import it — keep both in sync if
+    // the formula ever changes.
+    function rollStep() {
+      return Math.round(lineStepMinMs + Math.random() * (lineStepMaxMs - lineStepMinMs));
+    }
+
+    // Rolls `count` cumulative reveal times: the first is always 0 (a line
+    // reveals immediately once its turn starts), and each subsequent one
+    // adds a freshly rolled, independent step — the irregular rhythm that
+    // replaces the old constant `index * lineStepMs`.
+    function rollCumulativeTimes(count) {
+      const times = [];
+      let elapsed = 0;
+      for (let i = 0; i < count; i++) {
+        if (i > 0) elapsed += rollStep();
+        times.push(elapsed);
+      }
+      return times;
     }
 
     const boot = document.getElementById('intro-boot');
@@ -281,8 +308,11 @@ function padTag(tag: string): string {
     // sequence's first line.
     function resumeAfterHold() {
       const remaining = lines.slice(holdIndex + 1);
-      remaining.forEach((line, index) => at((index + 1) * lineStepMs, () => revealLine(line)));
-      const lineRevealMs = (remaining.length + 1) * lineStepMs;
+      // times[0] is the (already-revealed) hold line's own position, 0;
+      // times[1..] are when each remaining line reveals, relative to now.
+      const times = rollCumulativeTimes(remaining.length + 1);
+      remaining.forEach((line, index) => at(times[index + 1], () => revealLine(line)));
+      const lineRevealMs = times[times.length - 1];
       const assemblyStart = lineRevealMs + logoHoldMs;
       const condenseStart = assemblyStart + fadeMs;
       const finishAt = condenseStart + fadeMs;
@@ -295,19 +325,21 @@ function padTag(tag: string): string {
       // Defensive fallback if boot.json ever ships without a
       // holdUntilVisible line: behave exactly as before, using the
       // schedule computed at build time from the full line count.
+      // Worst-case data attributes: safe even though the rolled reveal
+      // times below can only be equal to or shorter than this bound.
       const assemblyStart = Number(root.dataset.assemblyStart);
       const condenseStart = Number(root.dataset.condenseStart);
       const finishAt = Number(root.dataset.finishAt);
-      lines.forEach((line, index) => at(index * lineStepMs, () => revealLine(line)));
+      const times = rollCumulativeTimes(lines.length);
+      lines.forEach((line, index) => at(times[index], () => revealLine(line)));
       at(assemblyStart, assembleLogo);
       at(condenseStart, condenseLogo);
       at(finishAt, finish);
     } else {
-      lines
-        .slice(0, holdIndex)
-        .forEach((line, index) => at(index * lineStepMs, () => revealLine(line)));
+      const times = rollCumulativeTimes(holdIndex + 1);
+      lines.slice(0, holdIndex).forEach((line, index) => at(times[index], () => revealLine(line)));
 
-      at(holdIndex * lineStepMs, () => {
+      at(times[holdIndex], () => {
         revealLine(holdLine);
         if (document.hidden) {
           // Park here instead of guessing: the rest of the sequence would

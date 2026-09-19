@@ -1,7 +1,10 @@
 {
-  "timing": { "lineStepMs": 95, "logoHoldMs": 700, "fadeMs": 350 },
+  "timing": { "lineStepMinMs": 120, "lineStepMaxMs": 340, "logoHoldMs": 1250, "fadeMs": 500 },
   "de": [
     { "text": "$ dirnhofer.net --boot" },
+    { "tag": "OK", "text": "Inhalte geladen" },
+    { "tag": "WAIT", "text": "Warte auf Benutzersitzung", "holdUntilVisible": true },
+    { "tag": "OK", "text": "Sitzung erkannt" },
     { "tag": "OK", "text": "Kernel geladen" },
     { "tag": "OK", "text": "Dateisystem geprüft" },
     { "tag": "OK", "text": "/projekte eingehängt" },
@@ -12,12 +15,13 @@
     { "tag": "OK", "text": "Ziel erreicht: Softwarearchitekt" },
     { "tag": "OK", "text": "Ziel erreicht: Tinkerer" },
     { "tag": "INFO", "text": "Kaffee: heiß" },
-    { "tag": "OK", "text": "Inhalte geladen" },
-    { "tag": "WAIT", "text": "Warte auf Benutzersitzung", "holdUntilVisible": true },
     { "tag": "OK", "text": "dirnhofer.net gestartet" }
   ],
   "en": [
     { "text": "$ dirnhofer.net --boot" },
+    { "tag": "OK", "text": "Content loaded" },
+    { "tag": "WAIT", "text": "Waiting for user session", "holdUntilVisible": true },
+    { "tag": "OK", "text": "Session detected" },
     { "tag": "OK", "text": "Kernel loaded" },
     { "tag": "OK", "text": "Filesystem checked" },
     { "tag": "OK", "text": "Mounted /projects" },
@@ -28,8 +32,6 @@
     { "tag": "OK", "text": "Reached target: software architect" },
     { "tag": "OK", "text": "Reached target: tinkerer" },
     { "tag": "INFO", "text": "Coffee: hot" },
-    { "tag": "OK", "text": "Content loaded" },
-    { "tag": "WAIT", "text": "Waiting for user session", "holdUntilVisible": true },
     { "tag": "OK", "text": "Started dirnhofer.net" }
   ]
 }
