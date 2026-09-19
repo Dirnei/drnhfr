@@ -5,19 +5,30 @@
 }
 
 /*
- * CRT scanline veil. Static (no animation), so it is intentionally left
- * outside the prefers-reduced-motion rule above: reduced-motion targets
- * animated/parallax motion that can trigger vestibular discomfort, and this
- * overlay never moves or changes, so hiding it would not serve that need.
- * `pointer-events: none` is mandatory — this sits above the whole document
- * and must never steal a click. It is excluded from print so the CV comes
- * out clean.
+ * CRT scanline veil, scoped to the content area only. The header and footer
+ * are deliberately left clean: the site's chrome should read as crisp UI
+ * while the content reads as something displayed on a screen. It is anchored
+ * to <main> rather than the viewport, so it covers exactly the content box —
+ * <main> is a full-height flex child, so this still reaches the fold on short
+ * pages.
+ *
+ * Static (no animation), so it is intentionally left outside the
+ * prefers-reduced-motion rule above: that setting targets animated or
+ * parallax motion which can trigger vestibular discomfort, and this overlay
+ * never moves, so hiding it would not serve that need.
+ *
+ * `pointer-events: none` is mandatory — it lies over the content and must
+ * never steal a click. Excluded from print so the CV comes out clean.
  */
-body::after {
+main {
+  position: relative;
+}
+
+main::after {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 90;
+  z-index: 1;
   pointer-events: none;
   /*
    * The darkening bands use color-mix() against --ink rather than a literal
@@ -33,7 +44,7 @@ body::after {
 }
 
 @media print {
-  body::after {
+  main::after {
     display: none;
   }
 }
