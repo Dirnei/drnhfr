@@ -23,19 +23,23 @@ const cv = cvFor(lang);
 const { profile } = cv;
 ---
 <header class="cv-head">
+  <p class="mono-label eyebrow">{profile.title}</p>
   <h1>{profile.name}</h1>
-  <p class="mono-label title">{profile.title}</p>
   <p class="statement">{profile.statement}</p>
-  <p class="mono-label contact">
-    <a href={`mailto:${profile.email}`}>{profile.email}</a>
-    {profile.phone && <> · <a href={`tel:${profile.phone.replace(/\s|\//g, '')}`}>{profile.phone}</a></>}
-    · {profile.location}
-    {profile.birthDate && <> · {new Date(profile.birthDate).toLocaleDateString(lang)}</>}
-    · <a href={profile.linkedin}>LinkedIn</a>
-  </p>
-  <p class="print-hide">
-    <button type="button" onclick="window.print()">{t('cv.print')}</button>
-  </p>
+  <div class="meta">
+    <ul class="contact">
+      <li><a href={`mailto:${profile.email}`}>{profile.email}</a></li>
+      {profile.phone && (
+        <li><a href={`tel:${profile.phone.replace(/[\s/]/g, '')}`}>{profile.phone}</a></li>
+      )}
+      <li>{profile.location}</li>
+      {profile.birthDate && <li>{new Date(profile.birthDate).toLocaleDateString(lang)}</li>}
+      <li><a href={profile.linkedin}>LinkedIn</a></li>
+    </ul>
+    <p class="print-hide">
+      <button type="button" onclick="window.print()">{t('cv.print')}</button>
+    </p>
+  </div>
 </header>
 
 <section>
@@ -43,17 +47,19 @@ const { profile } = cv;
   {
     cv.experience.map((station) => (
       <article class="cv-station">
-        <p class="mono-label period">{formatRange(station.start, station.end, lang)}</p>
-        <h3>{station.organisation}</h3>
-        {station.role && <p class="role">{station.role}</p>}
-        <p class="summary">{station.summary}</p>
-        {station.stack.length > 0 && (
-          <ul class="stack">
-            {station.stack.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
-        )}
+        <p class="rail">{formatRange(station.start, station.end, lang)}</p>
+        <div class="entry">
+          <h3>{station.organisation}</h3>
+          {station.role && <p class="role">{station.role}</p>}
+          <p class="summary">{station.summary}</p>
+          {station.stack.length > 0 && (
+            <ul class="stack">
+              {station.stack.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
       </article>
     ))
   }
@@ -64,18 +70,20 @@ const { profile } = cv;
   {
     cv.education.map((entry) => (
       <article class="cv-station">
-        <p class="mono-label period">{formatMonth(entry.start, lang)}</p>
-        <h3>{entry.title}</h3>
-        <p class="role">
-          {entry.organisation}
-          {entry.note && <> · {entry.note}</>}
-        </p>
+        <p class="rail">{formatMonth(entry.start, lang)}</p>
+        <div class="entry">
+          <h3>{entry.title}</h3>
+          <p class="role">
+            {entry.organisation}
+            {entry.note && <> · {entry.note}</>}
+          </p>
+        </div>
       </article>
     ))
   }
 </section>
 
-<section>
+<section class="expertise">
   <h2 class="mono-label section-head">{t('cv.expertise')}</h2>
   <div class="groups">
     {
@@ -110,50 +118,107 @@ const { profile } = cv;
 </section>
 
 <style>
+  /* ---------------------------------------------------------------- head */
+  .eyebrow {
+    color: var(--red-text);
+    margin: 0 0 0.5rem;
+  }
   .cv-head h1 {
     font-size: clamp(2rem, 7vw, 3rem);
-    margin: 0;
-    padding-block: 2rem 0.25rem;
-  }
-  .title {
-    color: var(--red-text);
-    margin: 0 0 1rem;
-  }
-  .statement {
-    max-width: 44rem;
-    color: var(--text-body);
-    margin: 0 0 1rem;
-  }
-  .contact {
-    color: var(--text-muted);
     margin: 0 0 1.25rem;
   }
-  .section-head {
-    color: var(--red-text);
+  .cv-head {
+    padding-block: 2.5rem 0;
+  }
+  .statement {
+    max-width: 42rem;
+    color: var(--text-body);
+    line-height: 1.7;
+    margin: 0 0 1.5rem;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     border-top: 1px solid var(--hairline);
     padding-top: 1rem;
-    margin-top: 2rem;
   }
-  .cv-station {
-    margin-bottom: 1.5rem;
-  }
-  .period {
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    list-style: none;
     margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     color: var(--text-muted);
   }
-  h3 {
-    font-size: 1rem;
-    margin: 0.3rem 0 0.1rem;
+  .contact a:hover {
+    color: var(--red-text);
+  }
+  .meta p {
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------------ sections */
+  .section-head {
+    color: var(--red-text);
+    margin: 3rem 0 1.25rem;
+  }
+
+  /*
+   * Date on a rail, content beside it. A CV is scanned down the left edge
+   * first — "when", then "who" — and stacking both in one column, which is
+   * what this did before, makes every entry the same undifferentiated block.
+   */
+  .cv-station {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 0 1.5rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--hairline-soft);
+  }
+  .cv-station:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+  }
+  .rail {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin: 0.2rem 0 0;
+    white-space: nowrap;
+  }
+
+  /*
+   * h1–h3 carry the site's poster treatment: 800 weight, 75% stretch,
+   * uppercase, line-height 0.92. That is right for a page title and wrong
+   * for thirty company names — "COS Informationstechnologie GmbH" set that
+   * way is a shout, and at 0.92 it collides with itself when it wraps.
+   */
+  .entry h3 {
+    font-weight: 600;
+    font-stretch: 100%;
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.3;
+    font-size: 1.0625rem;
+    margin: 0;
   }
   .role {
     color: var(--text-muted);
-    font-size: 0.9rem;
-    margin: 0 0 0.4rem;
+    font-size: 0.875rem;
+    margin: 0.15rem 0 0.6rem;
   }
   .summary {
-    margin: 0 0 0.5rem;
-    max-width: 44rem;
-    line-height: 1.6;
+    margin: 0 0 0.75rem;
+    max-width: 42rem;
+    line-height: 1.65;
+    color: var(--text-body);
   }
   .stack {
     display: flex;
@@ -169,58 +234,151 @@ const { profile } = cv;
     letter-spacing: 0.06em;
     color: var(--text-muted);
     border: 1px solid var(--hairline);
-    padding: 0.15rem 0.4rem;
+    padding: 0.15rem 0.45rem;
   }
-  /*
-   * Two columns of groups on anything wider than a phone. auto-fit rather
-   * than a fixed count so the groups reflow instead of being squeezed, and
-   * so the print layout gets the same treatment for free at A4 width.
-   */
+
+  /* ----------------------------------------------------------- expertise */
   .groups {
-    margin-top: 1rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 1.25rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    gap: 1.75rem 3rem;
   }
   .group-name {
-    color: var(--text-muted);
-    margin: 0 0 0.4rem;
+    color: var(--text-dim);
+    margin: 0 0 0.6rem;
     border-bottom: 1px solid var(--hairline-soft);
-    padding-bottom: 0.25rem;
+    padding-bottom: 0.35rem;
   }
+  /*
+   * A fixed label column, not auto: with auto every group sized its own
+   * labels and the bars started at a different x in each one, so eight
+   * groups produced eight ragged left edges for the thing the eye is
+   * actually comparing.
+   */
   .bars {
     display: grid;
-    grid-template-columns: minmax(6rem, auto) 1fr;
+    grid-template-columns: 8.5rem 1fr;
     align-items: center;
-    gap: 0.3rem 0.75rem;
+    gap: 0.45rem 0.9rem;
     margin: 0;
   }
   .bars dt {
     font-size: 0.8125rem;
     color: var(--text-body);
+    line-height: 1.2;
   }
   .bars dd {
     margin: 0;
-    height: 0.5rem;
-    border: 1px solid var(--hairline);
+    height: 4px;
+    background: var(--hairline);
   }
+  /*
+   * Teal, not red. Red is reserved for state and action on this site and
+   * fifty-four red bars at rest spend that meaning for nothing — and read as
+   * an alarm rather than as data. --boot-info also nods to the teal of the
+   * CV this was built from. print.css gives it a darker value for paper.
+   */
   .bar {
     display: block;
     height: 100%;
     width: var(--level);
-    background: var(--red);
+    background: var(--boot-info);
   }
+
   button {
     background: none;
     border: 1px solid var(--hairline);
     color: var(--text-muted);
-    font: inherit;
-    padding: 0.4rem 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.45rem 0.8rem;
     cursor: pointer;
   }
   button:hover,
   button:focus-visible {
     color: var(--red);
     border-color: var(--red);
+  }
+
+  /*
+   * On paper this is a document, not a page. The screen rhythm — 3rem
+   * between stations, a 3rem section gap, a heading that scales with the
+   * viewport — turned six jobs into four sheets with half of the first one
+   * empty. These are the same values at document density; nothing about the
+   * screen layout changes.
+   */
+  @media print {
+    .cv-head {
+      padding-block: 0;
+    }
+    .cv-head h1 {
+      font-size: 1.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .statement {
+      line-height: 1.5;
+      margin-bottom: 0.9rem;
+    }
+    .meta {
+      padding-top: 0.6rem;
+    }
+    .section-head {
+      margin: 1.4rem 0 0.7rem;
+    }
+    .cv-station {
+      padding-bottom: 0.7rem;
+      margin-bottom: 0.7rem;
+    }
+    .summary {
+      line-height: 1.5;
+      margin-bottom: 0.45rem;
+    }
+    .role {
+      margin-bottom: 0.4rem;
+    }
+    /*
+     * Expertise starts its own sheet. Left to flow it straddled the page
+     * break, and because a group must not be split it pushed one lone group
+     * onto a fourth, almost empty page. On its own it fits one page and the
+     * CV is three.
+     */
+    .expertise {
+      break-before: page;
+    }
+    .expertise .section-head {
+      margin-top: 0;
+    }
+    /*
+     * A4 content width is about 42rem, and auto-fit with a 19rem minimum
+     * plus the gap misses two columns by a hair — so it collapsed to one and
+     * the section ran to two pages. The paper width is fixed; say two.
+     */
+    .groups {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem 2rem;
+    }
+    .group-name {
+      margin-bottom: 0.45rem;
+    }
+    .bars {
+      gap: 0.28rem 0.9rem;
+    }
+    .bars dt {
+      font-size: 0.78rem;
+    }
+  }
+
+  /* The rail has nowhere to sit next to the content on a phone. */
+  @media (max-width: 40rem) {
+    .cv-station {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+    }
+    .rail {
+      margin: 0;
+    }
+    .bars {
+      grid-template-columns: 7.5rem 1fr;
+    }
   }
 </style>

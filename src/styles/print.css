@@ -25,6 +25,15 @@
     /* Keep the darker, print-legible red rather than the screen's lighter
        --red-text (#ff6868), which is only 2.83:1 on white. */
     --red-text: #da1515;
+    /*
+     * The two signal colours are tuned for a dark ground and vanish on paper:
+     * --boot-info (#56d4dd) lands at 1.6:1 on white and --boot-ok (#56d4dd's
+     * green sibling) is no better. The CV's expertise bars are drawn in
+     * --boot-info, so without this they print as empty tracks.
+     * --red (#da1515) is already print-legible and keeps its screen value.
+     */
+    --boot-info: #0e7490;
+    --boot-ok: #15803d;
   }
 
   body {
