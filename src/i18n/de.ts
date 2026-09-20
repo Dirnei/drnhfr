@@ -20,7 +20,7 @@ export const de = {
   'projects.empty': 'Die ersten Projekte werden gerade aufbereitet.',
   'cv.title': 'Lebenslauf',
   'cv.print': 'Als PDF drucken',
-  'cv.experience': 'Arbeitgeber',
+  'cv.timeline': 'Werdegang',
   'cv.education': 'Ausbildung',
   'cv.expertise': 'Expertise',
   'contact.title': 'Kontakt',

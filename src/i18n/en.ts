@@ -22,7 +22,7 @@ export const en: Record<keyof typeof de, string> = {
   'projects.empty': 'The first projects are being written up.',
   'cv.title': 'CV',
   'cv.print': 'Print as PDF',
-  'cv.experience': 'Experience',
+  'cv.timeline': 'Career',
   'cv.education': 'Education',
   'cv.expertise': 'Expertise',
   'contact.title': 'Contact',

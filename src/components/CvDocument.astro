@@ -1,7 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import type { Locale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
-import { Image } from 'astro:assets';
 import { cvFor, formatMonth, formatRange } from '../data/cv';
 /*
  * Imported directly rather than named in cv.json: Astro has to see the path
@@ -11,15 +11,16 @@ import { cvFor, formatMonth, formatRange } from '../data/cv';
 import portrait from '../assets/christian-dirnhofer.jpg';
 
 /*
- * The whole CV body, shared by /de/lebenslauf/ and /en/cv/. Both locales
- * render from the same component so a layout change cannot land on one and
- * miss the other — the only difference between them is which JSON file the
- * data comes from.
+ * The CV body, shared by /de/lebenslauf/ and /en/cv/. Both locales render
+ * from the same component so a layout change cannot land on one and miss the
+ * other — the only difference is which strings cv.json resolves to.
  *
- * This is also what the PDF is: there is no separate PDF renderer. The print
- * stylesheet turns the tokens light and the browser's "Save as PDF" does the
- * rest, so the document someone downloads is by construction the document
- * they were looking at.
+ * On screen this is deliberately NOT a sheet of A4. A page has vertical room
+ * that paper does not, so the career is drawn as one continuous timeline
+ * whose segments are as tall as the time actually spent: five years at one
+ * employer is five times the block of one year, and the shape of a career is
+ * readable before a single word of it is. Paper cannot do that, so @media
+ * print unwinds it back into a plain dated list.
  */
 interface Props {
   lang: Locale;
@@ -28,6 +29,45 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 const cv = cvFor(lang);
 const { profile } = cv;
+
+/*
+ * Build-time snapshot: an open-ended role is measured to today, so the
+ * current segment keeps growing between builds, which is the honest thing
+ * for it to do.
+ */
+function monthsBetween(start: string, end: string | null): number {
+  const [startYear, startMonth] = start.split('-').map(Number);
+  const now = new Date();
+  const [endYear, endMonth] = end
+    ? end.split('-').map(Number)
+    : [now.getUTCFullYear(), now.getUTCMonth() + 1];
+  return Math.max(1, (endYear - startYear) * 12 + (endMonth - startMonth));
+}
+
+/*
+ * Jobs and schooling share one axis, newest first — a career is one line, not
+ * two lists. A job spans a period and gets a proportional segment; schooling
+ * is a point in time and gets a node.
+ */
+type Item =
+  | {
+      kind: 'job';
+      start: string;
+      end: string | null;
+      months: number;
+      organisation: string;
+      role: string;
+      summary: string;
+      stack: string[];
+    }
+  | { kind: 'edu'; start: string; title: string; organisation: string; note: string };
+
+const stream: Item[] = [
+  ...cv.experience.map(
+    (entry): Item => ({ kind: 'job', ...entry, months: monthsBetween(entry.start, entry.end) }),
+  ),
+  ...cv.education.map((entry): Item => ({ kind: 'edu', ...entry })),
+].sort((a, b) => b.start.localeCompare(a.start));
 ---
 <header class="cv-head">
   <div class="identity">
@@ -61,45 +101,51 @@ const { profile } = cv;
   </div>
 </header>
 
-<section>
-  <h2 class="mono-label section-head">{t('cv.experience')}</h2>
-  {
-    cv.experience.map((station) => (
-      <article class="cv-station">
-        <p class="rail">{formatRange(station.start, station.end, lang)}</p>
-        <div class="entry">
-          <h3>{station.organisation}</h3>
-          {station.role && <p class="role">{station.role}</p>}
-          <p class="summary">{station.summary}</p>
-          {station.stack.length > 0 && (
-            <ul class="stack">
-              {station.stack.map((item) => (
-                <li>{item}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </article>
-    ))
-  }
-</section>
-
-<section class="education">
-  <h2 class="mono-label section-head">{t('cv.education')}</h2>
-  {
-    cv.education.map((entry) => (
-      <article class="cv-station">
-        <p class="rail">{formatMonth(entry.start, lang)}</p>
-        <div class="entry">
-          <h3>{entry.title}</h3>
-          <p class="role">
-            {entry.organisation}
-            {entry.note && <> · {entry.note}</>}
+<section class="timeline-section">
+  <h2 class="mono-label section-head">{t('cv.timeline')}</h2>
+  <ol class="timeline">
+    {
+      stream.map((item) => (
+        <li
+          class:list={['item', `is-${item.kind}`, item.kind === 'job' && !item.end && 'is-current']}
+          style={item.kind === 'job' ? `--months:${item.months}` : undefined}
+          data-reveal
+        >
+          <p class="when">
+            {item.kind === 'job'
+              ? formatRange(item.start, item.end, lang)
+              : formatMonth(item.start, lang)}
           </p>
-        </div>
-      </article>
-    ))
-  }
+          <div class="spine" aria-hidden="true"><span class="run" /></div>
+          <div class="entry">
+            {item.kind === 'job' ? (
+              <>
+                <h3>{item.organisation}</h3>
+                {item.role && <p class="role">{item.role}</p>}
+                <p class="summary">{item.summary}</p>
+                {item.stack.length > 0 && (
+                  <ul class="stack">
+                    {item.stack.map((tech) => (
+                      <li>{tech}</li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <>
+                <p class="mono-label badge">{t('cv.education')}</p>
+                <h3>{item.title}</h3>
+                <p class="role">
+                  {item.organisation}
+                  {item.note && <> · {item.note}</>}
+                </p>
+              </>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
 </section>
 
 <section class="expertise">
@@ -107,7 +153,7 @@ const { profile } = cv;
   <div class="groups">
     {
       cv.expertise.map((group) => (
-        <div class="group">
+        <div class="group" data-reveal>
           <p class="mono-label group-name">{group.group}</p>
           <dl class="bars">
             {group.skills.map((skill) => (
@@ -195,48 +241,103 @@ const { profile } = cv;
     margin: 0;
   }
 
-  /* ------------------------------------------------------------ sections */
-  /*
-   * A rule above each section. Without one the only horizontal lines on the
-   * page were the per-entry hairlines, so a new section read as just another
-   * entry — the red label alone was not carrying the break.
-   */
   .section-head {
     color: var(--red-text);
     border-top: 1px solid var(--hairline);
     padding-top: 1.1rem;
-    margin: 2.5rem 0 1.25rem;
+    margin: 2.5rem 0 1.5rem;
   }
 
-  /*
-   * Date on a rail, content beside it. A CV is scanned down the left edge
-   * first — "when", then "who" — and stacking both in one column, which is
-   * what this did before, makes every entry the same undifferentiated block.
-   */
-  .cv-station {
+  /* ------------------------------------------------------------ timeline */
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .item {
     display: grid;
-    grid-template-columns: 8rem 1fr;
-    gap: 0 1.5rem;
-    padding-bottom: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--hairline-soft);
+    grid-template-columns: 7.5rem 1.75rem 1fr;
+    align-items: stretch;
+    column-gap: 1rem;
   }
-  .cv-station:last-child {
-    border-bottom: 0;
-    margin-bottom: 0;
+  /*
+   * The whole point: a segment is as tall as the time it represents, so the
+   * shape of the career is readable before a word of it is.
+   *
+   * 0.32rem a month, not more. An entry needs roughly 8rem for its own text,
+   * which is already the floor for anything under two years — and at a truly
+   * linear scale the longest role opened 27rem of empty rail, which reads as
+   * a rendering bug rather than as a long tenure. This keeps the one genuine
+   * outlier visibly double everything else and wastes nothing.
+   *
+   * min-height, never height: a short job with a long description still gets
+   * the room its text needs, it just stops being proportional there.
+   */
+  .is-job {
+    min-height: calc(var(--months) * 0.32rem);
   }
-  .education .cv-station {
-    padding-bottom: 0.8rem;
-    margin-bottom: 0.8rem;
+  .is-edu {
+    min-height: 4.5rem;
   }
-  .rail {
+  .when {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--text-dim);
-    margin: 0.2rem 0 0;
+    margin: 0;
+    padding-top: 0.15rem;
+    text-align: right;
     white-space: nowrap;
   }
 
+  /* The rail: a hairline the full height, with the run drawn over it. */
+  .spine {
+    position: relative;
+    justify-self: center;
+    width: 100%;
+  }
+  .spine::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--hairline);
+    transform: translateX(-50%);
+  }
+  .run {
+    position: absolute;
+    left: 50%;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 5px;
+    transform: translateX(-50%);
+    background: var(--boot-info);
+  }
+  /* Schooling is a point in time, not a span, so it gets a node. */
+  .is-edu .run {
+    top: 0.45rem;
+    bottom: auto;
+    height: 9px;
+    width: 9px;
+    background: var(--text-dim);
+  }
+  /*
+   * Red for the role held right now. On this site red means state and
+   * action, and "this is where he is today" is the only state on the page —
+   * which is also the first thing anyone reading a CV looks for.
+   */
+  .is-current .run {
+    background: var(--red);
+  }
+
+  .entry {
+    padding-bottom: 1.5rem;
+  }
+  .badge {
+    color: var(--text-dim);
+    margin: 0 0 0.3rem;
+  }
   /*
    * h1–h3 carry the site's poster treatment: 800 weight, 75% stretch,
    * uppercase, line-height 0.92. That is right for a page title and wrong
@@ -252,6 +353,9 @@ const { profile } = cv;
     font-size: 1.0625rem;
     margin: 0;
   }
+  .is-current .entry h3 {
+    color: var(--text);
+  }
   .role {
     color: var(--text-muted);
     font-size: 0.875rem;
@@ -259,7 +363,7 @@ const { profile } = cv;
   }
   .summary {
     margin: 0 0 0.75rem;
-    max-width: 42rem;
+    max-width: 40rem;
     line-height: 1.65;
     color: var(--text-body);
   }
@@ -282,6 +386,7 @@ const { profile } = cv;
 
   /* ----------------------------------------------------------- expertise */
   .groups {
+    margin-top: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
     gap: 1.75rem 3rem;
@@ -343,12 +448,78 @@ const { profile } = cv;
     border-color: var(--red);
   }
 
+  /* -------------------------------------------------------------- motion */
   /*
-   * On paper this is a document, not a page. The screen rhythm — 3rem
-   * between stations, a 3rem section gap, a heading that scales with the
-   * viewport — turned six jobs into four sheets with half of the first one
-   * empty. These are the same values at document density; nothing about the
-   * screen layout changes.
+   * Entries arrive as they are scrolled to and the skill bars grow from
+   * nothing. Everything is styled as finished by default and only pulled
+   * back to a starting state once the script has set data-motion — so with
+   * JS off, the page is simply complete rather than permanently blank.
+   */
+  :global([data-motion='cv']) .item[data-reveal],
+  :global([data-motion='cv']) .group[data-reveal] {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  :global([data-motion='cv']) [data-reveal].shown {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 520ms ease,
+      transform 520ms ease;
+  }
+  :global([data-motion='cv']) .group[data-reveal] .bar {
+    width: 0;
+  }
+  :global([data-motion='cv']) .group[data-reveal].shown .bar {
+    width: var(--level);
+    transition: width 900ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global([data-motion='cv']) .item[data-reveal],
+    :global([data-motion='cv']) .group[data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+    :global([data-motion='cv']) .group[data-reveal] .bar {
+      width: var(--level);
+    }
+  }
+
+  /* --------------------------------------------------------------- small */
+  @media (max-width: 45rem) {
+    .item {
+      grid-template-columns: 1.75rem 1fr;
+      column-gap: 0.75rem;
+      grid-template-areas:
+        'spine when'
+        'spine entry';
+    }
+    .when {
+      grid-area: when;
+      text-align: left;
+      margin-bottom: 0.35rem;
+    }
+    .spine {
+      grid-area: spine;
+    }
+    .entry {
+      grid-area: entry;
+    }
+    .is-job {
+      min-height: calc(var(--months) * 0.22rem);
+    }
+    .bars {
+      grid-template-columns: 7.5rem 1fr;
+    }
+  }
+
+  /* --------------------------------------------------------------- print */
+  /*
+   * Paper gets none of this. A proportional timeline on A4 means a page and
+   * a half of empty rail for a five-year job, so print unwinds it back into
+   * the dated list the medium actually wants: no spine, no proportional
+   * height, no motion.
    */
   @media print {
     .cv-head {
@@ -365,9 +536,6 @@ const { profile } = cv;
       width: 96px;
       height: 96px;
     }
-    .section-head {
-      padding-top: 0.8rem;
-    }
     .statement {
       line-height: 1.5;
       margin-bottom: 0.9rem;
@@ -376,11 +544,27 @@ const { profile } = cv;
       padding-top: 0.6rem;
     }
     .section-head {
+      padding-top: 0.8rem;
       margin: 1.4rem 0 0.7rem;
     }
-    .cv-station {
+    .item {
+      grid-template-columns: 8rem 1fr;
+      grid-template-areas: none;
+      column-gap: 1.5rem;
+      min-height: 0;
+      break-inside: avoid;
       padding-bottom: 0.7rem;
       margin-bottom: 0.7rem;
+      border-bottom: 1px solid var(--hairline-soft);
+    }
+    .when {
+      text-align: left;
+    }
+    .spine {
+      display: none;
+    }
+    .entry {
+      padding-bottom: 0;
     }
     .summary {
       line-height: 1.5;
@@ -389,12 +573,6 @@ const { profile } = cv;
     .role {
       margin-bottom: 0.4rem;
     }
-    /*
-     * Expertise starts its own sheet. Left to flow it straddled the page
-     * break, and because a group must not be split it pushed one lone group
-     * onto a fourth, almost empty page. On its own it fits one page and the
-     * CV is three.
-     */
     .expertise {
       break-before: page;
     }
@@ -419,19 +597,60 @@ const { profile } = cv;
     .bars dt {
       font-size: 0.78rem;
     }
-  }
-
-  /* The rail has nowhere to sit next to the content on a phone. */
-  @media (max-width: 40rem) {
-    .cv-station {
-      grid-template-columns: 1fr;
-      gap: 0.35rem;
+    .item[data-reveal],
+    .group[data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
     }
-    .rail {
-      margin: 0;
-    }
-    .bars {
-      grid-template-columns: 7.5rem 1fr;
+    .bar {
+      width: var(--level) !important;
     }
   }
 </style>
+
+<script>
+  /*
+   * The marker is set here, not rendered by the server: everything above is
+   * styled as finished by default and only pulled back to its starting state
+   * once this script is known to be running. With JS off the CV is simply
+   * there — which, for the document someone is reading to decide whether to
+   * hire you, is the only acceptable failure mode.
+   */
+  const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+  if (targets.length > 0) {
+    document.documentElement.dataset.motion = 'cv';
+
+    const show = (el: Element) => el.classList.add('shown');
+
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !('IntersectionObserver' in window)
+    ) {
+      targets.forEach(show);
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            show(entry.target);
+            observer.unobserve(entry.target);
+          }
+        },
+        // Fire a little before the element reaches the fold so it has
+        // finished arriving by the time it is actually looked at.
+        { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
+      );
+      targets.forEach((el) => {
+        // Anything already at or above the fold is shown outright. The
+        // observer only reports elements that intersect, so on a restored
+        // scroll position everything scrolled past would otherwise stay
+        // invisible for as long as the visitor never scrolls back up.
+        if (el.getBoundingClientRect().top < window.innerHeight) {
+          show(el);
+          return;
+        }
+        observer.observe(el);
+      });
+    }
+  }
+</script>
