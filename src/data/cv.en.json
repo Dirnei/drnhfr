@@ -1,0 +1,178 @@
+{
+  "profile": {
+    "name": "Christian Dirnhofer",
+    "title": "Software Architect",
+    "email": "christian@dirnhofer.net",
+    "phone": "",
+    "birthDate": "",
+    "location": "83246 Unterwössen, Germany",
+    "linkedin": "https://www.linkedin.com/in/christian-dirnhofer-a89b4a229/",
+    "statement": "My goal is to unify software landscapes, make them accessible and integrate them cleanly — which buys more connectivity and simpler modularisation. With a passion for software architecture, UX and performance, I build solutions that convince users and developers alike."
+  },
+  "experience": [
+    {
+      "start": "2025-01",
+      "end": null,
+      "organisation": "DiIT GmbH",
+      "role": "Software Architect & Technical Consultant",
+      "summary": "Software Architect and Technical Consultant for Komax Group's wire harness manufacturing division. Architected distributed MES system design, established technical standards, and evaluated the technology stack.",
+      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry"]
+    },
+    {
+      "start": "2020-04",
+      "end": "2025-01",
+      "organisation": "advastore SE",
+      "role": "Lead Software Architect",
+      "summary": "Lead Software Architect for the Warehouse Management System: an event-driven, cloud native microservice application based on Akka.NET, running on Kubernetes and capable of managing a fully automated warehouse and all machines and robots associated with the process.",
+      "stack": ["C#", "Akka.NET", ".NET 8", "MongoDB", "MQTT", "Kubernetes", "Terraform"]
+    },
+    {
+      "start": "2018-01",
+      "end": "2020-04",
+      "organisation": "serva transport systems GmbH",
+      "role": "",
+      "summary": "Development of a Fleet Control for AGVs (Automated Guided Vehicles). Complete refactoring of all front- and backend applications.",
+      "stack": ["C#", ".NET 4.7", ".NET Standard", ".NET Core", "ASP.NET", "MSSQL"]
+    },
+    {
+      "start": "2017-01",
+      "end": "2018-01",
+      "organisation": "sixData GmbH",
+      "role": "",
+      "summary": "Development of a Management Information System for street lights. Primary developer of luxData.control, a module to control street lights.",
+      "stack": ["VB.NET", "C#", ".NET 3.5", "ASP.NET", "AngularJS", "MSSQL", "Oracle"]
+    },
+    {
+      "start": "2015-01",
+      "end": "2017-01",
+      "organisation": "COS Informationstechnologie GmbH",
+      "role": "",
+      "summary": "Development of customer websites and an internal web application to analyse and compare product data. Building and supporting the internal hosting platform.",
+      "stack": ["PHP", "Java (Vaadin)", "Contao", "TYPO3"]
+    },
+    {
+      "start": "2014-02",
+      "end": "2015-01",
+      "organisation": "wista Informationstechnologie GmbH",
+      "role": "",
+      "summary": "Development of customer specific software for the automotive and veneer industry, back- and frontend.",
+      "stack": ["C#", "Windows Forms", ".NET 2.0"]
+    }
+  ],
+  "education": [
+    {
+      "start": "2011-08",
+      "title": "IT Assistant apprenticeship",
+      "organisation": "IFB Rosenheim",
+      "note": "Completed July 2011"
+    },
+    {
+      "start": "2009-08",
+      "title": "Vocational school for IT professions",
+      "organisation": "Berufsschule 1 Traunstein",
+      "note": "Completed July 2009"
+    },
+    {
+      "start": "2008-08",
+      "title": "Secondary school certificate (Mittlere Reife)",
+      "organisation": "Volksschule Grassau",
+      "note": "Completed July 2008"
+    }
+  ],
+  "expertise": [
+    {
+      "group": "Programming Languages",
+      "skills": [
+        { "name": ".NET — focus: C#", "level": 98 },
+        { "name": "C/C++", "level": 88 },
+        { "name": "Go", "level": 65 },
+        { "name": "PHP", "level": 45 },
+        { "name": "Java", "level": 40 },
+        { "name": "Python", "level": 35 },
+        { "name": "Rust", "level": 22 }
+      ]
+    },
+    {
+      "group": "Scripting / Prototyping",
+      "skills": [
+        { "name": "NodeRED", "level": 95 },
+        { "name": "PowerShell", "level": 90 },
+        { "name": "JavaScript", "level": 82 },
+        { "name": "Shell", "level": 72 },
+        { "name": "TypeScript", "level": 55 }
+      ]
+    },
+    {
+      "group": "Communication",
+      "skills": [
+        { "name": "OpenAPI / REST", "level": 95 },
+        { "name": "MQTT", "level": 95 },
+        { "name": "gRPC", "level": 88 },
+        { "name": "Custom TCP", "level": 80 },
+        { "name": "Networking", "level": 78 },
+        { "name": "ModbusTCP", "level": 60 },
+        { "name": "OPC UA", "level": 50 }
+      ]
+    },
+    {
+      "group": "Databases",
+      "skills": [
+        { "name": "MongoDB", "level": 92 },
+        { "name": "MSSQL", "level": 85 },
+        { "name": "MySQL", "level": 72 },
+        { "name": "Redis", "level": 62 },
+        { "name": "Oracle", "level": 55 },
+        { "name": "Influx", "level": 50 }
+      ]
+    },
+    {
+      "group": "Tooling",
+      "skills": [
+        { "name": "Azure DevOps", "level": 96 },
+        { "name": "Akka.Streams", "level": 95 },
+        { "name": "Git", "level": 93 },
+        { "name": "NuGet", "level": 92 },
+        { "name": "VS Code", "level": 92 },
+        { "name": "Akka.NET", "level": 88 },
+        { "name": "GitHub", "level": 88 },
+        { "name": "npm", "level": 80 },
+        { "name": "Subversion", "level": 45 }
+      ]
+    },
+    {
+      "group": "User Interface",
+      "skills": [
+        { "name": "WinForms", "level": 92 },
+        { "name": "WPF (MVVM)", "level": 88 },
+        { "name": "HTML", "level": 85 },
+        { "name": "CSS/SASS/LESS", "level": 80 },
+        { "name": "UWP (MVVM)", "level": 72 }
+      ]
+    },
+    {
+      "group": "DevOps",
+      "skills": [
+        { "name": "Docker", "level": 88 },
+        { "name": "Kubernetes", "level": 78 },
+        { "name": "Terraform", "level": 72 },
+        { "name": "Ansible", "level": 60 },
+        { "name": "Flux", "level": 55 }
+      ]
+    },
+    {
+      "group": "Soft skills",
+      "skills": [
+        { "name": "Creativity", "level": 100 },
+        { "name": "Flexibility", "level": 100 },
+        { "name": "Willingness to learn", "level": 96 },
+        { "name": "Teamwork", "level": 95 },
+        { "name": "Self-reliance", "level": 95 },
+        { "name": "Problem solving", "level": 95 },
+        { "name": "Communication", "level": 92 },
+        { "name": "Organisation", "level": 90 },
+        { "name": "Efficiency", "level": 88 },
+        { "name": "Teaching / mentoring", "level": 80 }
+      ]
+    }
+  ]
+}

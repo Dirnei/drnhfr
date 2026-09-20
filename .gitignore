@@ -3,3 +3,8 @@ dist/
 .astro/
 .DS_Store
 *.log
+
+# Source CV: contains a private phone number and date of birth, and this
+# repository is public. The site renders from src/data/cv.*.json instead.
+/Lebenlauf_2026.pdf
+/Lebenslauf*.pdf

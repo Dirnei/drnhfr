@@ -39,18 +39,37 @@
     display: none !important;
   }
 
-  .cv-station {
+  .cv-station,
+  .group {
     break-inside: avoid;
+  }
+
+  /*
+   * Browsers drop background colours when printing, which would render every
+   * expertise bar as an empty outline — the one place on this site where the
+   * background IS the information. print-color-adjust forces them back.
+   * Scoped to the bars so nothing else starts eating toner.
+   */
+  .bar {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   a {
     color: var(--text);
   }
 
+  /*
+   * Links are dead on paper, so the URL is spelled out after them. It must
+   * NOT inherit the uppercase transform of whatever ran it — the contact line
+   * is a .mono-label — because a URL shouted in caps is harder to read and no
+   * longer matches what you would type.
+   */
   .cv a::after {
     content: ' (' attr(href) ')';
     font-size: 0.75em;
     color: var(--text-muted);
+    text-transform: none;
   }
 
   .cv a[href^="mailto:"]::after {

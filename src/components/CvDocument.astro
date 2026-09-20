@@ -1,0 +1,226 @@
+---
+import type { Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import { cvFor, formatMonth, formatRange } from '../data/cv';
+
+/*
+ * The whole CV body, shared by /de/lebenslauf/ and /en/cv/. Both locales
+ * render from the same component so a layout change cannot land on one and
+ * miss the other — the only difference between them is which JSON file the
+ * data comes from.
+ *
+ * This is also what the PDF is: there is no separate PDF renderer. The print
+ * stylesheet turns the tokens light and the browser's "Save as PDF" does the
+ * rest, so the document someone downloads is by construction the document
+ * they were looking at.
+ */
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const cv = cvFor(lang);
+const { profile } = cv;
+---
+<header class="cv-head">
+  <h1>{profile.name}</h1>
+  <p class="mono-label title">{profile.title}</p>
+  <p class="statement">{profile.statement}</p>
+  <p class="mono-label contact">
+    <a href={`mailto:${profile.email}`}>{profile.email}</a>
+    {profile.phone && <> · <a href={`tel:${profile.phone.replace(/\s|\//g, '')}`}>{profile.phone}</a></>}
+    · {profile.location}
+    {profile.birthDate && <> · {new Date(profile.birthDate).toLocaleDateString(lang)}</>}
+    · <a href={profile.linkedin}>LinkedIn</a>
+  </p>
+  <p class="print-hide">
+    <button type="button" onclick="window.print()">{t('cv.print')}</button>
+  </p>
+</header>
+
+<section>
+  <h2 class="mono-label section-head">{t('cv.experience')}</h2>
+  {
+    cv.experience.map((station) => (
+      <article class="cv-station">
+        <p class="mono-label period">{formatRange(station.start, station.end, lang)}</p>
+        <h3>{station.organisation}</h3>
+        {station.role && <p class="role">{station.role}</p>}
+        <p class="summary">{station.summary}</p>
+        {station.stack.length > 0 && (
+          <ul class="stack">
+            {station.stack.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        )}
+      </article>
+    ))
+  }
+</section>
+
+<section>
+  <h2 class="mono-label section-head">{t('cv.education')}</h2>
+  {
+    cv.education.map((entry) => (
+      <article class="cv-station">
+        <p class="mono-label period">{formatMonth(entry.start, lang)}</p>
+        <h3>{entry.title}</h3>
+        <p class="role">
+          {entry.organisation}
+          {entry.note && <> · {entry.note}</>}
+        </p>
+      </article>
+    ))
+  }
+</section>
+
+<section>
+  <h2 class="mono-label section-head">{t('cv.expertise')}</h2>
+  <div class="groups">
+    {
+      cv.expertise.map((group) => (
+        <div class="group">
+          <p class="mono-label group-name">{group.group}</p>
+          <dl class="bars">
+            {group.skills.map((skill) => (
+              <>
+                <dt>{skill.name}</dt>
+                {/*
+                  The bar is the value, so it carries the ARIA meter role and
+                  the number — a screen reader gets "78 percent", not an
+                  anonymous decorative box.
+                */}
+                <dd
+                  role="meter"
+                  aria-valuenow={skill.level}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-label={skill.name}
+                >
+                  <span class="bar" style={`--level:${skill.level}%`} />
+                </dd>
+              </>
+            ))}
+          </dl>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .cv-head h1 {
+    font-size: clamp(2rem, 7vw, 3rem);
+    margin: 0;
+    padding-block: 2rem 0.25rem;
+  }
+  .title {
+    color: var(--red-text);
+    margin: 0 0 1rem;
+  }
+  .statement {
+    max-width: 44rem;
+    color: var(--text-body);
+    margin: 0 0 1rem;
+  }
+  .contact {
+    color: var(--text-muted);
+    margin: 0 0 1.25rem;
+  }
+  .section-head {
+    color: var(--red-text);
+    border-top: 1px solid var(--hairline);
+    padding-top: 1rem;
+    margin-top: 2rem;
+  }
+  .cv-station {
+    margin-bottom: 1.5rem;
+  }
+  .period {
+    margin: 0;
+    color: var(--text-muted);
+  }
+  h3 {
+    font-size: 1rem;
+    margin: 0.3rem 0 0.1rem;
+  }
+  .role {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 0.4rem;
+  }
+  .summary {
+    margin: 0 0 0.5rem;
+    max-width: 44rem;
+    line-height: 1.6;
+  }
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .stack li {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    border: 1px solid var(--hairline);
+    padding: 0.15rem 0.4rem;
+  }
+  /*
+   * Two columns of groups on anything wider than a phone. auto-fit rather
+   * than a fixed count so the groups reflow instead of being squeezed, and
+   * so the print layout gets the same treatment for free at A4 width.
+   */
+  .groups {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.25rem 2rem;
+  }
+  .group-name {
+    color: var(--text-muted);
+    margin: 0 0 0.4rem;
+    border-bottom: 1px solid var(--hairline-soft);
+    padding-bottom: 0.25rem;
+  }
+  .bars {
+    display: grid;
+    grid-template-columns: minmax(6rem, auto) 1fr;
+    align-items: center;
+    gap: 0.3rem 0.75rem;
+    margin: 0;
+  }
+  .bars dt {
+    font-size: 0.8125rem;
+    color: var(--text-body);
+  }
+  .bars dd {
+    margin: 0;
+    height: 0.5rem;
+    border: 1px solid var(--hairline);
+  }
+  .bar {
+    display: block;
+    height: 100%;
+    width: var(--level);
+    background: var(--red);
+  }
+  button {
+    background: none;
+    border: 1px solid var(--hairline);
+    color: var(--text-muted);
+    font: inherit;
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+  }
+  button:hover,
+  button:focus-visible {
+    color: var(--red);
+    border-color: var(--red);
+  }
+</style>
