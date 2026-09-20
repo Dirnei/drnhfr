@@ -1,7 +1,14 @@
 ---
 import type { Locale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
+import { Image } from 'astro:assets';
 import { cvFor, formatMonth, formatRange } from '../data/cv';
+/*
+ * Imported directly rather than named in cv.json: Astro has to see the path
+ * statically to optimise and fingerprint it, and there is exactly one
+ * portrait. It is the same file the contact page uses.
+ */
+import portrait from '../assets/christian-dirnhofer.jpg';
 
 /*
  * The whole CV body, shared by /de/lebenslauf/ and /en/cv/. Both locales
@@ -23,8 +30,20 @@ const cv = cvFor(lang);
 const { profile } = cv;
 ---
 <header class="cv-head">
-  <p class="mono-label eyebrow">{profile.title}</p>
-  <h1>{profile.name}</h1>
+  <div class="identity">
+    <Image
+      src={portrait}
+      alt={profile.name}
+      width={132}
+      height={132}
+      class="portrait"
+      loading="eager"
+    />
+    <div>
+      <p class="mono-label eyebrow">{profile.title}</p>
+      <h1>{profile.name}</h1>
+    </div>
+  </div>
   <p class="statement">{profile.statement}</p>
   <div class="meta">
     <ul class="contact">
@@ -65,7 +84,7 @@ const { profile } = cv;
   }
 </section>
 
-<section>
+<section class="education">
   <h2 class="mono-label section-head">{t('cv.education')}</h2>
   {
     cv.education.map((entry) => (
@@ -119,16 +138,29 @@ const { profile } = cv;
 
 <style>
   /* ---------------------------------------------------------------- head */
-  .eyebrow {
-    color: var(--red-text);
-    margin: 0 0 0.5rem;
-  }
-  .cv-head h1 {
-    font-size: clamp(2rem, 7vw, 3rem);
-    margin: 0 0 1.25rem;
-  }
   .cv-head {
     padding-block: 2.5rem 0;
+  }
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  /* Square, like every other image on this site — the design bans radii. */
+  .portrait {
+    flex: none;
+    width: 132px;
+    height: 132px;
+    border: 1px solid var(--hairline);
+  }
+  .eyebrow {
+    color: var(--red-text);
+    margin: 0 0 0.4rem;
+  }
+  .cv-head h1 {
+    font-size: clamp(1.75rem, 6vw, 2.75rem);
+    margin: 0;
   }
   .statement {
     max-width: 42rem;
@@ -164,9 +196,16 @@ const { profile } = cv;
   }
 
   /* ------------------------------------------------------------ sections */
+  /*
+   * A rule above each section. Without one the only horizontal lines on the
+   * page were the per-entry hairlines, so a new section read as just another
+   * entry — the red label alone was not carrying the break.
+   */
   .section-head {
     color: var(--red-text);
-    margin: 3rem 0 1.25rem;
+    border-top: 1px solid var(--hairline);
+    padding-top: 1.1rem;
+    margin: 2.5rem 0 1.25rem;
   }
 
   /*
@@ -185,6 +224,10 @@ const { profile } = cv;
   .cv-station:last-child {
     border-bottom: 0;
     margin-bottom: 0;
+  }
+  .education .cv-station {
+    padding-bottom: 0.8rem;
+    margin-bottom: 0.8rem;
   }
   .rail {
     font-family: var(--font-mono);
@@ -313,7 +356,17 @@ const { profile } = cv;
     }
     .cv-head h1 {
       font-size: 1.9rem;
-      margin-bottom: 0.75rem;
+    }
+    .identity {
+      gap: 1.1rem;
+      margin-bottom: 0.9rem;
+    }
+    .portrait {
+      width: 96px;
+      height: 96px;
+    }
+    .section-head {
+      padding-top: 0.8rem;
     }
     .statement {
       line-height: 1.5;
