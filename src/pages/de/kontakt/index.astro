@@ -41,23 +41,29 @@ import { routePath } from '../../../i18n/routes';
     <section class="about">
       <h2>Über mich</h2>
       <p>
-        Entwickler, in Bayern zu Hause. Angefangen hat es 2007 mit Webseiten: HTML,
-        CSS, PHP. Danach VB.NET, dann Java, und 2010 C#. Da bin ich hängen geblieben.
+        Ich bin ein Entwickler aus Bayern. Angefangen hat es grob um 2007 herum mit
+        Webseiten: HTML, CSS, PHP. Danach über VB.NET und Java zu C# (2010). Das wurde
+        zu meinem ständigen Begleiter und ist zu Recht mein heutiges Fachgebiet.
+        Zwischen Visual Source Safe und dem aktuellen Azure DevOps habe ich alles
+        gesehen und verwendet.
       </p>
       <p>
-        2012 kam Embedded dazu. Erst Arduino, später ESP32, Platinen hab ich mir auch
-        selbst geätzt. Ganz losgekommen bin ich davon nie. 2013 dann Minecraft-Plugins,
-        und dazwischen jede Menge Projekte, die kein Mensch gebraucht hat. PCs
-        zusammenschrauben lief immer nebenher.
+        2012 kam Embedded dazu. Erst viele Arduinos, bis später die ESP32 auf den Markt
+        gekommen sind. Platinen ätzen darf natürlich nicht fehlen. Ein Breadboard ist
+        eben nichts auf Dauer und Lochrasterplatinen zu langweilig. Ganz losgekommen bin
+        ich von der Embedded-Schiene nie. Längstes und ambitioniertestes Projekt ist der{' '}
+        <a href="https://cloud.dartomat.com">Dartomat</a>.
       </p>
       <p>
-        Im Corona-Lockdown hab ich mir einen CO2-Laser gebaut. Der läuft immer noch,
-        genauso wie der 3D-Drucker. CAD ist dabei kein Hindernis.
+        Als im Corona-Lockdown das 3D-Drucken zu langweilig wurde, hab ich mir mal eben
+        einen CO2-Laser gebaut. Konstruktion, Teileliste erstellen, einkaufen, aufbauen
+        und einstellen. Ein drei Monate langes Projekt, das mir richtig viel gezeigt
+        hat. Der läuft auch immer noch, genauso wie der 3D-Drucker.
       </p>
       <p>
-        DevOps hab ich mir zusätzlich selbst beigebracht, 2022 kam Infrastructure as
-        Code dazu und das hat mich gepackt. Daheim laufen
-        Proxmox, Docker, Kubernetes, Ansible und Terraform. Mein Heimnetz ist dadurch
+        DevOps war auch ein ständiger Begleiter, der immer und überall im Einsatz war.
+        2022 kam Infrastructure as Code dazu und das hat mich gepackt. Daheim laufen
+        Proxmox, Docker, Kubernetes, Ansible und Terraform. Mein Heimnetz ist auch
         völlig übertrieben und sauberer aufgesetzt als das der meisten Firmen, für die
         ich gearbeitet habe.
       </p>
@@ -110,5 +116,14 @@ import { routePath } from '../../../i18n/routes';
   }
   .contact .about p {
     color: var(--text-body);
+  }
+  .about a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-color: var(--hairline);
+  }
+  .about a:hover {
+    color: var(--red);
+    text-decoration-color: var(--red);
   }
 </style>
