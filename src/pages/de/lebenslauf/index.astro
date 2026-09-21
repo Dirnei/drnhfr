@@ -48,10 +48,6 @@ import { routePath } from '../../../i18n/routes';
   }
 </style>
 <script is:inline>
-  // This is a toy gate, not access control (see the feature brief): the
-  // default — no JS, or JS without the flag — is the locked message, so an
-  // unlock only ever happened via the terminal's "su" command on the
-  // home page setting this same sessionStorage key.
   try {
     if (sessionStorage.getItem('cv-unlocked') === '1') {
       document.getElementById('cv-locked').hidden = true;

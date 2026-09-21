@@ -3,15 +3,6 @@
     margin: 16mm;
   }
 
-  /*
-   * Every colour token gets a print-safe override here, not just the ones a
-   * given page happens to use today. Browsers do not print background
-   * colours by default, and this stylesheet used to cover only --ink,
-   * --text, --text-muted and the two hairlines — a page using --text-body,
-   * --text-dim, --surface, --code-bg or --red-text (e.g. any article, not
-   * just the CV) printed those in their screen (dark-ground) values, which
-   * come out illegible or invisible on white paper.
-   */
   :root {
     --ink: #ffffff;
     --surface: #ffffff;
@@ -22,16 +13,7 @@
     --hairline: #cccccc;
     --hairline-soft: #e5e5e5;
     --code-bg: #f0f0f0;
-    /* Keep the darker, print-legible red rather than the screen's lighter
-       --red-text (#ff6868), which is only 2.83:1 on white. */
     --red-text: #da1515;
-    /*
-     * The two signal colours are tuned for a dark ground and vanish on paper:
-     * --boot-info (#56d4dd) lands at 1.6:1 on white and --boot-ok (#56d4dd's
-     * green sibling) is no better. The CV's expertise bars are drawn in
-     * --boot-info, so without this they print as empty tracks.
-     * --red (#da1515) is already print-legible and keeps its screen value.
-     */
     --boot-info: #0e7490;
     --boot-ok: #15803d;
   }
@@ -53,12 +35,6 @@
     break-inside: avoid;
   }
 
-  /*
-   * Browsers drop background colours when printing, which would render every
-   * expertise bar as an empty outline — the one place on this site where the
-   * background IS the information. print-color-adjust forces them back.
-   * Scoped to the bars so nothing else starts eating toner.
-   */
   .bar {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -68,12 +44,6 @@
     color: var(--text);
   }
 
-  /*
-   * Links are dead on paper, so the URL is spelled out after them. It must
-   * NOT inherit the uppercase transform of whatever ran it — the contact line
-   * is a .mono-label — because a URL shouted in caps is harder to read and no
-   * longer matches what you would type.
-   */
   .cv a::after {
     content: ' (' attr(href) ')';
     font-size: 0.75em;
@@ -85,13 +55,6 @@
     content: none;
   }
 
-  /*
-   * Shiki emits inline styles on the <pre> it generates (e.g.
-   * style="background-color:#0d1117;color:#e6edf3"), which outrank the
-   * screen-mode `.prose pre { background: var(--code-bg) }` rule and are
-   * not touched by the :root overrides above. The !important here is
-   * required to beat that inline style — do not remove it as unnecessary.
-   */
   .prose pre,
   .prose pre code,
   .prose pre span,

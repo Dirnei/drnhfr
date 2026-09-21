@@ -8,20 +8,8 @@ function readDecodeText(): string {
   return readFileSync(join(process.cwd(), 'src/components/DecodeText.astro'), 'utf8');
 }
 
-// T3b — boot timing. Unit-tests the pure arithmetic extracted for I6 so a
-// boot.json edit that pushes the schedule past what it used to be silently
-// capped at (the old hard-coded 5000ms in DecodeText) shows up as a failing
-// test instead of a decode that finishes unseen underneath the intro.
-//
-// boot.json's per-line step is now a random range, not a constant, so these
-// assertions test relationships and arithmetic derived from the data's own
-// fields rather than hard-coded millisecond totals — a hard-coded total
-// would go stale on every legitimate retune of boot.json and turn a
-// deliberate change into a red build for no reason.
 describe('computeBootSchedule', () => {
   it('derives assembly/condense/finish from the WORST CASE per-line step', () => {
-    // min and max are deliberately different so this fails if the
-    // implementation ever uses the min or an average instead of the max.
     const schedule = computeBootSchedule(
       { lineStepMinMs: 20, lineStepMaxMs: 100, logoHoldMs: 500, fadeMs: 200 },
       5,
@@ -42,11 +30,6 @@ describe('computeBootSchedule', () => {
     expect(en.finishAt).toBe(expectedFinish(bootData.en.length));
   });
 
-  // Regression guard for I6: the old bug was a hard-coded `5000` fallback
-  // in DecodeText.astro that boot.json could silently outgrow. These
-  // assertions read the actual component source (unlike the arithmetic
-  // check above, which never looks at DecodeText.astro at all) so
-  // re-hardcoding a literal timeout there fails the suite again.
   it('DecodeText imports its fallback arithmetic from boot-timing.ts', () => {
     const src = readDecodeText();
     const importMatch = src.match(
@@ -64,17 +47,10 @@ describe('computeBootSchedule', () => {
     const call = src.match(/(?:window\.)?setTimeout\(\s*start\s*,\s*([^)]+)\)/);
     expect(call).not.toBeNull();
     const arg = call![1].trim();
-    // A bare numeric timeout (the old `5000`) would make this fail: the
-    // argument must be a computed identifier/expression, not a literal.
     expect(Number.isNaN(Number(arg))).toBe(true);
   });
 
   it('keeps the fallback ahead of the schedule even if boot.json is retuned slower', () => {
-    // The scenario I6 called out: retuning the per-line step slower pushes
-    // the schedule well past the old hard-coded 5000ms fallback, which
-    // would have fired underneath the still-running intro. Asserted as a
-    // relationship (fallback = finishAt + margin), not a specific total, so
-    // any retune of lineStepMaxMs keeps this passing.
     const retuned = { ...bootData.timing, lineStepMaxMs: bootData.timing.lineStepMaxMs * 3 };
     const schedule = computeBootSchedule(retuned, bootData.de.length);
     const fallback = schedule.finishAt + DECODE_FALLBACK_MARGIN_MS;

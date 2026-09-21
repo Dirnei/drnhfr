@@ -1,9 +1,3 @@
-// GDPR regression guard (T2). The Datenschutzerklärung's central claim is
-// "no cookies, no tracking, nothing loaded from anywhere else" — this walks
-// the built site and fails if any src=, stylesheet href=, CSS url(), or
-// fetch() call points at a host other than the site's own, so a future
-// dependency (an analytics snippet, a CDN font, a tracking pixel) cannot
-// silently make that claim false.
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, join, relative } from 'node:path';
 

@@ -11,10 +11,6 @@ export default {
       ctx.print('(nothing yet)');
       return;
     }
-    /*
-     * Right-aligned numbers so the commands line up however long the list
-     * gets, the same way the real one does.
-     */
     const width = String(entries.length).length;
     ctx.print(
       entries

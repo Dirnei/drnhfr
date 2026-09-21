@@ -1,12 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
 
-// Read colours from the same tokens the site itself uses instead of a
-// second, hand-copied palette — the previous hard-coded values were the
-// pre-palette-lift colours and had drifted from what the site actually
-// renders in. This keeps make-og.mjs's output consistent with base.css
-// without adding a build step: it only runs when someone regenerates the
-// cards via `npm run og`.
 const tokensPath = new URL('../src/styles/tokens.css', import.meta.url);
 const tokensCss = await readFile(tokensPath, 'utf8');
 

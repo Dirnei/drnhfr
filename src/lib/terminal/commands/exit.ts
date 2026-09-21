@@ -1,21 +1,10 @@
 import { copy } from '../copy';
 import type { Command } from '../types';
 
-/*
- * Drops the same sessionStorage flag that `su` sets, which demotes the prompt
- * back to guest. The cv page re-reads the flag on every load, so clearing it
- * here is the whole of it — there is no server-side session to end, and
- * nothing to navigate away from: the terminal only exists on the home page.
- *
- * Exiting when you are already guest is not a failure, so it reports rather
- * than errors and leaves the status segment alone.
- */
 export default {
   name: 'exit',
   usage: 'exit',
   summary: 'drop back to guest and re-lock the cv',
-  // Noise to a guest — there is nothing to exit from until su has run. Still
-  // dispatches if typed, and says 'already guest.'
   listed: (ctx) => ctx.isUnlocked(),
   order: 9,
   run(_arg, ctx) {

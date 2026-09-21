@@ -13,8 +13,6 @@ const lines = bootLines(lang);
 const timing = bootTiming;
 const schedule = computeBootSchedule(timing, lines.length);
 
-// Column width for the "[ TAG ]" markers is derived from the longest tag in
-// the data, so a future "WARN" or "ERROR" line still lines up.
 const taggedLines = lines.filter((line) => line.tag);
 const tagWidth =
   taggedLines.length > 0 ? Math.max(...taggedLines.map((line) => line.tag!.length)) + 2 : 0;
@@ -81,15 +79,6 @@ function padTag(tag: string): string {
   .ln {
     opacity: 0;
   }
-  /*
-   * Boot-log status markers follow terminal convention, not the site palette:
-   * green means success, cyan means informational, and red is reserved for
-   * failure. Red for [ OK ] would say the opposite of what it means. This is
-   * a quotation of a terminal's own colour language inside the intro, and is
-   * the one place on the site where an accent other than --red appears.
-   * The default below is deliberately red, so an unrecognised tag (a future
-   * FAIL or ERROR) is red without anyone having to remember to add a rule.
-   */
   .tag {
     color: var(--red-text);
   }
@@ -104,12 +93,6 @@ function padTag(tag: string): string {
     display: none;
     margin-left: 0.3em;
   }
-  /*
-   * Only the parked WAIT line gets the animated cue, and only once the
-   * script actually decides to park (see the inline script below) — a
-   * visible-tab pass-through never adds .parked, so the line just reads as
-   * a normal, brief log entry.
-   */
   .ln[data-hold].parked .wait-cue {
     display: inline-block;
   }
@@ -156,19 +139,10 @@ function padTag(tag: string): string {
 </style>
 
 <script is:inline>
-  // Synchronous (not type="module") and placed right after the markup
-  // above: it runs the instant the parser reaches this point, before the
-  // rest of the page (header, main, list rows) is even parsed. That
-  // matters because the row-stagger CSS is gated on `data-intro="running"`
-  // being present on <html> — setting it any later (e.g. from a deferred
-  // module script) would leave a window where later elements paint before
-  // the marker exists, letting their entrance animation start early.
   const KEY = 'intro-played';
   const root = document.getElementById('intro');
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Guarded the same way as the write below: sessionStorage.getItem can
-  // throw in private browsing, when storage is blocked, or over quota.
   let seen = false;
   try {
     seen = sessionStorage.getItem(KEY) === '1';
@@ -179,14 +153,6 @@ function padTag(tag: string): string {
   if (!root || reduced || seen) {
     root?.remove();
   } else {
-    // Timing constants come from the boot log data (src/data/boot.json) via
-    // data attributes set from src/lib/boot-timing.ts's computeBootSchedule()
-    // in the frontmatter above, so editing the data reshapes the sequence
-    // without this script needing its own copy of boot.json. The schedule
-    // itself (when each phase fires) is still computed here for the part of
-    // the sequence after the holdUntilVisible line, since that part's start
-    // time depends on when the visitor actually arrives — see
-    // resumeAfterHold() below.
     const lineStepMinMs = Number(root.dataset.lineStepMin);
     const lineStepMaxMs = Number(root.dataset.lineStepMax);
     const logoHoldMs = Number(root.dataset.logoHold);
@@ -199,9 +165,6 @@ function padTag(tag: string): string {
     const timers = [];
     const at = (ms, fn) => timers.push(window.setTimeout(fn, ms));
 
-    // Set while the sequence is parked on the holdUntilVisible line, so
-    // finish() (dismissal) can tear it down even if the visitor never
-    // switches back to this tab.
     let onHoldVisible = null;
 
     function onKeydown(event) {
@@ -221,11 +184,6 @@ function padTag(tag: string): string {
       root.style.opacity = '0';
       window.setTimeout(() => root.remove(), fadeMs);
       document.dispatchEvent(new CustomEvent('intro:finished', { bubbles: true }));
-      // Written here, at actual completion or dismissal — not at intro
-      // start — so a tab that parks on the holdUntilVisible line and is
-      // never switched to does not burn the "seen this session" flag.
-      // Guarded like the read above: setItem can throw in private
-      // browsing, when storage is blocked, or over quota.
       try {
         sessionStorage.setItem(KEY, '1');
       } catch {
@@ -233,13 +191,6 @@ function padTag(tag: string): string {
       }
     };
 
-    // Wire every exit route — the natural end-of-sequence timer (scheduled
-    // below, once the schedule is known) and all four dismissal listeners —
-    // before scheduling the rest of the visual choreography. Everything
-    // from here down is just line-reveal and logo-assembly styling; if any
-    // of it throws, the intro can still be dismissed and the `data-intro`
-    // marker can still be cleared, instead of getting stuck forever with no
-    // way to reach finish().
     const lines = Array.from(root.querySelectorAll('.ln'));
     const holdLine = root.querySelector('.ln[data-hold]');
     const holdIndex = holdLine ? lines.indexOf(holdLine) : -1;
@@ -250,25 +201,14 @@ function padTag(tag: string): string {
     window.addEventListener('touchmove', finish, { once: true, passive: true });
 
     function revealLine(line) {
-      // The fade-in itself stays a fixed, snappy length — it's the *gap*
-      // between reveals (rollStep(), below) that is irregular, not the
-      // reveal animation each line plays when its turn comes.
       line.style.transition = `opacity ${lineStepMinMs}ms`;
       line.style.opacity = '1';
     }
 
-    // Mirrors rollLineStepMs() in src/lib/boot-timing.ts. Duplicated here
-    // because this script is intentionally non-module (see the comment at
-    // the top of this file) and so cannot import it — keep both in sync if
-    // the formula ever changes.
     function rollStep() {
       return Math.round(lineStepMinMs + Math.random() * (lineStepMaxMs - lineStepMinMs));
     }
 
-    // Rolls `count` cumulative reveal times: the first is always 0 (a line
-    // reveals immediately once its turn starts), and each subsequent one
-    // adds a freshly rolled, independent step — the irregular rhythm that
-    // replaces the old constant `index * lineStepMs`.
     function rollCumulativeTimes(count) {
       const times = [];
       let elapsed = 0;
@@ -301,9 +241,6 @@ function padTag(tag: string): string {
       }
     }
 
-    // Rewrites the parked line's tag from WAIT to OK, reusing the same
-    // centered-padding rule the Astro frontmatter used to build it, so the
-    // "[ TAG ]" column stays aligned.
     function flipHoldTag() {
       const tagWidth = Number(root.dataset.tagWidth);
       const tag = holdLine.querySelector('.tag');
@@ -314,18 +251,8 @@ function padTag(tag: string): string {
       tag.textContent = `[${left}OK${right}]`;
     }
 
-    // Schedules everything after the holdUntilVisible line — remaining
-    // lines, logo assembly, condense, finish — relative to *now*, i.e. the
-    // moment the hold condition is satisfied (either immediately, if the
-    // tab was already visible when the sequence reached that line, or on
-    // the visibilitychange that ends a park). This is the same arithmetic
-    // computeBootSchedule() uses, just re-based on "now" instead of script
-    // start, treating the already-revealed hold line as that mini
-    // sequence's first line.
     function resumeAfterHold() {
       const remaining = lines.slice(holdIndex + 1);
-      // times[0] is the (already-revealed) hold line's own position, 0;
-      // times[1..] are when each remaining line reveals, relative to now.
       const times = rollCumulativeTimes(remaining.length + 1);
       remaining.forEach((line, index) => at(times[index + 1], () => revealLine(line)));
       const lineRevealMs = times[times.length - 1];
@@ -338,11 +265,6 @@ function padTag(tag: string): string {
     }
 
     if (holdIndex === -1) {
-      // Defensive fallback if boot.json ever ships without a
-      // holdUntilVisible line: behave exactly as before, using the
-      // schedule computed at build time from the full line count.
-      // Worst-case data attributes: safe even though the rolled reveal
-      // times below can only be equal to or shorter than this bound.
       const assemblyStart = Number(root.dataset.assemblyStart);
       const condenseStart = Number(root.dataset.condenseStart);
       const finishAt = Number(root.dataset.finishAt);
@@ -358,10 +280,6 @@ function padTag(tag: string): string {
       at(times[holdIndex], () => {
         revealLine(holdLine);
         if (document.hidden) {
-          // Park here instead of guessing: the rest of the sequence would
-          // run unseen, and background-tab timer throttling would mangle
-          // it anyway. The cue makes the pause read as "waiting", not
-          // "stuck".
           holdLine.classList.add('parked');
           onHoldVisible = () => {
             if (document.hidden) return;
@@ -373,8 +291,6 @@ function padTag(tag: string): string {
           };
           document.addEventListener('visibilitychange', onHoldVisible);
         } else {
-          // Already visible: pass straight through, no delay — the common
-          // case must not be slowed down by this line's existence.
           resumeAfterHold();
         }
       });

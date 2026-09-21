@@ -38,8 +38,6 @@ export async function GET(_context: APIContext) {
       kind: 'Page', type: 'page',
       description: 'Privacy policy of this website.',
     },
-    // The CV is deliberately left out of this index: it's only reachable
-    // via the terminal's "su" command, see Terminal.astro.
     ...projects.map((p) => ({
       title: p.data.title,
       href: `/en/projects/${slugOf(p.id)}/`,

@@ -13,10 +13,6 @@ interface Props {
 
 const { lang, current, altHref, altAvailable = true } = Astro.props;
 const t = useTranslations(lang);
-// 'cv' is deliberately not in this list: it is unlisted-but-not-gone, and
-// gets its own entry below which ships hidden and is revealed once the
-// visitor has run the terminal's "su" command. The server cannot know
-// whether that happened, so the locked state is what it renders.
 const items: RouteKey[] = ['projects', 'blog', 'contact'];
 ---
 <ul class="nav-list">
@@ -45,9 +41,6 @@ const items: RouteKey[] = ['projects', 'blog', 'contact'];
   <li><LangSwitch lang={lang} href={altHref} available={altAvailable} /></li>
 </ul>
 <script is:inline>
-  // Reveal the cv link if this session has unlocked it. Same sessionStorage
-  // key the terminal and the cv page use, and the same posture: no flag, or
-  // no JS at all, means the link stays unlisted.
   try {
     if (sessionStorage.getItem('cv-unlocked') === '1') {
       document.getElementById('nav-cv').hidden = false;
@@ -83,12 +76,6 @@ const items: RouteKey[] = ['projects', 'blog', 'contact'];
     color: var(--text);
     border-bottom-color: var(--red);
   }
-  /*
-   * Tightens the gap once the nav has wrapped onto its own row (see
-   * BaseLayout's .header-inner breakpoint) so the five items sit
-   * comfortably in the narrower single row instead of running right up
-   * to the edge of what fits.
-   */
   @media (max-width: 37.5rem) {
     .nav-list {
       gap: 0.6rem;

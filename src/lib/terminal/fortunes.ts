@@ -1,12 +1,3 @@
-/*
- * Lazy-loaded by the fortune command, so a visitor who never asks for one
- * never downloads them.
- *
- * These are observations, not quotations — nothing here is attributed to
- * anyone, because a fortune file that launders someone else's line as your
- * own is worse than having no fortune file. Edit freely; they are meant to
- * sound like the person whose site this is.
- */
 export const FORTUNES: readonly string[] = [
   'Every cache is a bet that the truth will not change. Most bets are settled quietly.',
   'The retry that fixed it in testing is the one that takes production down at scale.',

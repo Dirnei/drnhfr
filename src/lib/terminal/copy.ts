@@ -1,32 +1,6 @@
-/*
- * The terminal is English-only by design: its commands are English words, and
- * German help text wrapped around `ls` and `cd` reads as neither one language
- * nor the other. The `lang` prop still drives which search index is fetched
- * and where `cd` navigates, so a German page's terminal still moves around
- * the German site — only the chrome is English.
- *
- * That is why this is a plain module rather than anything locale-aware: it is
- * imported by the component for the parts rendered on the server (the chips,
- * the intro line, the resting prompt) and by the client shell for the rest.
- */
 export const copy = {
-  // Who you are before and after `su`. The locked identity is the one
-  // rendered on the server, so a visitor with no JS is guest.
   promptUser: 'guest@drnhfr',
   promptUserRoot: 'root@drnhfr',
-  /*
-   * The message of the day, in the shape every Linux login has printed at you
-   * for twenty years. Rendered by the server into the log, so it is there
-   * before any script runs and costs no layout shift.
-   *
-   * The last line is the one that has to survive edits: it is the only thing
-   * telling a visitor that typing is allowed at all.
-   *
-   * No email address here, and none anywhere else on the home page. It lives
-   * on the contact page and in the Impressum, where someone looking for it
-   * will go — not on the most heavily crawled page of the site, where it is
-   * only there to be harvested.
-   */
   motd: [
     'drnhfr-sh 1.0 (x86_64-unknown-linux-gnu)',
     '',

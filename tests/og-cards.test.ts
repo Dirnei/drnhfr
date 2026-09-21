@@ -3,15 +3,6 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
-// Regression guard: the OG cards were regenerated from a hard-coded palette
-// that drifted from tokens.css once (commit 2067ce0, --ink #131418) and
-// drifted again after make-og.mjs was fixed to read tokens.css but nobody
-// re-ran `npm run og` following the 0f6d68a palette lift (--ink -> #1b1d23).
-// This samples a corner of each committed PNG — a plain background region,
-// well clear of the logo mark (which starts at x=80,y=80) and the text
-// (which starts at x=80) — and fails if it doesn't match the current
-// --ink token, so a future palette change that forgets to regenerate the
-// cards is caught here instead of shipping silently.
 function readInkToken(): string {
   const tokensCss = readFileSync(join(process.cwd(), 'src/styles/tokens.css'), 'utf8');
   const match = tokensCss.match(/--ink:\s*(#[0-9a-fA-F]{3,8})/);

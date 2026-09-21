@@ -28,21 +28,6 @@ export function clearSessionFlags(): void {
   }
 }
 
-/**
- * The unlock code, computed client-side from wall-clock time. The formula
- * lives in plain sight on purpose — this is a toy, not access control.
- *
- * Write the clock as YYMMDDHH and mirror the whole thing:
- *   2026-09-21 10:xx  ->  26092110  ->  "01129062"
- *
- * One operation, rather than three-with-an-exception: the rule before this
- * mirrored the month, the day and the year but left the hour alone, which is
- * four things to notice and a reason for none of them.
- *
- * The hour is the finest unit, so one code holds for the whole hour, and `su`
- * also accepts the code from a minute ago, which covers typing it out across
- * an hour boundary.
- */
 export function codeFor(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, '0');
   const stamp =

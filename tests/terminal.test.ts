@@ -15,12 +15,6 @@ import { humanise, humaniseCoarse } from '../src/lib/terminal/duration';
 import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
-/*
- * None of this could be tested before: the whole terminal lived inside a
- * `<script define:vars>`, which is inline and therefore unimportable. These
- * are the parts that are pure logic and would fail silently in a browser.
- */
-
 describe('the unlock code', () => {
   // The rule, in one line: write the clock as YYMMDDHH and mirror it.
   it.each([
@@ -115,11 +109,6 @@ describe('the command registry', () => {
     expect(completionNames(ctx)).not.toContain('?');
   });
 
-  /*
-   * `exit` is noise to a guest — there is nothing to exit from until `su` has
-   * run — and `su` is noise once you already are root. Neither is removed,
-   * both still dispatch if typed; they just stop cluttering the list.
-   */
   it('lists exit only once unlocked, and su only while locked', () => {
     const guest = stubContext({ isUnlocked: () => false }).ctx;
     const root = stubContext({ isUnlocked: () => true }).ctx;
@@ -135,11 +124,6 @@ describe('the command registry', () => {
     expect(out[0]).toBe('already guest.');
   });
 
-  /*
-   * The point of the refactor: help used to be a hand-written array kept in
-   * step with a switch and a completion list by hand. If it ever drifts
-   * again, it will be because someone reintroduced a second source.
-   */
   it('renders help from the registry, one row per visible command', () => {
     const { ctx } = stubContext();
     const rendered = renderHelp(commands, ctx).split('\n');
@@ -151,11 +135,6 @@ describe('the command registry', () => {
     }
   });
 
-  /*
-   * sl is an easter egg: you find it by mistyping `ls`, which only works if
-   * nothing advertises it. If it ever shows up in help or completion, the
-   * joke is over.
-   */
   it('keeps sl out of help and out of Tab', () => {
     expect(findCommand('sl')?.name).toBe('sl');
     const { ctx } = stubContext();
@@ -174,11 +153,6 @@ describe('the command registry', () => {
   });
 });
 
-/*
- * A stub context. Commands never touch the DOM — they print, navigate and
- * flip state through this interface — so running one in a test is just
- * calling it with a fake. None of this was reachable before the refactor.
- */
 function stubContext(overrides: Partial<CommandContext> = {}) {
   const out: string[] = [];
   const art: string[] = [];
@@ -274,8 +248,6 @@ describe('cowsay', () => {
   it('keeps every bubble line the same width', () => {
     const { ctx, art } = stubContext({ columns: () => 30 });
     cowsay.run('one two three four five six seven eight', ctx);
-    // Body lines only: the _____ and ----- rules are inset by one on purpose,
-    // exactly as the original draws them.
     const body = art[0].split('\n').slice(1, -6);
     expect(body.length).toBeGreaterThan(1);
     expect(new Set(body.map((line) => line.length)).size).toBe(1);
@@ -298,13 +270,6 @@ describe('figlet', () => {
     expect(art[0]).toBe(renderBanner('drnhfr').join('\n'));
   });
 
-  /*
-   * The banner is a grid, and a grid only holds if every cell is the same
-   * width. U+2588 is outside the latin subset this site self-hosts, so the
-   * glyph that renders may be substituted from another font with its own
-   * advance — which shears the whole banner. The command has to notice and
-   * draw in ASCII instead.
-   */
   it('falls back to ASCII ink when the block glyph is not cell-perfect', async () => {
     const { ctx, art } = stubContext({
       charWidth: (sample: string) => (sample.includes(BLOCK_INK) ? 9.4 : 7.8),
@@ -377,10 +342,6 @@ describe('fortune', () => {
     expect(FORTUNES).toContain(out[0]);
   });
 
-  /*
-   * A fortune file that launders someone else's aphorism as your own is worse
-   * than no fortune file. These have to stay unattributed observations.
-   */
   it('attributes nothing to anyone', async () => {
     const { FORTUNES } = await import('../src/lib/terminal/fortunes');
     for (const line of FORTUNES) {
@@ -485,12 +446,6 @@ describe('curl', () => {
     });
   });
 
-  /*
-   * The whole reason this is an allowlist. Both of these parse as perfectly
-   * valid URLs, and a terminal that opens whatever it is handed is a terminal
-   * that runs someone else's script for anyone who can get a line pasted into
-   * it.
-   */
   it.each([
     ['javascript:alert(1)'],
     ['JavaScript:alert(1)'],
@@ -575,11 +530,6 @@ describe('uptime and the last commit', () => {
     expect(out[1]).toBe('last commit 2d 7h ago');
   });
 
-  /*
-   * git cannot always answer — a tarball, a shallow export, a machine with no
-   * git at all. Saying nothing is the right answer; inventing a date would
-   * make the site claim it was deployed at a moment it was not.
-   */
   it('says nothing when git could not answer', () => {
     const { ctx, out } = withCommit(null);
     findCommand('uptime')!.run('', ctx);

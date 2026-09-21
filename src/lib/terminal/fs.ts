@@ -7,12 +7,6 @@ export function nameFromHref(href: string): string {
   return parts[parts.length - 1] ?? '';
 }
 
-/*
- * `kind` in the search index is a localized label the site shows to the
- * visitor; `type` is the stable key. The terminal keys off `type`, so a German
- * index still prints English labels here and nothing breaks if the German
- * wording is ever reworded.
- */
 export const TYPE_LABEL: Record<string, string> = {
   page: 'Page',
   project: 'Project',
@@ -24,18 +18,12 @@ export function isPageType(type: string): boolean {
   return type === 'page';
 }
 
-/** Case-insensitive lookup of a bare name against a listing. */
 export function findIn(entries: SearchEntry[], argRaw: string): SearchEntry | undefined {
   const needle = argRaw.trim().replace(/^\/+/, '').replace(/\/+$/, '').toLowerCase();
   if (!needle) return undefined;
   return entries.find((entry) => nameFromHref(entry.href).toLowerCase() === needle);
 }
 
-/**
- * The `ls` table: pages first, then projects, then articles, alphabetical
- * within each group, with the kind column aligned to the longest name.
- * Pure, so tests can assert the exact text without a browser.
- */
 export function formatListing(entries: SearchEntry[]): string {
   const rows = entries
     .map((entry) => ({

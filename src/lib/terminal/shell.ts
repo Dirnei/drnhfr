@@ -5,19 +5,8 @@ import { commands, completionNames, findCommand } from './registry';
 import { clearSessionFlags, isUnlocked, setUnlocked } from './unlock';
 import type { CommandContext, SearchEntry, TerminalConfig } from './types';
 
-/*
- * TerminalShortcut sets this when "/" or Ctrl+K is pressed on another page,
- * right before sending the visitor here. Focus has to wait until the prompt is
- * actually enabled, which is why it hangs off the intro handover below rather
- * than running at script load.
- */
 const FOCUS_KEY = 'focus-terminal';
 
-/**
- * Wires the markup Terminal.astro rendered to the commands in ./commands/.
- * Everything the server knows arrives through the #terminal-config JSON blob;
- * everything a command can do arrives through the CommandContext built here.
- */
 export function boot(): void {
   const configEl = document.getElementById('terminal-config');
   const section = document.getElementById('terminal');
@@ -30,7 +19,6 @@ export function boot(): void {
   const config = JSON.parse(configEl.textContent ?? '{}') as TerminalConfig;
   const chipButtons = Array.from(chipsRow.querySelectorAll<HTMLButtonElement>('.chip'));
 
-  // ---------------------------------------------------------- filesystem
   let entries: SearchEntry[] = [];
   const entriesPromise = fetch(config.searchHref)
     .then((response) => response.json())
@@ -45,12 +33,6 @@ export function boot(): void {
       return entries;
     });
 
-  /*
-   * The cv is not in the search index — it is unlisted by design — so the
-   * terminal splices it in as a virtual entry, and only once `su` has run.
-   * Everything that walks the filesystem goes through visibleEntries(), so
-   * ls, cd, cat and tab completion agree about what exists.
-   */
   const cvEntry: SearchEntry = {
     href: config.cvHref,
     type: 'page',
@@ -58,7 +40,6 @@ export function boot(): void {
   };
   const visibleEntries = (): SearchEntry[] => (isUnlocked() ? [...entries, cvEntry] : entries);
 
-  // -------------------------------------------------------------- output
   const appendLine = (text: string, className: string) => {
     const el = document.createElement('p');
     el.className = `line ${className}`;
@@ -73,8 +54,6 @@ export function boot(): void {
     const promptSpan = document.createElement('span');
     promptSpan.className = 'prompt-mini';
     promptSpan.setAttribute('aria-hidden', 'true');
-    // Scrollback mirrors the prompt that ran the command, and that prompt is
-    // the bare $ under the powerline.
     promptSpan.textContent = '$';
     el.append(promptSpan, raw);
     log.append(el);
@@ -82,15 +61,8 @@ export function boot(): void {
   };
 
   let lastFailed = false;
-  /* A command that reboots is on its way out; do not hand the prompt back. */
   let halted = false;
 
-  /*
-   * A block the command owns and repaints, rather than a line per frame.
-   * Removed again on end(), so an animation leaves the scrollback as it found
-   * it — after `sl` the log shows the prompt and nothing else, which is the
-   * whole joke.
-   */
   const draw = () => {
     const el = document.createElement('p');
     el.className = 'line draw';
@@ -99,14 +71,6 @@ export function boot(): void {
     return {
       update(text: string) {
         el.textContent = text;
-        /*
-         * Follow the tail on every repaint, not just when the block is
-         * created. At creation it is still empty and 0px tall, so scrolling
-         * then puts nothing in view: the first frame grew it to ten rows and
-         * the log stayed exactly where it was. Invisible on a fresh terminal,
-         * where the log does not scroll at all, and a train hidden below the
-         * fold as soon as anything had been printed before it.
-         */
         log.scrollTop = log.scrollHeight;
       },
       end() {
@@ -115,11 +79,6 @@ export function boot(): void {
     };
   };
 
-  /*
-   * Measured, not assumed: the log is a fluid width and the monospace face is
-   * whatever survived font loading, so a hard-coded 80 would either wrap the
-   * art or leave it adrift. One probe, read once per call.
-   */
   const measureAdvance = (sample: string) => {
     const probe = document.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
@@ -138,17 +97,11 @@ export function boot(): void {
 
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // --------------------------------------------------------- status line
   const clockEl = document.getElementById('terminal-clock');
   const lockEl = document.getElementById('terminal-lock');
   const statusEl = document.getElementById('terminal-status');
   const hostEl = document.getElementById('terminal-host');
 
-  /*
-   * Stamped when a prompt is drawn, not ticked on a timer — which is what a
-   * real shell does: the prompt shows the time it was printed. No interval,
-   * nothing mutating the DOM while the page sits idle.
-   */
   const stampClock = () => {
     if (!clockEl) return;
     const now = new Date();
@@ -156,25 +109,15 @@ export function boot(): void {
     clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
   };
 
-  /* The strip reports real state: whether the last command failed, and who you
-     are this session. `su` promotes guest to root, `exit` demotes again, and
-     the prompt has to say so — that is the point of a prompt. */
   const refreshStatus = (failed: boolean) => {
     if (statusEl) statusEl.hidden = !failed;
     const unlocked = isUnlocked();
     if (lockEl) lockEl.hidden = !unlocked;
     if (hostEl) hostEl.textContent = unlocked ? copy.promptUserRoot : copy.promptUser;
-    // The header is rendered by SiteNav, which reveals this on page load.
-    // su and exit have to keep it honest without a reload.
     const navCv = document.getElementById('nav-cv');
     if (navCv) navCv.hidden = !unlocked;
   };
 
-  /*
-   * Both reload and restart print a line first and pause briefly so the
-   * message is actually readable before the page goes — except under reduced
-   * motion, where the pause is pointless theatre.
-   */
   const reboot = (full: boolean) => {
     halted = true;
     if (full) clearSessionFlags();
@@ -184,7 +127,6 @@ export function boot(): void {
     window.setTimeout(() => window.location.reload(), settle);
   };
 
-  // ------------------------------------------------------------- context
   const ctx: CommandContext = {
     config,
     origin: window.location.origin,
@@ -210,22 +152,6 @@ export function boot(): void {
     navigate: (href) => {
       window.location.href = href;
     },
-    /*
-     * An anchor click, not window.open.
-     *
-     * window.open(url, target, 'noopener') returns null BY SPECIFICATION —
-     * noopener severs the handle, so there is nothing to hand back — which
-     * meant null-checking its result reported "blocked" on every call in
-     * every browser, including the ones where the tab opened perfectly well.
-     *
-     * A synthetic click on an anchor with rel="noopener noreferrer" opens the
-     * tab and keeps both guarantees: the new page gets no handle on this one,
-     * and is not told where its visitor came from.
-     *
-     * Blocking is predicted rather than detected: a popup without transient
-     * activation is refused, and userActivation says so up front. Where that
-     * API is missing the check is skipped rather than guessed at.
-     */
     openTab: (href) => {
       if (navigator.userActivation && !navigator.userActivation.isActive) return false;
       const link = document.createElement('a');
@@ -240,7 +166,6 @@ export function boot(): void {
     reboot,
   };
 
-  // ---------------------------------------------------------------- repl
   const parse = (raw: string): [string, string] => {
     const trimmed = raw.trim();
     const spaceIndex = trimmed.indexOf(' ');
@@ -256,18 +181,11 @@ export function boot(): void {
     lastFailed = false;
     const command = findCommand(name);
     if (command) {
-      /*
-       * A command may take time and animate while it does — see sl. Block the
-       * prompt for the duration the way a real shell does, so keystrokes do
-       * not queue up behind it, and hand focus back afterwards because
-       * disabling an element drops it.
-       */
       const hadFocus = document.activeElement === input;
       input.disabled = true;
       try {
         await command.run(rest, ctx);
       } finally {
-        // Nothing is waiting on a keypress once the command is done.
         releaseInterrupt();
         if (!halted) {
           input.disabled = false;
@@ -275,8 +193,6 @@ export function boot(): void {
         }
       }
     } else {
-      // Still an error, so the status segment lights up — but a dead end with
-      // no way out is worse than a dead end that hands you the map.
       ctx.printError(`${name}: ${copy.cmdNotFoundSuffix}`);
       ctx.print(renderHelp(commands, ctx));
     }
@@ -284,11 +200,6 @@ export function boot(): void {
     refreshStatus(lastFailed);
   };
 
-  /*
-   * Anything that animates gets a way out. The prompt is disabled while a
-   * command runs, so the keypress lands on the document; this hands it to
-   * whoever is waiting and then rearms.
-   */
   let interruptWaiters: Array<() => void> = [];
   const releaseInterrupt = () => {
     const waiting = interruptWaiters;
@@ -299,7 +210,6 @@ export function boot(): void {
     if (interruptWaiters.length > 0) releaseInterrupt();
   });
 
-  // ------------------------------------------------------------- history
   const history: string[] = [];
   let historyCursor = 0;
   let draft = '';
@@ -343,8 +253,6 @@ export function boot(): void {
         }
         return;
       }
-      // Argument completion is opt-in per command rather than a hard-coded
-      // list of "cd" and "cat", so a new command gets it by declaring it.
       const name = value.slice(0, spaceIndex).toLowerCase();
       if (!findCommand(name)?.completesEntries) return;
       const partial = value.slice(spaceIndex + 1).toLowerCase();
@@ -361,7 +269,6 @@ export function boot(): void {
     }
   });
 
-  // --------------------------------------------------------------- focus
   chipButtons.forEach((button) => {
     button.addEventListener('click', () => {
       if (input.disabled) return;
@@ -370,8 +277,6 @@ export function boot(): void {
     });
   });
 
-  // Clicking anywhere in the terminal focuses the input, unless the click
-  // already landed on something interactive (a chip) that handles itself.
   section.addEventListener('click', (event) => {
     if (input.disabled) return;
     const target = event.target;
@@ -379,17 +284,11 @@ export function boot(): void {
     input.focus();
   });
 
-  // Deliberately no autofocus on load: that would pop the keyboard on mobile
-  // unprompted and steal a screen-reader user's position. Instead, typing
-  // anywhere with nothing else focused focuses the input and lets the
-  // keystroke land there.
   document.addEventListener('keydown', (event) => {
     if (input.disabled) return;
     if (document.activeElement !== document.body) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     if (event.key.length !== 1) return;
-    // '/' and ctrl/cmd+k belong to TerminalShortcut, which focuses this prompt
-    // from anywhere on the site. Leave them alone.
     if (event.key === '/') return;
     input.focus();
   });
@@ -416,9 +315,6 @@ export function boot(): void {
   stampClock();
   refreshStatus(false);
 
-  // The prompt only becomes available once the boot intro is done playing —
-  // see BootIntro.astro. If the intro isn't running at all (already seen this
-  // session, or prefers-reduced-motion), enable immediately.
   if (document.documentElement.dataset.intro === 'running') {
     let enabled = false;
     const enableOnce = () => {

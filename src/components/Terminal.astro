@@ -15,10 +15,6 @@ const { lang } = Astro.props;
 const cvHref = routePath('cv', lang);
 const otherHomeHref = `/${otherLocale(lang)}/`;
 const searchHref = `/${lang}/search.json`;
-// Computed here rather than in the shell so the fallback follows boot.json
-// instead of a hard-coded number: a safety timeout in case `intro:finished`
-// never fires (e.g. a tab parked on BootIntro's holdUntilVisible line and
-// never switched back to).
 const introFallbackMs =
   Math.max(
     computeBootSchedule(bootTiming, bootLines('de').length).finishAt,
@@ -28,14 +24,6 @@ const terminalLabel = 'Interactive terminal';
 const logLabel = lang === 'de' ? 'Terminal-Ausgabe' : 'Terminal output';
 const inputLabel = 'Terminal input';
 
-/*
- * Everything the client needs that the server alone knows. It travels as a
- * JSON blob below rather than through define:vars: define:vars forces a
- * script inline, an inline script cannot import, and that single constraint
- * is what used to hold the whole shell and all eleven commands in this file.
- *
- * The strings live in ../lib/terminal/copy.ts, shared with the client.
- */
 const config = {
   lang,
   cvHref,
@@ -44,8 +32,6 @@ const config = {
   introFallbackMs,
   lastCommit: lastCommitIso,
 };
-// A literal </script> inside the blob would end the tag early. Nothing here
-// contains one today, but escaping < costs nothing and removes the class.
 const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
 ---
 
@@ -60,12 +46,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     }
   </div>
   <div class="log" id="terminal-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={logLabel}>
-    {/*
-      One element, not one per line: the log is white-space: pre-wrap, so the
-      blank lines survive as blank lines. Rendered per line they collapsed,
-      because an empty <p> has no height, and a message of the day without
-      its spacing is just a paragraph.
-    */}
     <p class="line hint">{copy.motd.join(String.fromCharCode(10))}</p>
   </div>
   <form class="term-form" id="terminal-form">
@@ -128,30 +108,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     opacity: 0.4;
     cursor: not-allowed;
   }
-  /*
-   * Fill the window — but only when the window is tall enough to be worth it.
-   *
-   * body is already a flex column with min-height: 100dvh and main is
-   * flex: 1 0 auto, so main reaches the bottom of the viewport on its own —
-   * but its children are block boxes and size to their content, so the log
-   * stopped at 24rem however much room was going spare. These rules carry the
-   * chain the last two steps: main becomes a column, the terminal takes the
-   * space the hero does not, and the log takes the space the chips and the
-   * prompt row do not.
-   *
-   * The height query is the important part. Pinning body to 100dvh is what
-   * makes the log scroll instead of the page — but it also means anything
-   * that does not fit escapes past the bottom of a fixed-height body, and a
-   * short window put ninety pixels of terminal BELOW the footer. Under 45rem
-   * there is not enough height to fill anyway (the header, hero and footer
-   * alone claim most of it), so none of this applies and the page falls back
-   * to the ordinary document flow: log capped at 24rem, page scrolls, footer
-   * last, which is what it always did.
-   *
-   * Scoped with :has so only a page that actually contains a terminal is
-   * turned into a flex column. Where :has is missing the rules do not match
-   * and the same fallback applies, which is why the max-height below stays.
-   */
   @media (min-height: 45rem) {
     :global(body:has(.terminal)) {
       height: 100dvh;
@@ -159,19 +115,9 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     :global(main:has(.terminal)) {
       display: flex;
       flex-direction: column;
-      /* Its flex: 1 0 auto refuses to shrink, and min-height: auto on a flex
-         item refuses again. */
       flex: 1 1 auto;
       min-height: 0;
     }
-    /*
-     * Auto margins switch stretch off. .shell and .terminal both centre with
-     * margin: 0 auto, and in a column flex container that means they size to
-     * their content rather than filling the row — the terminal collapsed to
-     * 498px of a 1088px column, because the longest line in it happened to be
-     * short. width restores the fill; max-width still caps it and the auto
-     * margins still centre it.
-     */
     :global(main:has(.terminal)) > * {
       width: 100%;
     }
@@ -179,8 +125,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
       display: flex;
       flex-direction: column;
       flex: 1;
-      /* Without this a flex item refuses to shrink below its content, and a
-         long scrollback would push the prompt off the bottom of the page. */
       min-height: 0;
     }
     :global(main:has(.terminal)) .log {
@@ -199,55 +143,9 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     word-break: break-word;
     line-height: 1.6;
   }
-  /*
-   * :global is load-bearing here — do not "tidy" it away.
-   *
-   * Astro scopes component styles by stamping data-astro-cid-* onto the
-   * elements in THIS template at build time. Every line in the log except the
-   * first is created by document.createElement in the shell at runtime, so it
-   * never receives that attribute and a plain `.line` rule simply misses it.
-   *
-   * The consequence was silent and long-lived: error lines were not red,
-   * echoed commands were not muted, the $ was not teal, and every line used
-   * the browser's default 1em <p> margin instead of 0.4rem — which also left
-   * a 13px gap under the last line that made the log look like it had failed
-   * to scroll to the bottom.
-   *
-   * Scoped to descendants of .log, which is itself scoped, so this leaks
-   * nothing outside the terminal.
-   */
   .log :global(.line) {
     margin: 0 0 0.4rem;
   }
-  /*
-   * A drawing surface, not prose: the log wraps and breaks words, which turns
-   * ASCII art into confetti. pre keeps the columns, and the overflow is
-   * clipped rather than scrolled so a wide frame cannot make the whole page
-   * jiggle sideways mid-animation.
-   */
-  /*
-   * Art keeps its columns and scrolls sideways if it overflows. A banner is
-   * worth reaching for; the alternative is the log folding it in half and
-   * destroying it.
-   */
-  /*
-   * line-height 1 is not cosmetic here. The banner is drawn out of U+2588
-   * FULL BLOCK, which fills its em box exactly — at any line-height above 1
-   * the rows stop touching and every letter is sliced into five visible
-   * strips. Same reason letter-spacing has to stay at 0.
-   */
-  /*
-   * No overflow of its own. overflow-x: auto here made every banner its own
-   * scroll container — and because CSS refuses to pair a scrolling axis with
-   * a visible one, overflow-y quietly became auto too, so each block carried
-   * its own little scrollbar. The log already scrolls; wide art is its
-   * problem to solve, once, for the whole scrollback.
-   *
-   * line-height 1 is not cosmetic either. The banner is drawn out of U+2588
-   * FULL BLOCK, which fills its em box exactly — at any line-height above 1
-   * the rows stop touching and every letter is sliced into five visible
-   * strips. Same reason letter-spacing has to stay at 0.
-   */
   .log :global(.line.art) {
     white-space: pre;
     word-break: normal;
@@ -276,15 +174,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .log :global(.line.err) {
     color: var(--red-text);
   }
-  /*
-   * The prompt row IS the powerline: segments, the closing wedge, then the
-   * input running to the end of the row. Nothing is stated twice, and only
-   * the input flexes, so the segments never compete with it for width.
-   *
-   * Clock and error sit at the FRONT rather than the far right. A right-
-   * aligned clock needs a flex spacer, and a spacer and a flexing input then
-   * fight over the same free space.
-   */
   .term-form {
     display: flex;
     align-items: stretch;
@@ -294,25 +183,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     --prev: transparent;
   }
 
-  /*
-   * Segments abut and each one's wedge is drawn in the PREVIOUS segment's
-   * colour via --prev, which is what makes a powerline read as one continuous
-   * bar rather than detached tabs.
-   *
-   * The wedge is clip-path, not the usual Nerd Font wedge glyph: that
-   * character only exists in patched fonts and this site self-hosts plain
-   * JetBrains Mono, so it would render as tofu.
-   *
-   * Every background is color-mix()'d from existing tokens, so the whole strip
-   * follows a palette change rather than drifting from it. Each pairing was
-   * measured against WCAG AA: the error segment sits at a 12% red mix rather
-   * than the 22% that looked better, because anything stronger dropped red-on-
-   * red below 4.5:1.
-   *
-   * aria-hidden sits on each segment, not on the form: the form holds the
-   * input, which has to stay reachable. The segments restate what the page
-   * already says, so they are chrome, not content.
-   */
   .seg {
     position: relative;
     display: inline-flex;
@@ -327,19 +197,9 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     padding: 0.3rem 0.55rem 0.3rem 0.85rem;
     white-space: nowrap;
   }
-  /* .seg sets display, which beats the UA [hidden] rule wherever that rule
-     is not !important. Without this the conditional segments show. */
   .seg[hidden] {
     display: none;
   }
-  /*
-   * The wedge starts one pixel INSIDE the previous segment rather than at
-   * this one's edge. Segment boundaries land on fractional pixels, and at
-   * left: 0 this segment's own background antialiases into the boundary
-   * pixel before the wedge covers it — a hairline of the wrong colour at
-   * every arrow. The overlap is painted in the previous segment's own
-   * colour, so it is invisible there and covers the sliver here.
-   */
   .seg::before {
     content: '';
     position: absolute;
@@ -389,21 +249,8 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     --prev: color-mix(in srgb, var(--boot-info) 16%, var(--surface));
     --fg: var(--boot-ok);
   }
-  /*
-   * The closing wedge. It is a wedge in its own right rather than a segment's
-   * ::before, because what follows is the <input>, and a replaced element has
-   * no pseudo-elements to hang one on.
-   */
   .seg-cap {
     flex: none;
-    /*
-     * Same one-pixel overlap as .seg::before, and for the same reason: the
-     * left edge lands on a fractional pixel and the page ground survives in
-     * it as a hairline. A negative margin rather than a negative offset,
-     * because this one is a flex item and not a positioned pseudo-element.
-     * The overlapped pixel is painted in the previous segment's own colour,
-     * so it cannot be seen there.
-     */
     margin-left: -1px;
     width: calc(0.35rem + 1px);
     background: var(--prev);
@@ -413,11 +260,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .seg-lock:not([hidden]) ~ .seg-cap {
     --prev: color-mix(in srgb, var(--boot-ok) 16%, var(--surface));
   }
-  /*
-   * Phone widths: the tilde carries the least information and goes first,
-   * which buys the input about four characters. Dropping it re-points the
-   * language segment's wedge at the host colour now behind it.
-   */
   @media (max-width: 30rem) {
     .seg-path {
       display: none;

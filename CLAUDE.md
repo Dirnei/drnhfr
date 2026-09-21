@@ -9,6 +9,23 @@ spec before arguing with anything below.
 
 ---
 
+## Comments
+
+Write code that does not need them. A comment earns its place only when it
+explains the lines directly below it **and** the reader could not get there
+from the code itself — a non-obvious encoding, an empty catch, a value that
+looks wrong until you know why.
+
+Everything else goes. No rationale, no history, no design argument, no
+restating the signature above it in a sentence. If a decision needs explaining
+it belongs in the commit message, in `docs/superpowers/specs/`, or in this
+file — not in the source.
+
+This was applied retroactively: about 1,250 lines of commentary came out of
+`src/`, `tests/` and `scripts/` in one pass. Do not put it back.
+
+---
+
 ## Verify, don't assume
 
 There is a real browser available, and it has caught bugs in this project that

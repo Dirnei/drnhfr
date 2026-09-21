@@ -2,14 +2,6 @@
 @import './motion.css';
 @import './print.css';
 
-/*
- * Only the *-latin-*.woff2 files are preloaded in BaseLayout's <head>. The
- * *-latin-ext-*.woff2 files below still ship (for the unicode-range browsers
- * that need them), but every character the DE/EN site content actually uses
- * falls in the latin subset, so preloading latin-ext would just cost bytes
- * on the critical path for no visible benefit.
- */
-/* open-sans-latin-ext-wdth-normal */
 @font-face {
   font-family: 'Open Sans Variable';
   font-style: normal;
@@ -20,7 +12,6 @@
   unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 
-/* open-sans-latin-wdth-normal */
 @font-face {
   font-family: 'Open Sans Variable';
   font-style: normal;
@@ -31,7 +22,6 @@
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
-/* jetbrains-mono-latin-ext-wght-normal */
 @font-face {
   font-family: 'JetBrains Mono Variable';
   font-style: normal;
@@ -41,7 +31,6 @@
   unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 
-/* jetbrains-mono-latin-wght-normal */
 @font-face {
   font-family: 'JetBrains Mono Variable';
   font-style: normal;
@@ -62,12 +51,6 @@ html {
   color-scheme: dark;
 }
 
-/*
- * With a sticky header, anything scrolled to by an anchor (the skip link's
- * #main, or a future heading link) would land underneath it. scroll-padding
- * reserves the header's height so targets stop below it instead. The larger
- * value at narrow widths accounts for the header wrapping onto two rows.
- */
 html {
   scroll-padding-top: 5rem;
 }
@@ -113,14 +96,6 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-  /*
-   * --red-text, not --red: this is a global rule, so it has to hold up
-   * everywhere it could apply, including any future a/button drawn on a
-   * --surface background (e.g. inside the command palette or an inline
-   * <code> span) — and plain --red is only 2.96:1 there, under the 3:1
-   * non-text bar. --red-text clears 3:1 with headroom on both --ink
-   * (5.96:1) and --surface (5.36:1).
-   */
   outline: 2px solid var(--red-text);
   outline-offset: 2px;
 }

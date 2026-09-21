@@ -3,25 +3,8 @@ import { Image } from 'astro:assets';
 import type { Locale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { cvFor, formatMonth, formatRange } from '../data/cv';
-/*
- * Imported directly rather than named in cv.json: Astro has to see the path
- * statically to optimise and fingerprint it, and there is exactly one
- * portrait. It is the same file the contact page uses.
- */
 import portrait from '../assets/christian-dirnhofer.jpg';
 
-/*
- * The CV body, shared by /de/lebenslauf/ and /en/cv/. Both locales render
- * from the same component so a layout change cannot land on one and miss the
- * other — the only difference is which strings cv.json resolves to.
- *
- * On screen this is deliberately NOT a sheet of A4. A page has vertical room
- * that paper does not, so the career is drawn as one continuous timeline
- * whose segments are as tall as the time actually spent: five years at one
- * employer is five times the block of one year, and the shape of a career is
- * readable before a single word of it is. Paper cannot do that, so @media
- * print unwinds it back into a plain dated list.
- */
 interface Props {
   lang: Locale;
 }
@@ -30,11 +13,6 @@ const t = useTranslations(lang);
 const cv = cvFor(lang);
 const { profile } = cv;
 
-/*
- * Build-time snapshot: an open-ended role is measured to today, so the
- * current segment keeps growing between builds, which is the honest thing
- * for it to do.
- */
 function monthsBetween(start: string, end: string | null): number {
   const [startYear, startMonth] = start.split('-').map(Number);
   const now = new Date();
@@ -44,11 +22,6 @@ function monthsBetween(start: string, end: string | null): number {
   return Math.max(1, (endYear - startYear) * 12 + (endMonth - startMonth));
 }
 
-/*
- * Jobs and schooling share one axis, newest first — a career is one line, not
- * two lists. A job spans a period and gets a proportional segment; schooling
- * is a point in time and gets a node.
- */
 type Item =
   | {
       kind: 'job';
@@ -159,11 +132,6 @@ const stream: Item[] = [
             {group.skills.map((skill) => (
               <>
                 <dt>{skill.name}</dt>
-                {/*
-                  The bar is the value, so it carries the ARIA meter role and
-                  the number — a screen reader gets "78 percent", not an
-                  anonymous decorative box.
-                */}
                 <dd
                   role="meter"
                   aria-valuenow={skill.level}
@@ -260,19 +228,6 @@ const stream: Item[] = [
     align-items: stretch;
     column-gap: 1rem;
   }
-  /*
-   * The whole point: a segment is as tall as the time it represents, so the
-   * shape of the career is readable before a word of it is.
-   *
-   * 0.32rem a month, not more. An entry needs roughly 8rem for its own text,
-   * which is already the floor for anything under two years — and at a truly
-   * linear scale the longest role opened 27rem of empty rail, which reads as
-   * a rendering bug rather than as a long tenure. This keeps the one genuine
-   * outlier visibly double everything else and wastes nothing.
-   *
-   * min-height, never height: a short job with a long description still gets
-   * the room its text needs, it just stops being proportional there.
-   */
   .is-job {
     min-height: calc(var(--months) * 0.32rem);
   }
@@ -322,11 +277,6 @@ const stream: Item[] = [
     width: 9px;
     background: var(--text-dim);
   }
-  /*
-   * Red for the role held right now. On this site red means state and
-   * action, and "this is where he is today" is the only state on the page —
-   * which is also the first thing anyone reading a CV looks for.
-   */
   .is-current .run {
     background: var(--red);
   }
@@ -338,12 +288,6 @@ const stream: Item[] = [
     color: var(--text-dim);
     margin: 0 0 0.3rem;
   }
-  /*
-   * h1–h3 carry the site's poster treatment: 800 weight, 75% stretch,
-   * uppercase, line-height 0.92. That is right for a page title and wrong
-   * for thirty company names — "COS Informationstechnologie GmbH" set that
-   * way is a shout, and at 0.92 it collides with itself when it wraps.
-   */
   .entry h3 {
     font-weight: 600;
     font-stretch: 100%;
@@ -397,12 +341,6 @@ const stream: Item[] = [
     border-bottom: 1px solid var(--hairline-soft);
     padding-bottom: 0.35rem;
   }
-  /*
-   * A fixed label column, not auto: with auto every group sized its own
-   * labels and the bars started at a different x in each one, so eight
-   * groups produced eight ragged left edges for the thing the eye is
-   * actually comparing.
-   */
   .bars {
     display: grid;
     grid-template-columns: 8.5rem 1fr;
@@ -420,12 +358,6 @@ const stream: Item[] = [
     height: 4px;
     background: var(--hairline);
   }
-  /*
-   * Teal, not red. Red is reserved for state and action on this site and
-   * fifty-four red bars at rest spend that meaning for nothing — and read as
-   * an alarm rather than as data. --boot-info also nods to the teal of the
-   * CV this was built from. print.css gives it a darker value for paper.
-   */
   .bar {
     display: block;
     height: 100%;
@@ -449,12 +381,6 @@ const stream: Item[] = [
   }
 
   /* -------------------------------------------------------------- motion */
-  /*
-   * Entries arrive as they are scrolled to and the skill bars grow from
-   * nothing. Everything is styled as finished by default and only pulled
-   * back to a starting state once the script has set data-motion — so with
-   * JS off, the page is simply complete rather than permanently blank.
-   */
   :global([data-motion='cv']) .item[data-reveal],
   :global([data-motion='cv']) .group[data-reveal] {
     opacity: 0;
@@ -515,12 +441,6 @@ const stream: Item[] = [
   }
 
   /* --------------------------------------------------------------- print */
-  /*
-   * Paper gets none of this. A proportional timeline on A4 means a page and
-   * a half of empty rail for a five-year job, so print unwinds it back into
-   * the dated list the medium actually wants: no spine, no proportional
-   * height, no motion.
-   */
   @media print {
     .cv-head {
       padding-block: 0;
@@ -579,11 +499,6 @@ const stream: Item[] = [
     .expertise .section-head {
       margin-top: 0;
     }
-    /*
-     * A4 content width is about 42rem, and auto-fit with a 19rem minimum
-     * plus the gap misses two columns by a hair — so it collapsed to one and
-     * the section ran to two pages. The paper width is fixed; say two.
-     */
     .groups {
       grid-template-columns: repeat(2, 1fr);
       gap: 0.9rem 2rem;
@@ -609,13 +524,6 @@ const stream: Item[] = [
 </style>
 
 <script>
-  /*
-   * The marker is set here, not rendered by the server: everything above is
-   * styled as finished by default and only pulled back to its starting state
-   * once this script is known to be running. With JS off the CV is simply
-   * there — which, for the document someone is reading to decide whether to
-   * hire you, is the only acceptable failure mode.
-   */
   const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
   if (targets.length > 0) {
     document.documentElement.dataset.motion = 'cv';
@@ -636,15 +544,9 @@ const stream: Item[] = [
             observer.unobserve(entry.target);
           }
         },
-        // Fire a little before the element reaches the fold so it has
-        // finished arriving by the time it is actually looked at.
         { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
       );
       targets.forEach((el) => {
-        // Anything already at or above the fold is shown outright. The
-        // observer only reports elements that intersect, so on a restored
-        // scroll position everything scrolled past would otherwise stay
-        // invisible for as long as the visitor never scrolls back up.
         if (el.getBoundingClientRect().top < window.innerHeight) {
           show(el);
           return;

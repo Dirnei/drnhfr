@@ -1,10 +1,5 @@
 import type { Command } from '../types';
 
-/*
- * cowsay, after Tony Monroe's 1999 original. The cow is fixed; the bubble is
- * computed, because the whole trick is that the box grows to fit whatever you
- * said.
- */
 const COW = [
   '        \\   ^__^',
   '         \\  (oo)\\_______',
@@ -31,10 +26,6 @@ function wrap(text: string, width: number): string[] {
   return lines.length > 0 ? lines : [''];
 }
 
-/*
- * One line gets the < > bubble; several get the /, |, \ frame, exactly as the
- * original does — that shape is most of the joke's recognisability.
- */
 function bubble(text: string, width: number): string[] {
   const lines = wrap(text, width);
   const inner = Math.max(...lines.map((line) => line.length));

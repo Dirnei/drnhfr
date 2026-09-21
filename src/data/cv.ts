@@ -4,18 +4,6 @@ import source from './cv.json';
 
 const yearMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'expected YYYY-MM');
 
-/*
- * One file, and a field is either:
- *
- *   "organisation": "DiIT GmbH"                        — same in every language
- *   "note": { "de": "Abschluss Juli 2011", "en": "…" } — one per language
- *
- * Most of a CV is the first kind: dates, employers, "MongoDB", "Docker",
- * every skill level. Those used to live in cv.de.json AND cv.en.json, which
- * meant all 54 levels existed twice and would drift the first time one was
- * tuned. Now the shared facts are written once and only real prose is
- * doubled — and a missing translation is a build error, not a blank.
- */
 const localized = z.union([
   z.string().min(1),
   z.object({ de: z.string().min(1), en: z.string().min(1) }),
@@ -31,16 +19,6 @@ const cvSchema = z.object({
     name: z.string().min(1),
     title: localized,
     email: z.email(),
-    /*
-     * phone and birthDate are opt-in and empty by default, and the page skips
-     * whatever is empty.
-     *
-     * The reason is not styling: the `su` gate hides the CV with a `hidden`
-     * attribute in the browser, so the full markup is in the HTML that every
-     * visitor and crawler downloads. Anything in these fields is on the open
-     * web, gate or no gate — and the PDF is printed from that same page, so
-     * there is no "PDF only" place to put them either.
-     */
     phone: z.string(),
     birthDate: z.union([z.literal(''), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]),
     location: localized,
@@ -82,7 +60,6 @@ const cvSchema = z.object({
     .min(1),
 });
 
-/* What a page actually renders: every string already resolved to one locale. */
 export interface CV {
   profile: {
     name: string;
@@ -106,12 +83,6 @@ export interface CV {
   expertise: { group: string; skills: { name: string; level: number }[] }[];
 }
 
-/*
- * Parsed once at build time. A malformed date, a level of 120, or a German
- * string with no English counterpart is a build failure with a path to the
- * offending key, rather than a page that renders "undefined" to whoever
- * unlocked it.
- */
 const parsed = cvSchema.parse(source);
 
 const pick = (value: Localized, locale: Locale): string =>
@@ -162,8 +133,6 @@ export function cvFor(locale: Locale): CV {
   return resolved[locale];
 }
 
-/* Dates are stored as facts (YYYY-MM) and formatted per locale here, so the
-   same month is never written twice in two notations. */
 export function formatMonth(value: string, locale: Locale): string {
   const [year, month] = value.split('-');
   return locale === 'de' ? `${month}.${year}` : `${month}/${year}`;

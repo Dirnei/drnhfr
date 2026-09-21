@@ -4,22 +4,6 @@
   }
 }
 
-/*
- * CRT scanline veil, scoped to the content area only. The header and footer
- * are deliberately left clean: the site's chrome should read as crisp UI
- * while the content reads as something displayed on a screen. It is anchored
- * to <main> rather than the viewport, so it covers exactly the content box —
- * <main> is a full-height flex child, so this still reaches the fold on short
- * pages.
- *
- * Static (no animation), so it is intentionally left outside the
- * prefers-reduced-motion rule above: that setting targets animated or
- * parallax motion which can trigger vestibular discomfort, and this overlay
- * never moves, so hiding it would not serve that need.
- *
- * `pointer-events: none` is mandatory — it lies over the content and must
- * never steal a click. Excluded from print so the CV comes out clean.
- */
 main {
   position: relative;
 }
@@ -30,12 +14,6 @@ main::after {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  /*
-   * The darkening bands use color-mix() against --ink rather than a literal
-   * rgb(0 0 0 / …) value, so this stays a token-derived texture instead of
-   * a hard-coded hex/rgb colour, per the "colours from custom properties
-   * only" rule. --ink at ~10% opacity reads the same as a soft black line.
-   */
   background: repeating-linear-gradient(
     180deg,
     transparent 0 2px,

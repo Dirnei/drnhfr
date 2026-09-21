@@ -11,16 +11,6 @@ const { text, delay = 0 } = Astro.props;
   import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
   import { bootTiming, bootLines } from '../data/boot';
 
-  /*
-   * Substitutes are drawn from the character's OWN class rather than one flat
-   * alphabet. The pool used to be uppercase-only, so a lowercase heading was
-   * scrambled into something systematically wider in a proportional face —
-   * wide enough to wrap onto a second line, which shoved every block below it
-   * (the terminal) down by a line height on every frame until the text
-   * settled. Matching the class keeps each placeholder near the width of the
-   * character it stands in for; spaces, punctuation and accented letters are
-   * left alone, which costs nothing and pins the widest offenders.
-   */
   const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const LOWER = 'abcdefghijklmnopqrstuvwxyz';
   const DIGITS = '0123456789';
@@ -37,26 +27,6 @@ const { text, delay = 0 } = Astro.props;
     const run = () => {
       const elements = [...document.querySelectorAll<HTMLElement>('.decode')];
 
-      /*
-       * Freeze the height of each BLOCK that contains decoding text, for as
-       * long as any text inside it is still settling.
-       *
-       * Substitutes never match the real glyph widths in a proportional face,
-       * so the line count changes mid-animation: the German heading wraps to
-       * two lines but scrambles narrow enough to briefly un-wrap to one, and
-       * everything below it — on the home page, the terminal — jumps a full
-       * line height and back.
-       *
-       * The block is the right thing to pin, not the span. Pinning the span
-       * means making it inline-block, and then its height and overflow both
-       * feed back into the parent's line box through the baseline, which
-       * moves the very content we are trying to hold still. A block box has
-       * no such coupling: fix its height and nothing below it can move.
-       *
-       * Measured here rather than at build time because it depends on the
-       * viewport and on the webfont, which has loaded by the time the intro
-       * hands over.
-       */
       const holders = new Map<HTMLElement, number>();
       for (const element of elements) {
         const holder = element.closest<HTMLElement>('h1, h2, h3, p, li') ?? element.parentElement;
@@ -71,8 +41,6 @@ const { text, delay = 0 } = Astro.props;
         if (!holder) return;
         const left = (holders.get(holder) ?? 1) - 1;
         holders.set(holder, left);
-        // Two decodes can share one heading, and the later one is still
-        // running when the first finishes.
         if (left > 0) return;
         holder.style.height = '';
         holder.style.overflow = '';
@@ -102,14 +70,6 @@ const { text, delay = 0 } = Astro.props;
       }
     };
 
-    // A full-screen boot intro may still be covering the page. Starting the
-    // decode now would let it finish unseen underneath the overlay, so wait
-    // for the intro to announce completion — with a safety timeout in case
-    // the event never arrives. This component doesn't know which locale's
-    // intro is running, so the fallback is computed for both and the worse
-    // (longer) of the two is used, plus a margin — derived from the same
-    // boot-timing.ts arithmetic that drives BootIntro itself, rather than a
-    // hard-coded number that a boot.json retune could silently outgrow.
     if (document.documentElement.dataset.intro === 'running') {
       const fallbackMs =
         Math.max(
@@ -127,12 +87,6 @@ const { text, delay = 0 } = Astro.props;
       };
       document.addEventListener('intro:finished', start, { once: true });
 
-      // The fallback countdown is armed on first visibility, not here at
-      // script load: a tab parked in the background (see BootIntro's
-      // holdUntilVisible line) can sit hidden far longer than fallbackMs.
-      // Arming immediately would trip the fallback unseen, decode the
-      // headings under the still-hidden overlay, and then have the intro
-      // play over an already-finished page once the visitor arrives.
       const armFallback = () => {
         timeoutId = window.setTimeout(start, fallbackMs);
       };

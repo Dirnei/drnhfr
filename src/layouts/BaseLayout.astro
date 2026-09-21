@@ -31,15 +31,8 @@ const {
 const other = lang === 'de' ? 'en' : 'de';
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const t = useTranslations(lang);
-// The footer's one piece of non-link content: how to get back to the
-// terminal. Ctrl on everything that is not a Mac, which is the only place
-// the distinction is worth a line of code.
 const shortcutKey = lang === 'de' ? 'Strg K' : 'Ctrl K';
 const shortcutHint = lang === 'de' ? 'zum terminal' : 'for terminal';
-// x-default must name the German member of this page's own hreflang
-// cluster: on a German page that is the page itself, on an English page
-// with a counterpart that is the counterpart, and on an English page with
-// no counterpart there is no German member to point to at all.
 const xDefaultHref =
   lang === 'de' ? canonical : altAvailable ? new URL(altHref, Astro.site) : null;
 ---
@@ -114,14 +107,6 @@ const xDefaultHref =
   </body>
 </html>
 <style>
-  /*
-   * Sticky header. Two things it needs beyond position/top, both of which
-   * look broken if omitted: an opaque background, because the page scrolls
-   * underneath it and the body ground would otherwise show through; and a
-   * z-index above page content. The boot intro (100) and the command
-   * palette (a native <dialog>, top layer) still sit above it, and the
-   * skip link (50) still clears it when focused.
-   */
   .site-header {
     position: sticky;
     top: 0;
@@ -138,13 +123,6 @@ const xDefaultHref =
   .nav {
     margin-left: auto;
   }
-  /*
-   * At phone widths the logo plus the full five-item nav (four links +
-   * lang switch) cannot share one row without shrinking type past
-   * legibility. Wrapping the nav onto its own row under the logo keeps
-   * every item at full size and reachable, with no JS and no change
-   * above this breakpoint.
-   */
   @media (max-width: 37.5rem) {
     .header-inner {
       flex-wrap: wrap;
@@ -162,11 +140,6 @@ const xDefaultHref =
     margin-top: 4rem;
     padding-block: 1.25rem;
   }
-  /*
-   * One row: the legal links on the left, the shortcut hint pushed right.
-   * It wraps to two rows on a phone rather than shrinking the type, which
-   * is the same trade the header makes at the same breakpoint.
-   */
   .footer-inner {
     display: flex;
     align-items: center;

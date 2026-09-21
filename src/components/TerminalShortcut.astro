@@ -1,12 +1,6 @@
 ---
 import type { Locale } from '../i18n/locales';
 
-/*
- * The site-wide "/" and Ctrl/Cmd+K shortcut. It used to open a command
- * palette; the terminal on the home page does the same job with `ls`, `cd`
- * and `cat` against the same search index, so the shortcut now just takes
- * you there instead of maintaining a second command surface.
- */
 interface Props {
   lang: Locale;
 }
@@ -14,18 +8,9 @@ const { lang } = Astro.props;
 const homeHref = `/${lang}/`;
 ---
 <script define:vars={{ homeHref }}>
-  // Read by Terminal.astro once its prompt is live. sessionStorage rather
-  // than a URL hash: the intent is "focus the prompt", which is not
-  // something worth leaving in the address bar or in a shared link.
   const FOCUS_KEY = 'focus-terminal';
 
   document.addEventListener('keydown', (event) => {
-    /*
-     * Never while the boot overlay is playing. The prompt is disabled until
-     * the intro hands over, and the page underneath is not meant to be
-     * reachable yet — the same guard the command palette carried, and the
-     * reason tests/motion-contract.test.ts watches this file.
-     */
     if (document.documentElement.dataset.intro === 'running') return;
 
     const bare = !event.metaKey && !event.ctrlKey && !event.altKey;
@@ -33,9 +18,6 @@ const homeHref = `/${lang}/`;
     const isK = (event.key === 'k' || event.key === 'K') && (event.metaKey || event.ctrlKey);
     if (!isSlash && !isK) return;
 
-    // Never steal the key from something the visitor is typing into. That
-    // includes the terminal's own prompt, where "/" is a real character in
-    // every path they might type.
     const target = event.target;
     if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]')) {
       return;

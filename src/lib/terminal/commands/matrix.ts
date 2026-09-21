@@ -1,17 +1,9 @@
 import type { Command } from '../types';
 
-/*
- * ASCII only, and on purpose. The obvious choice is katakana, but this site
- * self-hosts a latin subset of its monospace face — anything outside it gets
- * substituted from another font with its own advance width, and a grid drawn
- * from mixed advances shears. The same reason figlet measures its ink before
- * using it.
- */
 const CHARS = '01<>{}[]/\\|=+-*#$%&abcdefghijklmnopqrstuvwxyz';
 const ROWS = 14;
 const TAIL = 7;
 const FRAME_MS = 70;
-/* A hard stop, in case a tab is left running in a background window. */
 const MAX_MS = 30000;
 
 const pick = () => CHARS[Math.floor(Math.random() * CHARS.length)];
@@ -27,7 +19,6 @@ export default {
     const drawing = ctx.draw();
 
     if (ctx.reducedMotion()) {
-      // One still frame: the joke survives, the falling does not.
       const still = Array.from({ length: 6 }, () =>
         Array.from({ length: columns }, () => (Math.random() < 0.25 ? pick() : ' ')).join(''),
       );
@@ -35,8 +26,6 @@ export default {
       return;
     }
 
-    /* Persistent grid: only the head and the end of each tail change per
-       frame, so the rain falls instead of reshuffling itself every tick. */
     const grid: string[][] = Array.from({ length: ROWS }, () => new Array(columns).fill(' '));
     const drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * ROWS * 2));
 
