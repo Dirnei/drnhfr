@@ -2,7 +2,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import { extname, join, relative } from 'node:path';
 
 const DIST = 'dist';
-const ALLOWED_HOST = 'dirnhofer.net';
+const CANONICAL_HOST = 'www.dirnhofer.net';
+const ALLOWED_HOSTS = new Set([CANONICAL_HOST, 'dirnhofer.net']);
 const SCANNABLE_EXTENSIONS = new Set(['.html', '.css', '.js', '.xml']);
 
 const PATTERNS = [
@@ -27,7 +28,7 @@ async function walk(dir) {
 function isExternal(url) {
   if (!/^(?:[a-z]+:)?\/\//i.test(url)) return false;
   try {
-    return new URL(url, `https://${ALLOWED_HOST}/`).hostname !== ALLOWED_HOST;
+    return !ALLOWED_HOSTS.has(new URL(url, `https://${CANONICAL_HOST}/`).hostname);
   } catch {
     return false;
   }

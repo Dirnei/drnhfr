@@ -183,7 +183,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     reducedMotion: () => true,
     navigate: () => {},
     openTab: () => true,
-    origin: 'https://dirnhofer.net',
+    origin: 'https://www.dirnhofer.net',
     reboot: () => {},
     ...overrides,
   } as CommandContext;
@@ -422,7 +422,7 @@ describe('whoami', () => {
 });
 
 describe('curl', () => {
-  const ORIGIN = 'https://dirnhofer.net';
+  const ORIGIN = 'https://www.dirnhofer.net';
 
   it('treats a bare host as a host', () => {
     expect(resolveTarget('example.com', ORIGIN)).toEqual({
@@ -434,7 +434,7 @@ describe('curl', () => {
   it('treats a leading slash as a path on this site', () => {
     expect(resolveTarget('/de/projekte/', ORIGIN)).toEqual({
       ok: true,
-      href: 'https://dirnhofer.net/de/projekte/',
+      href: 'https://www.dirnhofer.net/de/projekte/',
     });
   });
 

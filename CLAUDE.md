@@ -229,10 +229,14 @@ somewhere, don't.
 
 ## Working agreements
 
-- Work directly on `main`. Do not push; there is no remote yet, and pushing
-  before DNS resolves produces a completely broken deploy (`site` is
-  `https://dirnhofer.net` with no `base`, so every root-absolute path 404s on
-  `dirnei.github.io`).
+- Work directly on `main`. `origin` is `Dirnei/drnhfr`; a push to `main` runs
+  `.github/workflows/deploy.yml` and publishes to GitHub Pages.
+- **The canonical host is `www.dirnhofer.net`.** It is set in three places that
+  must agree: `site` in `astro.config.mjs`, `public/CNAME`, and the `Sitemap:`
+  line in `public/robots.txt`. `scripts/check-gdpr.mjs` accepts both that host
+  and the bare apex, which GitHub redirects. A deploy before DNS points at
+  GitHub lands on `dirnei.github.io/drnhfr/`, where every root-absolute path
+  404s because `site` carries no `base`.
 - Commit messages follow the global `~/.claude/CLAUDE.md` rules: Conventional
   Commits, English, **subject line only**, 74 characters max, no body, no
   trailers, no attribution.

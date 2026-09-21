@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dirnhofer.net/sitemap-index.xml
+Sitemap: https://www.dirnhofer.net/sitemap-index.xml
