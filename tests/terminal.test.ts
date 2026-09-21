@@ -119,6 +119,18 @@ describe('the command registry', () => {
     }
   });
 
+  /*
+   * sl is an easter egg: you find it by mistyping `ls`, which only works if
+   * nothing advertises it. If it ever shows up in help or completion, the
+   * joke is over.
+   */
+  it('keeps sl out of help and out of Tab', () => {
+    expect(findCommand('sl')?.name).toBe('sl');
+    expect(completionNames()).not.toContain('sl');
+    const rows = renderHelp(commands).split('\n');
+    expect(rows.some((row) => row.startsWith('sl'))).toBe(false);
+  });
+
   it('aligns every summary in the same column', () => {
     const rows = renderHelp(commands).split('\n').slice(1);
     const starts = commands

@@ -127,6 +127,18 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .line {
     margin: 0 0 0.4rem;
   }
+  /*
+   * A drawing surface, not prose: the log wraps and breaks words, which turns
+   * ASCII art into confetti. pre keeps the columns, and the overflow is
+   * clipped rather than scrolled so a wide frame cannot make the whole page
+   * jiggle sideways mid-animation.
+   */
+  .line.draw {
+    white-space: pre;
+    word-break: normal;
+    overflow: hidden;
+    line-height: 1.15;
+  }
   .line:last-child {
     margin-bottom: 0;
   }

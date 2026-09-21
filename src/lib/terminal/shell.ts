@@ -82,6 +82,47 @@ export function boot(): void {
   };
 
   let lastFailed = false;
+  /* A command that reboots is on its way out; do not hand the prompt back. */
+  let halted = false;
+
+  /*
+   * A block the command owns and repaints, rather than a line per frame.
+   * Removed again on end(), so an animation leaves the scrollback as it found
+   * it — after `sl` the log shows the prompt and nothing else, which is the
+   * whole joke.
+   */
+  const draw = () => {
+    const el = document.createElement('p');
+    el.className = 'line draw';
+    log.append(el);
+    log.scrollTop = log.scrollHeight;
+    return {
+      update(text: string) {
+        el.textContent = text;
+      },
+      end() {
+        el.remove();
+      },
+    };
+  };
+
+  /*
+   * Measured, not assumed: the log is a fluid width and the monospace face is
+   * whatever survived font loading, so a hard-coded 80 would either wrap the
+   * art or leave it adrift. One probe, read once per call.
+   */
+  const columns = () => {
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
+    probe.textContent = '0'.repeat(100);
+    log.append(probe);
+    const charWidth = probe.getBoundingClientRect().width / 100;
+    probe.remove();
+    if (!charWidth) return 80;
+    return Math.max(20, Math.floor(log.clientWidth / charWidth));
+  };
+
+  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // --------------------------------------------------------- status line
   const clockEl = document.getElementById('terminal-clock');
@@ -121,10 +162,11 @@ export function boot(): void {
    * motion, where the pause is pointless theatre.
    */
   const reboot = (full: boolean) => {
+    halted = true;
     if (full) clearSessionFlags();
     appendLine(full ? copy.restarting : copy.reloading, 'out');
     input.disabled = true;
-    const settle = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450;
+    const settle = reducedMotion() ? 0 : 450;
     window.setTimeout(() => window.location.reload(), settle);
   };
 
@@ -142,6 +184,9 @@ export function boot(): void {
     commands: () => commands,
     isUnlocked,
     setUnlocked,
+    draw,
+    columns,
+    reducedMotion,
     navigate: (href) => {
       window.location.href = href;
     },
@@ -164,7 +209,22 @@ export function boot(): void {
     lastFailed = false;
     const command = findCommand(name);
     if (command) {
-      await command.run(rest, ctx);
+      /*
+       * A command may take time and animate while it does — see sl. Block the
+       * prompt for the duration the way a real shell does, so keystrokes do
+       * not queue up behind it, and hand focus back afterwards because
+       * disabling an element drops it.
+       */
+      const hadFocus = document.activeElement === input;
+      input.disabled = true;
+      try {
+        await command.run(rest, ctx);
+      } finally {
+        if (!halted) {
+          input.disabled = false;
+          if (hadFocus) input.focus();
+        }
+      }
     } else {
       // Still an error, so the status segment lights up — but a dead end with
       // no way out is worse than a dead end that hands you the map.

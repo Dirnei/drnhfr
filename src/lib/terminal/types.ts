@@ -24,6 +24,16 @@ export interface Command {
   run(arg: string, ctx: CommandContext): void | Promise<void>;
 }
 
+/**
+ * A block of the log a command owns and can repaint, for anything that is not
+ * a line of text you print once: an animation, a progress bar, a game. Held
+ * open until end(), which removes it again.
+ */
+export interface Drawing {
+  update(text: string): void;
+  end(): void;
+}
+
 /** One row of /{lang}/search.json, plus the CV which is spliced in locally. */
 export interface SearchEntry {
   href: string;
@@ -62,6 +72,12 @@ export interface CommandContext {
   commands(): Command[];
   isUnlocked(): boolean;
   setUnlocked(value: boolean): void;
+  /** A repaintable block of the log. See Drawing. */
+  draw(): Drawing;
+  /** How many characters fit across the log right now, measured not guessed. */
+  columns(): number;
+  /** True when the visitor asked for less motion — animate nothing. */
+  reducedMotion(): boolean;
   navigate(href: string): void;
   /** full = also clear the session flags, so the boot sequence replays. */
   reboot(full: boolean): void;
