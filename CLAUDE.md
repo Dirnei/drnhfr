@@ -28,7 +28,11 @@ This was applied retroactively: about 1,250 lines of commentary came out of
 
 ## Copy
 
-**No em dashes.** Say what a thing is, and if it adds something, why it was
+**No em dashes** and **no rule-of-three lists** ("Kein Framework, kein
+Container, keine Konventionen"). The tricolon is a persuasion rhythm, and what
+it lists is usually already in the sentence before it.
+
+Say what a thing is, and if it adds something, why it was
 built. No marketing, no benefit lists, no closing flourish. The owner's own
 line is the model: "Eine YAML-Spezifikation um CLI oder RCON Commands zu
 beschreiben."

@@ -19,6 +19,5 @@ system is by Patrick Pötz, under MIT and CC BY-SA. The website and the
 configurator are mine.
 
 In the configurator you click a rack together, see it straight away and get
-the bill of materials with it: how many supports, how many connectors, how
-many pins. The layout sits in the address bar, so a configuration can be
-passed on as a link.
+the bill of materials for it. The layout sits in the address bar, so a
+configuration can be passed on as a link.

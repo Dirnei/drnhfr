@@ -11,8 +11,8 @@ links:
   docs: 'https://edict.leberkas.org/'
 ---
 
-Edict beschreibt Kommandos in einer YAML-Datei: wie sie heißen, welche
-Parameter sie nehmen, was sie zurückgeben. Aus dieser einen Beschreibung
+Edict beschreibt Kommandos in einer YAML-Datei: Name, Parameter und
+Rückgabewert. Aus dieser einen Beschreibung
 bedienen sich die Kommandozeile und die RCON-Konsole, über die Spieleserver
 ferngesteuert werden.
 

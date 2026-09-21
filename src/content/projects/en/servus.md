@@ -19,6 +19,5 @@ collections, type utilities, text and dates.
 I started it because I kept copying the same twenty lines from one project
 into the next. Whatever was needed twice goes in, the rest stays out.
 
-No framework, no container, no conventions. A NuGet package under the MIT
-licence that can be used without arranging the rest of the application
-around it.
+Servus is a NuGet package under the MIT licence. It imposes no structure that
+the rest of the application has to be arranged around.

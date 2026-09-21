@@ -16,7 +16,6 @@ eine Farbe liegt. Das Genre gibt es hundertfach in den App-Stores, dort meist
 mit Werbung zwischen den Zügen.
 
 Gaudi Ballz läuft im Browser, lässt sich als App auf den Homescreen legen und
-funktioniert danach auch ohne Netz. Kein Konto, keine Werbung, kein
-Preisschild.
+funktioniert danach auch ohne Netz. Es kostet nichts und zeigt keine Werbung.
 
 Gebaut habe ich es aus Spaß.

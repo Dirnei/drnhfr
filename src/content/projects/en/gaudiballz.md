@@ -16,6 +16,7 @@ The genre exists a hundred times over in the app stores, there usually with
 advertising between the moves.
 
 Gaudi Ballz runs in the browser, installs onto the home screen as an app and
-works without a connection afterwards. No account, no ads, no price tag.
+works without a connection afterwards. It costs nothing and shows no
+advertising.
 
 I built it for fun.

@@ -20,6 +20,5 @@ Pötz und steht unter MIT beziehungsweise CC BY-SA. Von mir sind die Website
 und der Konfigurator.
 
 Im Konfigurator klickt man ein Rack zusammen, sieht es sofort und bekommt die
-Stückliste dazu: wie viele Stützen, wie viele Verbinder, wie viele Stifte.
-Der Aufbau steht in der Adresszeile, eine Konfiguration lässt sich also als
-Link weitergeben.
+Stückliste mit allen Teilen dazu. Der Aufbau steht in der Adresszeile, eine
+Konfiguration lässt sich also als Link weitergeben.

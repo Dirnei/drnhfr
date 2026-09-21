@@ -11,10 +11,9 @@ links:
   docs: 'https://edict.leberkas.org/'
 ---
 
-Edict describes commands in a YAML file: what they are called, which
-parameters they take, what they return. Both the command line and the RCON
-console used to control game servers remotely work from that one
-description.
+Edict describes commands in a YAML file: name, parameters and return value.
+Both the command line and the RCON console used to control game servers
+remotely work from that one description.
 
 Without it, the two sides are maintained separately, once in the argument
 parser and once in the RCON handler. By the second change they have drifted
