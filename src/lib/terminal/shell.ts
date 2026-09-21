@@ -120,15 +120,20 @@ export function boot(): void {
    * whatever survived font loading, so a hard-coded 80 would either wrap the
    * art or leave it adrift. One probe, read once per call.
    */
-  const columns = () => {
+  const measureAdvance = (sample: string) => {
     const probe = document.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
-    probe.textContent = '0'.repeat(100);
+    probe.textContent = sample;
     log.append(probe);
-    const charWidth = probe.getBoundingClientRect().width / 100;
+    const width = probe.getBoundingClientRect().width / sample.length;
     probe.remove();
-    if (!charWidth) return 80;
-    return Math.max(20, Math.floor(log.clientWidth / charWidth));
+    return width;
+  };
+
+  const columns = () => {
+    const width = measureAdvance('0'.repeat(100));
+    if (!width) return 80;
+    return Math.max(20, Math.floor(log.clientWidth / width));
   };
 
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -196,6 +201,7 @@ export function boot(): void {
     setUnlocked,
     draw,
     columns,
+    charWidth: measureAdvance,
     reducedMotion,
     navigate: (href) => {
       window.location.href = href;

@@ -155,11 +155,18 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
    * worth reaching for; the alternative is the log folding it in half and
    * destroying it.
    */
+  /*
+   * line-height 1 is not cosmetic here. The banner is drawn out of U+2588
+   * FULL BLOCK, which fills its em box exactly — at any line-height above 1
+   * the rows stop touching and every letter is sliced into five visible
+   * strips. Same reason letter-spacing has to stay at 0.
+   */
   .log :global(.line.art) {
     white-space: pre;
     word-break: normal;
     overflow-x: auto;
-    line-height: 1.15;
+    line-height: 1;
+    letter-spacing: 0;
   }
   .log :global(.line.draw) {
     white-space: pre;

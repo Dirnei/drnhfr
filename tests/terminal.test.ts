@@ -3,7 +3,14 @@ import { commands, completionNames, findCommand } from '../src/lib/terminal/regi
 import { renderHelp } from '../src/lib/terminal/help-text';
 import { findIn, formatListing, nameFromHref } from '../src/lib/terminal/fs';
 import { codeFor, codeMatches } from '../src/lib/terminal/unlock';
-import { FONT, GLYPH_HEIGHT, GLYPH_WIDTH, renderBanner } from '../src/lib/terminal/font';
+import {
+  ASCII_INK,
+  BLOCK_INK,
+  FONT,
+  GLYPH_HEIGHT,
+  GLYPH_WIDTH,
+  renderBanner,
+} from '../src/lib/terminal/font';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 /*
@@ -169,6 +176,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     setUnlocked: () => {},
     draw: () => ({ update: () => {}, end: () => {} }),
     columns: () => 80,
+    charWidth: () => 7.8,
     reducedMotion: () => true,
     navigate: () => {},
     reboot: () => {},
@@ -256,6 +264,28 @@ describe('figlet', () => {
     const { ctx, art } = stubContext();
     await figlet.run('', ctx);
     expect(art[0]).toBe(renderBanner('drnhfr').join('\n'));
+  });
+
+  /*
+   * The banner is a grid, and a grid only holds if every cell is the same
+   * width. U+2588 is outside the latin subset this site self-hosts, so the
+   * glyph that renders may be substituted from another font with its own
+   * advance — which shears the whole banner. The command has to notice and
+   * draw in ASCII instead.
+   */
+  it('falls back to ASCII ink when the block glyph is not cell-perfect', async () => {
+    const { ctx, art } = stubContext({
+      charWidth: (sample: string) => (sample.includes(BLOCK_INK) ? 9.4 : 7.8),
+    });
+    await figlet.run('hi', ctx);
+    expect(art[0]).toContain(ASCII_INK);
+    expect(art[0]).not.toContain(BLOCK_INK);
+  });
+
+  it('uses block ink when the glyph measures true', async () => {
+    const { ctx, art } = stubContext({ charWidth: () => 7.8 });
+    await figlet.run('hi', ctx);
+    expect(art[0]).toContain(BLOCK_INK);
   });
 
   it('refuses a banner nobody asked for', async () => {

@@ -13,7 +13,18 @@
 export const GLYPH_WIDTH = 5;
 export const GLYPH_HEIGHT = 5;
 
-const INK = '█';
+/*
+ * Preferred ink, and the fallback when it is not cell-compatible.
+ *
+ * U+2588 is in Block Elements, not Basic Latin. The site self-hosts a latin
+ * subset and loads it with font-display: optional, so the glyph that actually
+ * renders may come from whatever the OS substitutes — and a substituted glyph
+ * need not share the advance width of the letters around it. When it does
+ * not, a grid built out of it shears. '#' cannot be substituted, so it is the
+ * safe one.
+ */
+export const BLOCK_INK = '█';
+export const ASCII_INK = '#';
 
 export const FONT: Record<string, readonly string[]> = {
   A: ['.###.', '#...#', '#####', '#...#', '#...#'],
@@ -71,12 +82,12 @@ const MISSING = FONT[' '];
  * Renders text as GLYPH_HEIGHT rows of block characters, one space between
  * glyphs. Returns the rows; the caller decides how to print them.
  */
-export function renderBanner(text: string): string[] {
+export function renderBanner(text: string, ink: string = BLOCK_INK): string[] {
   const glyphs = [...text.toUpperCase()].map((char) => FONT[char] ?? MISSING);
   const rows: string[] = [];
   for (let row = 0; row < GLYPH_HEIGHT; row += 1) {
     const line = glyphs
-      .map((glyph) => glyph[row].replaceAll('#', INK).replaceAll('.', ' '))
+      .map((glyph) => glyph[row].replaceAll('#', ink).replaceAll('.', ' '))
       .join(' ');
     // Trailing ink is impossible to see; trailing spaces just widen the box.
     rows.push(line.replace(/\s+$/, ''));

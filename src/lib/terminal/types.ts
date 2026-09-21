@@ -82,6 +82,13 @@ export interface CommandContext {
   draw(): Drawing;
   /** How many characters fit across the log right now, measured not guessed. */
   columns(): number;
+  /**
+   * The rendered advance width of a sample string, in pixels per character.
+   * Lets a command check that a glyph really is cell-compatible before it
+   * builds a grid out of it — the font that actually renders is whatever
+   * survived font-display: optional, not necessarily the one we asked for.
+   */
+  charWidth(sample: string): number;
   /** True when the visitor asked for less motion — animate nothing. */
   reducedMotion(): boolean;
   navigate(href: string): void;
