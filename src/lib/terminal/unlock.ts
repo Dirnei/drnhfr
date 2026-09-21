@@ -29,13 +29,13 @@ export function clearSessionFlags(): void {
 }
 
 export function codeFor(date: Date): string {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  const stamp =
-    pad(date.getFullYear() % 100) +
-    pad(date.getMonth() + 1) +
-    pad(date.getDate()) +
-    pad(date.getHours());
-  return stamp.split('').reverse().join('');
+  const rev = (value: number) => String(value).padStart(2, '0').split('').reverse().join('');
+  return (
+    rev(date.getMonth() + 1) +
+    rev(date.getDate()) +
+    rev(date.getFullYear() % 100) +
+    rev(date.getHours())
+  );
 }
 
 /** True for the current hour's code and the one a minute ago. */

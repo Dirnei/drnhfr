@@ -151,8 +151,9 @@ prompt back, and must call `drawing.end()` in a `finally`.
 
 ### The CV gate
 
-`su <password>` / `exit`, flag in `sessionStorage`. The password is the clock
-written `YYMMDDHH` and mirrored: `2026-09-21 10:xx` → `26092110` → `01129062`.
+`su <password>` / `exit`, flag in `sessionStorage`. The password is month, day,
+year and hour, each pair reversed on its own: `2026-09-21 18:xx` → `09 21 26 18`
+→ `90126281`.
 
 **It is a toy, not access control** — the owner's words. The CV page ships its
 full markup and merely hides it, so the content is public to anyone who reads

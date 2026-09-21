@@ -16,11 +16,10 @@ import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 describe('the unlock code', () => {
-  // The rule, in one line: write the clock as YYMMDDHH and mirror it.
   it.each([
-    ['2026-09-21 10:05', new Date(2026, 8, 21, 10, 5), '01129062'],
-    ['2026-12-05 14:37', new Date(2026, 11, 5, 14, 37), '41502162'],
-    ['2027-01-01 00:00', new Date(2027, 0, 1, 0, 0), '00101072'],
+    ['2026-09-21 10:05', new Date(2026, 8, 21, 10, 5), '90126201'],
+    ['2026-12-05 14:37', new Date(2026, 11, 5, 14, 37), '21506241'],
+    ['2027-01-01 00:00', new Date(2027, 0, 1, 0, 0), '10107200'],
   ])('%s -> %s', (_label, date, expected) => {
     expect(codeFor(date)).toBe(expected);
   });
