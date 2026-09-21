@@ -124,7 +124,24 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     word-break: break-word;
     line-height: 1.6;
   }
-  .line {
+  /*
+   * :global is load-bearing here — do not "tidy" it away.
+   *
+   * Astro scopes component styles by stamping data-astro-cid-* onto the
+   * elements in THIS template at build time. Every line in the log except the
+   * first is created by document.createElement in the shell at runtime, so it
+   * never receives that attribute and a plain `.line` rule simply misses it.
+   *
+   * The consequence was silent and long-lived: error lines were not red,
+   * echoed commands were not muted, the $ was not teal, and every line used
+   * the browser's default 1em <p> margin instead of 0.4rem — which also left
+   * a 13px gap under the last line that made the log look like it had failed
+   * to scroll to the bottom.
+   *
+   * Scoped to descendants of .log, which is itself scoped, so this leaks
+   * nothing outside the terminal.
+   */
+  .log :global(.line) {
     margin: 0 0 0.4rem;
   }
   /*
@@ -133,26 +150,26 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
    * clipped rather than scrolled so a wide frame cannot make the whole page
    * jiggle sideways mid-animation.
    */
-  .line.draw {
+  .log :global(.line.draw) {
     white-space: pre;
     word-break: normal;
     overflow: hidden;
     line-height: 1.15;
   }
-  .line:last-child {
+  .log :global(.line:last-child) {
     margin-bottom: 0;
   }
-  .line.hint {
+  .log :global(.line.hint) {
     color: var(--text-dim);
   }
-  .line.echo {
+  .log :global(.line.echo) {
     color: var(--text-muted);
   }
-  .line.echo .prompt-mini {
+  .log :global(.line.echo .prompt-mini) {
     color: var(--boot-info);
     margin-right: 0.4em;
   }
-  .line.err {
+  .log :global(.line.err) {
     color: var(--red-text);
   }
   /*
