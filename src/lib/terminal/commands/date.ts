@@ -4,7 +4,7 @@ export default {
   name: 'date',
   usage: 'date',
   summary: 'the time on your clock, not mine',
-  order: 10,
+  order: 11,
   run(_arg, ctx) {
     /*
      * Deliberately the visitor's local time. This is a static site — there is

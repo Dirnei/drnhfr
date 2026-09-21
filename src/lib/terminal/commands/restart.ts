@@ -9,7 +9,7 @@ export default {
   name: 'restart',
   usage: 'restart',
   summary: 'reboot — replay the boot sequence, re-lock the cv',
-  order: 19,
+  order: 20,
   run(_arg, ctx) {
     ctx.reboot(true);
   },

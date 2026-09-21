@@ -14,7 +14,10 @@ export default {
   name: 'exit',
   usage: 'exit',
   summary: 'drop back to guest and re-lock the cv',
-  order: 8,
+  // Noise to a guest — there is nothing to exit from until su has run. Still
+  // dispatches if typed, and says 'already guest.'
+  listed: (ctx) => ctx.isUnlocked(),
+  order: 9,
   run(_arg, ctx) {
     const wasUnlocked = ctx.isUnlocked();
     ctx.setUnlocked(false);

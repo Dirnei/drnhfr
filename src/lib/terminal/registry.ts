@@ -1,4 +1,5 @@
-import type { Command } from './types';
+import { isListed } from './help-text';
+import type { Command, CommandContext } from './types';
 
 /*
  * Every file in ./commands/ that default-exports a Command is a command.
@@ -28,6 +29,6 @@ export function findCommand(name: string): Command | undefined {
  * What Tab offers. Primary names only — completing "?" to "?" helps nobody,
  * and hidden commands stay hidden.
  */
-export function completionNames(): string[] {
-  return commands.filter((command) => !command.hidden).map((command) => command.name);
+export function completionNames(ctx: CommandContext): string[] {
+  return commands.filter((command) => isListed(command, ctx)).map((command) => command.name);
 }

@@ -17,7 +17,7 @@ export default {
   name: 'uptime',
   usage: 'uptime',
   summary: 'how long this tab has been open',
-  order: 11,
+  order: 12,
   run(_arg, ctx) {
     // Uptime of the page, not of any machine: nothing here runs on a server.
     ctx.print(`up ${humanise(ctx.uptimeMs())}, 1 user`);

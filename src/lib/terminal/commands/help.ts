@@ -8,6 +8,6 @@ export default {
   summary: 'this list',
   order: 0,
   run(_arg, ctx) {
-    ctx.print(renderHelp(ctx.commands()));
+    ctx.print(renderHelp(ctx.commands(), ctx));
   },
 } satisfies Command;

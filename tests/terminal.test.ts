@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { commands, completionNames, findCommand } from '../src/lib/terminal/registry';
-import { renderHelp } from '../src/lib/terminal/help-text';
+import { isListed, renderHelp } from '../src/lib/terminal/help-text';
 import { findIn, formatListing, nameFromHref } from '../src/lib/terminal/fs';
 import { codeFor, codeMatches } from '../src/lib/terminal/unlock';
 import {
@@ -11,6 +11,7 @@ import {
   GLYPH_WIDTH,
   renderBanner,
 } from '../src/lib/terminal/font';
+import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 /*
@@ -108,8 +109,29 @@ describe('the command registry', () => {
   });
 
   it('offers primary names to Tab, but not aliases', () => {
-    expect(completionNames()).toContain('whoami');
-    expect(completionNames()).not.toContain('?');
+    const { ctx } = stubContext();
+    expect(completionNames(ctx)).toContain('whoami');
+    expect(completionNames(ctx)).not.toContain('?');
+  });
+
+  /*
+   * `exit` is noise to a guest — there is nothing to exit from until `su` has
+   * run — and `su` is noise once you already are root. Neither is removed,
+   * both still dispatch if typed; they just stop cluttering the list.
+   */
+  it('lists exit only once unlocked, and su only while locked', () => {
+    const guest = stubContext({ isUnlocked: () => false }).ctx;
+    const root = stubContext({ isUnlocked: () => true }).ctx;
+    expect(completionNames(guest)).toContain('su');
+    expect(completionNames(guest)).not.toContain('exit');
+    expect(completionNames(root)).toContain('exit');
+    expect(completionNames(root)).not.toContain('su');
+  });
+
+  it('still runs a command that is not listed', () => {
+    const { ctx, out } = stubContext({ isUnlocked: () => false });
+    findCommand('exit')!.run('', ctx);
+    expect(out[0]).toBe('already guest.');
   });
 
   /*
@@ -118,11 +140,12 @@ describe('the command registry', () => {
    * again, it will be because someone reintroduced a second source.
    */
   it('renders help from the registry, one row per visible command', () => {
-    const rendered = renderHelp(commands).split('\n');
+    const { ctx } = stubContext();
+    const rendered = renderHelp(commands, ctx).split('\n');
     expect(rendered[0]).toBe('available commands:');
-    expect(rendered).toHaveLength(commands.filter((c) => !c.hidden).length + 1);
-    for (const command of commands) {
-      if (command.hidden) continue;
+    const listed = commands.filter((command) => isListed(command, ctx));
+    expect(rendered).toHaveLength(listed.length + 1);
+    for (const command of listed) {
       expect(rendered.some((row) => row.startsWith(command.usage))).toBe(true);
     }
   });
@@ -134,15 +157,17 @@ describe('the command registry', () => {
    */
   it('keeps sl out of help and out of Tab', () => {
     expect(findCommand('sl')?.name).toBe('sl');
-    expect(completionNames()).not.toContain('sl');
-    const rows = renderHelp(commands).split('\n');
+    const { ctx } = stubContext();
+    expect(completionNames(ctx)).not.toContain('sl');
+    const rows = renderHelp(commands, ctx).split('\n');
     expect(rows.some((row) => row.startsWith('sl'))).toBe(false);
   });
 
   it('aligns every summary in the same column', () => {
-    const rows = renderHelp(commands).split('\n').slice(1);
+    const { ctx } = stubContext();
+    const rows = renderHelp(commands, ctx).split('\n').slice(1);
     const starts = commands
-      .filter((command) => !command.hidden)
+      .filter((command) => isListed(command, ctx))
       .map((command) => rows.find((row) => row.startsWith(command.usage))!.indexOf(command.summary));
     expect(new Set(starts).size).toBe(1);
   });
@@ -182,6 +207,8 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     interrupted: () => new Promise<void>(() => {}),
     reducedMotion: () => true,
     navigate: () => {},
+    openTab: () => true,
+    origin: 'https://dirnhofer.net',
     reboot: () => {},
     ...overrides,
   } as CommandContext;
@@ -367,9 +394,8 @@ describe('neofetch', () => {
     await findCommand('neofetch')!.run('', ctx);
     const text = art[0];
     expect(text).toContain('Role:');
-    expect(text).toContain(
-      typeof cv.profile.title === 'string' ? cv.profile.title : cv.profile.title.en,
-    );
+    const title: unknown = cv.profile.title;
+    expect(text).toContain(typeof title === 'string' ? title : (title as { en: string }).en);
     expect(text).toContain(cv.experience[0].stack[0]);
   });
 
@@ -418,5 +444,88 @@ describe('matrix', () => {
     release();
     await running;
     expect(ended).toBe(true);
+  });
+});
+
+describe('whoami', () => {
+  it('names the user, not the person', () => {
+    const guest = stubContext({ isUnlocked: () => false });
+    findCommand('whoami')!.run('', guest.ctx);
+    expect(guest.out[0]).toBe('guest');
+
+    const root = stubContext({ isUnlocked: () => true });
+    findCommand('whoami')!.run('', root.ctx);
+    expect(root.out[0]).toBe('root');
+  });
+});
+
+describe('curl', () => {
+  const ORIGIN = 'https://dirnhofer.net';
+
+  it('treats a bare host as a host', () => {
+    expect(resolveTarget('example.com', ORIGIN)).toEqual({
+      ok: true,
+      href: 'https://example.com/',
+    });
+  });
+
+  it('treats a leading slash as a path on this site', () => {
+    expect(resolveTarget('/de/blog/', ORIGIN)).toEqual({
+      ok: true,
+      href: 'https://dirnhofer.net/de/blog/',
+    });
+  });
+
+  it('keeps an explicit scheme', () => {
+    expect(resolveTarget('http://example.com/x', ORIGIN)).toEqual({
+      ok: true,
+      href: 'http://example.com/x',
+    });
+  });
+
+  /*
+   * The whole reason this is an allowlist. Both of these parse as perfectly
+   * valid URLs, and a terminal that opens whatever it is handed is a terminal
+   * that runs someone else's script for anyone who can get a line pasted into
+   * it.
+   */
+  it.each([
+    ['javascript:alert(1)'],
+    ['JavaScript:alert(1)'],
+    ['data:text/html,<script>alert(1)</script>'],
+    ['file:///etc/passwd'],
+  ])('refuses %s', (hostile) => {
+    const result = resolveTarget(hostile, ORIGIN);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain('unsupported protocol');
+  });
+
+  it('asks for a url when given none', () => {
+    const result = resolveTarget('   ', ORIGIN);
+    expect(result.ok).toBe(false);
+  });
+
+  it('reports a blocked popup instead of pretending it worked', () => {
+    const { ctx, out, err } = stubContext({ openTab: () => false });
+    findCommand('curl')!.run('example.com', ctx);
+    expect(out).toHaveLength(0);
+    expect(err[0]).toContain('blocked');
+  });
+
+  it('says where it went', () => {
+    const opened: string[] = [];
+    const { ctx, out } = stubContext({
+      openTab: (href: string) => {
+        opened.push(href);
+        return true;
+      },
+    });
+    findCommand('curl')!.run('example.com', ctx);
+    expect(opened).toEqual(['https://example.com/']);
+    expect(out[0]).toContain('https://example.com/');
+  });
+
+  it('answers to wget as well', () => {
+    expect(findCommand('wget')?.name).toBe('curl');
   });
 });

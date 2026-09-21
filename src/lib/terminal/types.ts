@@ -17,8 +17,15 @@ export interface Command {
   summary: string;
   /** Curated position in `help`. Alphabetical order reads worse than this. */
   order: number;
-  /** Kept out of `help` and tab completion. */
+  /** Kept out of `help` and tab completion, always. */
   hidden?: boolean;
+  /**
+   * Kept out of `help` and tab completion unless this says otherwise — for
+   * commands that only make sense in a particular state. It still dispatches
+   * when typed in full: hiding a command is about not cluttering the list,
+   * not about refusing to run it.
+   */
+  listed?(ctx: CommandContext): boolean;
   /** Tab-completes its argument against the visible filesystem. */
   completesEntries?: boolean;
   run(arg: string, ctx: CommandContext): void | Promise<void>;
@@ -59,6 +66,8 @@ export interface TerminalConfig {
  */
 export interface CommandContext {
   readonly config: TerminalConfig;
+  /** Base for resolving anything relative the visitor types. */
+  readonly origin: string;
   /** Normal output. Multi-line strings are fine; the log preserves newlines. */
   print(text: string): void;
   /**
@@ -102,6 +111,11 @@ export interface CommandContext {
    */
   interrupted(): Promise<void>;
   navigate(href: string): void;
+  /**
+   * Opens a URL in a new tab. Returns false if the browser refused — usually
+   * a popup blocker, which the caller should report rather than swallow.
+   */
+  openTab(href: string): boolean;
   /** full = also clear the session flags, so the boot sequence replays. */
   reboot(full: boolean): void;
 }

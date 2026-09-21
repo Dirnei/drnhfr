@@ -42,7 +42,7 @@ export default {
   name: 'neofetch',
   usage: 'neofetch',
   summary: 'who and what this is',
-  order: 13,
+  order: 14,
   async run(_arg, ctx) {
     /*
      * Read from cv.json rather than repeating the facts here. It is the same
@@ -83,6 +83,9 @@ export default {
       const right = facts[row] ?? '';
       lines.push(`${left}  ${right}`.replace(/\s+$/, ''));
     }
+    // The bio used to be whoami's output. whoami now prints the username, as
+    // the real one does, so it lives here instead of being lost.
+    lines.push('', copy.whoami);
     ctx.printArt(lines.join('\n'));
   },
 } satisfies Command;

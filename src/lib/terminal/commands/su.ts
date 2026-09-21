@@ -7,7 +7,9 @@ export default {
   name: 'su',
   usage: 'su <password>',
   summary: 'become root and unlock the cv',
-  order: 7,
+  // The mirror of exit: pointless once you already are root.
+  listed: (ctx) => !ctx.isUnlocked(),
+  order: 8,
   run(arg, ctx) {
     const code = arg.trim();
     if (!code) {

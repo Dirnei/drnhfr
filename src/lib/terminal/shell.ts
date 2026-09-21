@@ -187,6 +187,7 @@ export function boot(): void {
   // ------------------------------------------------------------- context
   const ctx: CommandContext = {
     config,
+    origin: window.location.origin,
     print: (text) => appendLine(text, 'out'),
     printArt: (text) => appendLine(text, 'art'),
     printError: (text) => {
@@ -208,6 +209,33 @@ export function boot(): void {
     interrupted: () => new Promise<void>((resolve) => interruptWaiters.push(resolve)),
     navigate: (href) => {
       window.location.href = href;
+    },
+    /*
+     * An anchor click, not window.open.
+     *
+     * window.open(url, target, 'noopener') returns null BY SPECIFICATION —
+     * noopener severs the handle, so there is nothing to hand back — which
+     * meant null-checking its result reported "blocked" on every call in
+     * every browser, including the ones where the tab opened perfectly well.
+     *
+     * A synthetic click on an anchor with rel="noopener noreferrer" opens the
+     * tab and keeps both guarantees: the new page gets no handle on this one,
+     * and is not told where its visitor came from.
+     *
+     * Blocking is predicted rather than detected: a popup without transient
+     * activation is refused, and userActivation says so up front. Where that
+     * API is missing the check is skipped rather than guessed at.
+     */
+    openTab: (href) => {
+      if (navigator.userActivation && !navigator.userActivation.isActive) return false;
+      const link = document.createElement('a');
+      link.href = href;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      return true;
     },
     reboot,
   };
@@ -250,7 +278,7 @@ export function boot(): void {
       // Still an error, so the status segment lights up — but a dead end with
       // no way out is worse than a dead end that hands you the map.
       ctx.printError(`${name}: ${copy.cmdNotFoundSuffix}`);
-      ctx.print(renderHelp(commands));
+      ctx.print(renderHelp(commands, ctx));
     }
     stampClock();
     refreshStatus(lastFailed);
@@ -306,7 +334,7 @@ export function boot(): void {
       const spaceIndex = value.indexOf(' ');
       if (spaceIndex === -1) {
         const typed = value.toLowerCase();
-        const matches = completionNames().filter(
+        const matches = completionNames(ctx).filter(
           (candidate) => typed.length > 0 && candidate.startsWith(typed),
         );
         if (matches.length === 1) {

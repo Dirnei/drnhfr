@@ -4,7 +4,7 @@ export default {
   name: 'history',
   usage: 'history',
   summary: 'what you have typed so far',
-  order: 12,
+  order: 13,
   run(_arg, ctx) {
     const entries = ctx.history();
     if (entries.length === 0) {

@@ -21,7 +21,7 @@ export default {
   name: 'matrix',
   usage: 'matrix',
   summary: 'follow the white rabbit — any key to stop',
-  order: 17,
+  order: 18,
   async run(_arg, ctx) {
     const columns = Math.min(ctx.columns(), 120);
     const drawing = ctx.draw();

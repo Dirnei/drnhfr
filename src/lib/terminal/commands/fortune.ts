@@ -4,7 +4,7 @@ export default {
   name: 'fortune',
   usage: 'fortune',
   summary: 'an opinion, at random',
-  order: 14,
+  order: 15,
   async run(_arg, ctx) {
     // Lazy, like the figlet font: nobody downloads the fortunes until the
     // first time somebody asks for one.
