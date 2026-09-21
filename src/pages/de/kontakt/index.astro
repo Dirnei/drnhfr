@@ -8,7 +8,7 @@ import { routePath } from '../../../i18n/routes';
   lang="de"
   current="contact"
   title="Kontakt — Christian Dirnhofer"
-  description="So erreichst du Christian Dirnhofer."
+  description="Über Christian Dirnhofer und wie du ihn erreichst."
   altHref={routePath('contact', 'en')}
 >
   <div class="shell contact">
@@ -38,6 +38,31 @@ import { routePath } from '../../../i18n/routes';
         <a href="https://github.com/Dirnei">Dirnei</a>
       </li>
     </ul>
+    <section class="about">
+      <h2>Über mich</h2>
+      <p>
+        Ich bin Entwickler und lebe in Bayern. Angefangen zu programmieren habe ich um
+        2007 mit Web, also HTML, CSS und PHP. Über VB.NET und Java bin ich 2010 bei C#
+        gelandet und dort geblieben.
+      </p>
+      <p>
+        2013 habe ich Minecraft-Plugins geschrieben, dazwischen eine Menge unsinniger
+        Freizeitprojekte. 2012 kam Embedded dazu und hat mich nie ganz losgelassen,
+        erst mit Arduino, später mit ESP32. Platinen habe ich dafür auch selbst geätzt,
+        PCs zusammenzubauen gehörte ohnehin immer dazu.
+      </p>
+      <p>
+        Beruflich ist über die Jahre viel DevOps dazugekommen, 2022 dann Infrastructure
+        as Code. Ich arbeite mit Proxmox, Docker, Kubernetes, Ansible und Terraform.
+        Mein Heimnetz ist dabei völlig übertrieben und besser aufgebaut als das der
+        meisten Firmen, für die ich gearbeitet habe.
+      </p>
+      <p>
+        Wenn ich nicht programmiere, drucke ich in 3D oder baue etwas. Dazu kommt ein
+        CO2-Laser, den ich im Corona-Lockdown selbst gebaut habe, und CAD. Was sich
+        automatisieren lässt, automatisiere ich, im echten Leben genauso wie in Spielen.
+      </p>
+    </section>
   </div>
 </BaseLayout>
 <style>
@@ -70,5 +95,17 @@ import { routePath } from '../../../i18n/routes';
   }
   .links a:hover {
     color: var(--red);
+  }
+  .about {
+    border-top: 1px solid var(--hairline);
+    margin-top: 3rem;
+    padding-top: 2rem;
+  }
+  .about h2 {
+    font-size: 1.5rem;
+    margin-block: 0 1rem;
+  }
+  .contact .about p {
+    color: var(--text-body);
   }
 </style>

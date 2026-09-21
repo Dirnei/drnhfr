@@ -8,7 +8,7 @@ import { routePath } from '../../../i18n/routes';
   lang="en"
   current="contact"
   title="Contact — Christian Dirnhofer"
-  description="How to reach Christian Dirnhofer."
+  description="About Christian Dirnhofer and how to reach him."
   altHref={routePath('contact', 'de')}
 >
   <div class="shell contact">
@@ -38,6 +38,31 @@ import { routePath } from '../../../i18n/routes';
         <a href="https://github.com/Dirnei">Dirnei</a>
       </li>
     </ul>
+    <section class="about">
+      <h2>About me</h2>
+      <p>
+        I am a developer based in Bavaria. I started programming around 2007 with the
+        web, meaning HTML, CSS and PHP. By way of VB.NET and Java I arrived at C# in
+        2010 and stayed.
+      </p>
+      <p>
+        In 2013 I wrote Minecraft plugins, with a lot of pointless side projects in
+        between. Embedded work came in 2012 and never quite let go, first with Arduino,
+        later with the ESP32. I etched the boards for it myself, and building PCs was
+        part of it all along.
+      </p>
+      <p>
+        Professionally a lot of DevOps accumulated over the years, and in 2022
+        infrastructure as code. I work with Proxmox, Docker, Kubernetes, Ansible and
+        Terraform. My home network is thoroughly over the top and better built than
+        that of most companies I have worked for.
+      </p>
+      <p>
+        When I am not programming I print in 3D or build something. There is also a CO2
+        laser I built myself during the covid lockdown, and CAD. Whatever can be
+        automated, I automate, in real life as much as in games.
+      </p>
+    </section>
   </div>
 </BaseLayout>
 <style>
@@ -70,5 +95,17 @@ import { routePath } from '../../../i18n/routes';
   }
   .links a:hover {
     color: var(--red);
+  }
+  .about {
+    border-top: 1px solid var(--hairline);
+    margin-top: 3rem;
+    padding-top: 2rem;
+  }
+  .about h2 {
+    font-size: 1.5rem;
+    margin-block: 0 1rem;
+  }
+  .contact .about p {
+    color: var(--text-body);
   }
 </style>
