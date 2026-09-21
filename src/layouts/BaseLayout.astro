@@ -6,6 +6,7 @@ import BootIntro from '../components/BootIntro.astro';
 import TerminalShortcut from '../components/TerminalShortcut.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
+import { UNLOCK_KEY, BYPASS_HASH } from '../lib/terminal/unlock';
 
 interface Props {
   lang: 'de' | 'en';
@@ -77,6 +78,25 @@ const xDefaultHref =
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={new URL(`/og-${lang}.png`, Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline define:vars={{ storageKey: UNLOCK_KEY, bypass: BYPASS_HASH }}>
+      (() => {
+        const claim = () => {
+          if (location.hash.slice(1).toLowerCase() !== bypass) return false;
+          try {
+            sessionStorage.setItem(storageKey, '1');
+            history.replaceState(null, '', location.pathname + location.search);
+            return true;
+          } catch {
+            // Storage blocked: keep the hash so the link still works on reload.
+            return false;
+          }
+        };
+        claim();
+        addEventListener('hashchange', () => {
+          if (claim()) location.reload();
+        });
+      })();
+    </script>
   </head>
   <body>
     {showIntro && <BootIntro lang={lang} />}

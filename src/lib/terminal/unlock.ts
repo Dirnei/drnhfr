@@ -1,5 +1,6 @@
 export const UNLOCK_KEY = 'cv-unlocked';
 export const INTRO_KEY = 'intro-played';
+export const BYPASS_HASH = 'no-time-for-puzzles';
 
 export function isUnlocked(): boolean {
   try {

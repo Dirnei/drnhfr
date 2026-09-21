@@ -155,6 +155,12 @@ prompt back, and must call `drawing.end()` in a `finally`.
 year and hour, each pair reversed on its own: `2026-09-21 18:xx` → `09 21 26 18`
 → `90126281`.
 
+There is also a bypass link for people who should not have to solve anything:
+appending `#` + `BYPASS_HASH` (`src/lib/terminal/unlock.ts`) to any URL sets the
+same flag and strips the hash again — `https://dirnhofer.net/de/lebenslauf/#no-time-for-puzzles`.
+The check lives in the `BaseLayout` head so it runs before the nav and page
+scripts read the flag; that ordering is why it is not on the CV page itself.
+
 **It is a toy, not access control** — the owner's words. The CV page ships its
 full markup and merely hides it, so the content is public to anyone who reads
 the HTML. Never describe it as protection, and never put anything there that
