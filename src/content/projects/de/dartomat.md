@@ -3,7 +3,7 @@ title: 'Dartomat'
 summary: 'Ein selbst gebauter Dartautomat, seit 2013 gewachsen, heute mit Online-Multiplayer und eigenen Spielmodi.'
 role: 'Idee, Hardware und Software'
 period: '2013 – heute'
-stack: ['Arduino', 'React']
+stack: ['Arduino', 'ESP32', 'Raspberry Pi', 'Akka.NET', 'React']
 featured: true
 order: 5
 translationKey: 'dartomat'
@@ -12,14 +12,14 @@ links:
 ---
 
 2013 habe ich eine billige Dartscheibe auseinandergenommen und mit einem Arduino
-ausgelesen. Ab da wusste das Ding selbst, welches Feld getroffen wurde, und ich
-konnte entscheiden, was damit passiert.
+ausgelesen, um zu verstehen, wie das funktioniert. Seitdem ich das herausfand, ist
+es eskaliert.
 
-Daraus ist über die Jahre ein eigener Dartautomat geworden, so einer, wie er in
-deutschen Kneipen hängt. Jede Iteration kam dann, wenn ich wieder etwas
-dazugelernt hatte, und entsprechend sieht man dem Ding an, was in den Jahren
-dazwischen an Können dazugekommen ist.
+Über die Jahre und sehr viele Iterationen ist es mit meinen gewachsenen Erfahrungen
+immer weiter verbessert worden. Aus nur einem Arduino, der an einem Windows-PC hing,
+wurde dann UWP am Raspberry mit Windows IoT. Danach mal ein ESP32 mit MQTT, bis es
+jetzt eine Raspberry-Pi-HAT-Platine ist, mit eigenem Real-Time-Prozessor, der über
+I2C mit Linux kommuniziert.
 
-Heute hängt der Automat online. Gespielt wird mit Freunden über das Internet,
-und die Spielmodi sind nicht fest verdrahtet. Eigene Spiele kann man sich selbst
-schreiben, statt immer die Standardvarianten zu spielen, die jeder kennt.
+Heute hängt der Automat online im Akka.NET-Cluster, damit man mit Freunden über das
+Internet spielen kann. Abgeschlossen ist das Projekt dennoch nicht.
