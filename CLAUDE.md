@@ -175,7 +175,11 @@ actually needs protecting.
   a missing translation is a build error. Dates are `YYYY-MM` facts, formatted
   per locale at render time.
 - **Project logos are vendored**, like every other asset: `src/assets/projects/`,
-  wired through `logo: image()` in the collection schema. Both are drawn for the
+  mapped to a project in `src/lib/project-logos.ts` by `translationKey`. They are
+  deliberately **not** an `image()` field on the collection: in Astro 7.3.3 the dev
+  server writes `.astro/content-assets.mjs` empty, so an `image()` field rehydrates
+  to nothing and the logo is invisible in `astro dev` while being fine in a build.
+  A plain ESM import behaves the same in both. Both logos are drawn for the
   light docs sites they come from, so the page sets them on a `--logo-tile`
   square rather than on the page ground, where a dark-inked mark would vanish.
   The scanline texture across that tile is `main::after` from `motion.css`, not

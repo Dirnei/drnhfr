@@ -6,6 +6,7 @@ import Prose from '../../../components/Prose.astro';
 import ProjectLinks from '../../../components/ProjectLinks.astro';
 import { getProjects } from '../../../lib/entries';
 import { slugOf } from '../../../lib/ids';
+import { projectLogos } from '../../../lib/project-logos';
 import { findCounterpart } from '../../../lib/translations';
 import { useTranslations } from '../../../i18n/ui';
 import { routePath } from '../../../i18n/routes';
@@ -21,6 +22,7 @@ export async function getStaticPaths() {
 const { project } = Astro.props;
 const t = useTranslations('de');
 const { Content } = await render(project);
+const logo = projectLogos[project.data.translationKey];
 
 const englishProjects = await getProjects('en');
 const counterpart = findCounterpart(englishProjects, project.data.translationKey);
@@ -39,9 +41,9 @@ const altHref = counterpart
 >
   <article class="shell">
     <div class="head">
-      {project.data.logo && (
+      {logo && (
         <div class="logo">
-          <Image src={project.data.logo} alt="" width={128} height={128} densities={[1, 2]} />
+          <Image src={logo} alt="" width={128} height={128} densities={[1, 2]} />
         </div>
       )}
       <div>

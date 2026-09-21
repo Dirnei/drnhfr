@@ -4,7 +4,6 @@ summary: 'A YAML contract that describes a command exactly once — for the CLI 
 role: 'Design and implementation'
 period: '2026–present'
 stack: ['YAML']
-logo: '../../../assets/projects/edict.png'
 featured: true
 order: 20
 translationKey: 'edict'
