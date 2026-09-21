@@ -99,6 +99,15 @@ export function boot(): void {
     return {
       update(text: string) {
         el.textContent = text;
+        /*
+         * Follow the tail on every repaint, not just when the block is
+         * created. At creation it is still empty and 0px tall, so scrolling
+         * then puts nothing in view: the first frame grew it to ten rows and
+         * the log stayed exactly where it was. Invisible on a fresh terminal,
+         * where the log does not scroll at all, and a train hidden below the
+         * fold as soon as anything had been printed before it.
+         */
+        log.scrollTop = log.scrollHeight;
       },
       end() {
         el.remove();
