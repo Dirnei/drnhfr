@@ -120,6 +120,55 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     opacity: 0.4;
     cursor: not-allowed;
   }
+  /*
+   * Fill the window.
+   *
+   * body is already a flex column with min-height: 100dvh and main is
+   * flex: 1 0 auto, so main reaches the bottom of the viewport on its own —
+   * but its children are block boxes and size to their content, so the log
+   * stopped at 24rem however much room was going spare. This carries the
+   * chain the last two steps: main becomes a column, the terminal takes the
+   * space the hero does not, and the log takes the space the chips and the
+   * prompt row do not.
+   *
+   * Scoped with :has so only a page that actually contains a terminal is
+   * turned into a flex column. Where :has is missing the rules simply do not
+   * match, the log keeps its max-height below, and the terminal looks the way
+   * it did before — which is why that max-height stays as a fallback rather
+   * than being deleted.
+   */
+  /*
+   * A definite height, not a minimum. body already sets min-height: 100dvh,
+   * which lets the whole column grow — so a long scrollback made the log
+   * taller instead of scrollable and pushed the prompt off the bottom of the
+   * page. Pinning the height on a terminal page is what makes the log, rather
+   * than the document, the thing that scrolls.
+   *
+   * main also has to be allowed to shrink: its flex: 1 0 auto refuses, and
+   * min-height: auto on a flex item refuses again.
+   */
+  :global(body:has(.terminal)) {
+    height: 100dvh;
+  }
+  :global(main:has(.terminal)) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  :global(main:has(.terminal)) .terminal {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* Without this a flex item refuses to shrink below its content, and a
+       long scrollback would push the prompt off the bottom of the page. */
+    min-height: 0;
+  }
+  :global(main:has(.terminal)) .log {
+    flex: 1;
+    max-height: none;
+  }
+
   .log {
     border: 1px solid var(--hairline);
     padding: 1rem;
