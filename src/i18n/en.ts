@@ -12,7 +12,7 @@ export const en: Record<keyof typeof de, string> = {
   'projects.stack': 'Stack',
   'projects.repo': 'GitHub',
   'projects.docs': 'Project page',
-  'projects.demo': 'Demo',
+  'projects.demo': 'Try it',
   'projects.empty': 'The first projects are being written up.',
   'cv.title': 'CV',
   'cv.print': 'Print as PDF',

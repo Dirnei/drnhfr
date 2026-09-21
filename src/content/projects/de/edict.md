@@ -1,6 +1,6 @@
 ---
 title: 'Edict'
-summary: 'Ein YAML-Vertrag, der ein Kommando genau einmal beschreibt — für die CLI und für die RCON-Konsole.'
+summary: 'Eine YAML-Spezifikation um CLI oder RCON Commands zu beschreiben.'
 role: 'Entwurf und Umsetzung'
 period: '2026 – heute'
 stack: ['YAML']

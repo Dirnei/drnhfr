@@ -10,7 +10,7 @@ export const de = {
   'projects.stack': 'Stack',
   'projects.repo': 'GitHub',
   'projects.docs': 'Projektseite',
-  'projects.demo': 'Demo',
+  'projects.demo': 'Ausprobieren',
   'projects.empty': 'Die ersten Projekte werden gerade aufbereitet.',
   'cv.title': 'Lebenslauf',
   'cv.print': 'Als PDF drucken',

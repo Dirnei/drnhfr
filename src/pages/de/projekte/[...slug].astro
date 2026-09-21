@@ -42,8 +42,8 @@ const altHref = counterpart
   <article class="shell">
     <div class="head">
       {logo && (
-        <div class="logo">
-          <Image src={logo} alt="" width={128} height={128} densities={[1, 2]} />
+        <div class="logo" data-tile={logo.tile}>
+          <Image src={logo.src} alt="" width={128} height={128} densities={[1, 2]} />
         </div>
       )}
       <h1>{project.data.title}</h1>
@@ -78,6 +78,9 @@ const altHref = counterpart
     padding: 0.75rem;
     background: var(--logo-tile);
     border: 1px solid var(--hairline);
+  }
+  .logo[data-tile='dark'] {
+    background: var(--logo-tile-dark);
   }
   .logo :global(img) {
     display: block;
