@@ -2,7 +2,7 @@
 title: 'HomeRacker'
 summary: 'Website and configurator for HomeRacker, the modular 3D-printable rack system by Patrick Pötz.'
 role: 'Website redesign and configurator'
-period: 'PLACEHOLDER: period'
+period: '2026–present'
 stack: ['Astro', 'SVG']
 featured: true
 order: 30

@@ -11,11 +11,11 @@ links:
   docs: 'https://edict.leberkas.org/'
 ---
 
-Edict beschreibt Kommandos in einer YAML-Datei: Name, Parameter und
-Rückgabewert. Aus dieser einen Beschreibung
-bedienen sich die Kommandozeile und die RCON-Konsole, über die Spieleserver
-ferngesteuert werden.
+Edict versucht, mit einer YAML-Datei CLI-Apps zu beschreiben, ähnlich wie es
+OpenAPI für REST macht. Das ermöglicht nicht nur, eine einheitliche UI für die
+Doku zu erschaffen (Swagger UI), sondern ermöglicht es auch, programmatisch
+CLIs zu verwenden. Vor allem für RCON-fähige Game-Server eine super
+interessante Sache.
 
-Ohne so eine Beschreibung werden beide Seiten getrennt gepflegt, einmal im
-Argument-Parser und einmal im RCON-Handler. Ab der zweiten Änderung laufen
-sie auseinander.
+Ursprung war die nicht einheitliche Dokumentation von verfügbaren RCON-Commands
+in verschiedenen Spielen wie Minecraft, Project Zomboid oder Ark SE.
