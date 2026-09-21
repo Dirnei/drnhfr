@@ -1,6 +1,6 @@
 ---
 title: 'HomeRacker'
-summary: 'Website redesign and configurator for HomeRacker, the modular 3D-printable rack system by Patrick Pötz.'
+summary: 'Website and configurator for HomeRacker, the modular 3D-printable rack system by Patrick Pötz.'
 role: 'Website redesign and configurator'
 period: 'PLACEHOLDER: period'
 stack: ['Astro', 'SVG']
@@ -13,12 +13,12 @@ links:
   demo: 'https://homeracker.org/configurator/'
 ---
 
-HomeRacker is a modular rack system you print yourself: supports, connectors
-and lock pins that snap together without tools into whatever is needed right
-now — "Server rack. Shoe rack. Any rack." The system is Patrick Pötz's, under
-MIT and CC BY-SA respectively. The website and the configurator are mine.
+HomeRacker is a rack system you print yourself. Supports, connectors and lock
+pins snap together without tools into a rack of whatever size is needed. The
+system is by Patrick Pötz, under MIT and CC BY-SA. The website and the
+configurator are mine.
 
-The configurator takes the arithmetic off your hands. You click a rack
-together, see it immediately, and get the bill of materials with it: how many
-supports, how many connectors, how many pins. The whole layout lives in the
-address bar, so a configuration can be passed on as a link.
+In the configurator you click a rack together, see it straight away and get
+the bill of materials with it: how many supports, how many connectors, how
+many pins. The layout sits in the address bar, so a configuration can be
+passed on as a link.

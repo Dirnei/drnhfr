@@ -1,6 +1,6 @@
 ---
 title: 'Servus'
-summary: 'The .NET library that has been collecting the same copy-pasted helpers since 2017 — so they stop being copy-pasted.'
+summary: 'A .NET library holding the code I would otherwise write again in every project.'
 role: 'Author and maintainer'
 period: '2017–present'
 stack: ['.NET', 'C#', 'NuGet']
@@ -12,17 +12,13 @@ links:
   docs: 'https://servus.leberkas.org'
 ---
 
-Every new project starts with the same twenty lines. A startup path that
-comes up cleanly. A collection that behaves the way you expect. A date that
-does not fall over at the first change of time zone. At some point I stopped
-typing them out again and started collecting them instead.
+Servus collects the helpers I have needed in nearly every .NET project since
+2017: application startup and configuration, concurrency, diagnostics,
+collections, type utilities, text and dates.
 
-That was 2017. Servus has grown out of real projects ever since rather than
-off a drawing board: whatever was needed twice goes in, everything else stays
-out. The library is cut into modules — Runtime with Application, Concurrency
-and Diagnostics, Data with Collections, Type System, Text and DateTime, plus
-a handful of extras.
+I started it because I kept copying the same twenty lines from one project
+into the next. Whatever was needed twice goes in, the rest stays out.
 
-Deliberately not a framework: no container to adopt, no conventions to learn
-first. A NuGet package that saves typing and then gets out of the way. Source
-under the MIT licence.
+No framework, no container, no conventions. A NuGet package under the MIT
+licence that can be used without arranging the rest of the application
+around it.

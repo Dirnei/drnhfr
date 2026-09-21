@@ -46,7 +46,7 @@ export default {
       ...(commitAge === null
         ? []
         : ([['Updated', `${humaniseCoarse(commitAge)} ago`]] as Array<[string, string]>)),
-      ['CV', ctx.isUnlocked() ? 'unlocked' : 'locked — try su'],
+      ['CV', ctx.isUnlocked() ? 'unlocked' : 'locked, try su'],
     ];
 
     const user = ctx.isUnlocked() ? copy.promptUserRoot : copy.promptUser;

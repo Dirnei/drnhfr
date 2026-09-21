@@ -11,12 +11,11 @@ links:
   docs: 'https://edict.leberkas.org/'
 ---
 
-A command line and a remote console are the same thing wearing two faces: a
-name, a few parameters, an answer. They still get described twice — once in
-the argument parser, once in the RCON handler — and by the second change the
-two have already drifted apart.
+Edict describes commands in a YAML file: what they are called, which
+parameters they take, what they return. Both the command line and the RCON
+console used to control game servers remotely work from that one
+description.
 
-Edict turns that around. The commands live in a YAML file, exactly once: what
-they are called, which parameters they take, what they return. The contract is
-the source and the surfaces are consumers — whether someone types the command
-into a terminal or sends it over RCON to a game server.
+Without it, the two sides are maintained separately, once in the argument
+parser and once in the RCON handler. By the second change they have drifted
+apart.

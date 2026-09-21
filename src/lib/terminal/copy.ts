@@ -23,7 +23,7 @@ export const copy = {
   suMissing: 'su: please supply the root password',
   suWrong: 'su: authentication failure. nice try.',
   suSuccess: 'access granted. you are root.',
-  suHintPrefix: 'the cv is mounted and listed in the nav — or: cd ',
+  suHintPrefix: 'the cv is mounted and listed in the nav. or: cd ',
   cvDescription: 'the cv. root only.',
   exitDone: 'back to guest. cv locked.',
   exitIdle: 'already guest.',

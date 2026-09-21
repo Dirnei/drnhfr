@@ -1,6 +1,6 @@
 ---
 title: 'Gaudi Ballz'
-summary: 'Ein kostenloses, werbefreies Farbsortier-Puzzle fürs Handy. Aus Spaß gebaut.'
+summary: 'Ein Farbsortier-Puzzle fürs Handy, kostenlos und ohne Werbung.'
 role: 'Idee und Umsetzung'
 period: 'PLATZHALTER: Zeitraum'
 stack: ['React', 'Vite', 'PWA']
@@ -11,12 +11,12 @@ links:
   demo: 'https://gaudiballz.leberkas.org/'
 ---
 
-Sortieren, bis jede Farbe für sich steht: Bälle wandern von Kolben zu Kolben,
-bis kein Mischmasch mehr übrig ist. Ein Genre, das jeder kennt — und das in
-den App-Stores fast immer unter Werbung begraben liegt.
+Bälle werden von Kolben zu Kolben umgeschichtet, bis in jedem Kolben nur noch
+eine Farbe liegt. Das Genre gibt es hundertfach in den App-Stores, dort meist
+mit Werbung zwischen den Zügen.
 
-Hier nicht. Kein Konto, keine Werbung, kein Preisschild. Die Seite lässt sich
-als App auf den Homescreen legen und läuft danach auch ohne Netz. Hochformat,
-eine Hand, für zwischendurch.
+Gaudi Ballz läuft im Browser, lässt sich als App auf den Homescreen legen und
+funktioniert danach auch ohne Netz. Kein Konto, keine Werbung, kein
+Preisschild.
 
-Gebaut, weil es Spaß gemacht hat, nicht weil ein Plan dahinterstand.
+Gebaut habe ich es aus Spaß.

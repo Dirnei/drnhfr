@@ -26,6 +26,18 @@ This was applied retroactively: about 1,250 lines of commentary came out of
 
 ---
 
+## Copy
+
+**No em dashes.** Say what a thing is, and if it adds something, why it was
+built. No marketing, no benefit lists, no closing flourish. The owner's own
+line is the model: "Eine YAML-Spezifikation um CLI oder RCON Commands zu
+beschreiben."
+
+Page `<title>` separators are the one exception (`Impressum — Christian
+Dirnhofer`): that is a separator, not prose.
+
+---
+
 ## Verify, don't assume
 
 There is a real browser available, and it has caught bugs in this project that

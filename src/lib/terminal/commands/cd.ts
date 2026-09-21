@@ -6,7 +6,7 @@ const HERE = new Set(['.', '..', '/', '~']);
 export default {
   name: 'cd',
   usage: 'cd <target>',
-  summary: 'move to <target> — ".." and "/" go back',
+  summary: 'move to <target>, ".." and "/" go back',
   order: 2,
   completesEntries: true,
   run(arg, ctx) {

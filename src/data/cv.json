@@ -9,7 +9,7 @@
     "linkedin": "https://www.linkedin.com/in/christian-dirnhofer-a89b4a229/",
     "statement": {
       "de": "Mein Ziel ist es, Software-Landschaften zu vereinheitlichen, zugänglich zu machen und sauber zu integrieren. So entsteht mehr Vernetzung und einfachere Modularisierung. Mit Leidenschaft für Softwarearchitektur, UX und Performance schaffe ich Lösungen, die Nutzer und Entwickler gleichermaßen überzeugen.",
-      "en": "My goal is to unify software landscapes, make them accessible and integrate them cleanly — which buys more connectivity and simpler modularisation. With a passion for software architecture, UX and performance, I build solutions that convince users and developers alike."
+      "en": "My goal is to unify software landscapes, make them accessible and integrate them cleanly, which buys more connectivity and simpler modularisation. With a passion for software architecture, UX and performance, I build solutions that convince users and developers alike."
     }
   },
   "experience": [
@@ -113,7 +113,7 @@
     {
       "group": "Programming Languages",
       "skills": [
-        { "name": { "de": ".NET — Fokus: C#", "en": ".NET — focus: C#" }, "level": 98 },
+        { "name": { "de": ".NET, Fokus: C#", "en": ".NET, focus: C#" }, "level": 98 },
         { "name": "C/C++", "level": 88 },
         { "name": "Go", "level": 65 },
         { "name": "PHP", "level": 45 },

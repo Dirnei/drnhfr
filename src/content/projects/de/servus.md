@@ -1,6 +1,6 @@
 ---
 title: 'Servus'
-summary: 'Die .NET-Bibliothek, in der seit 2017 der Boilerplate landet, den ich sonst in jedem Projekt neu schreiben würde.'
+summary: 'Eine .NET-Bibliothek mit dem Code, den ich sonst in jedem Projekt neu schreibe.'
 role: 'Autor und Maintainer'
 period: '2017 – heute'
 stack: ['.NET', 'C#', 'NuGet']
@@ -12,17 +12,14 @@ links:
   docs: 'https://servus.leberkas.org'
 ---
 
-Jedes neue Projekt fängt mit denselben zwanzig Zeilen an. Ein Start, der
-sauber hochfährt. Eine Collection, die sich so verhält, wie man es erwartet.
-Ein Datum, das nicht beim ersten Zeitzonenwechsel kippt. Irgendwann habe ich
-aufgehört, sie jedes Mal neu zu tippen, und angefangen, sie zu sammeln.
+Servus sammelt die Helfer, die ich seit 2017 in fast jedem .NET-Projekt
+gebraucht habe: Start und Konfiguration einer Anwendung, Nebenläufigkeit,
+Diagnostics, Collections, Typ-Utilities, Text und Datum.
 
-Das war 2017. Seitdem wächst Servus aus echten Projekten heraus statt am
-Reißbrett: Was zweimal gebraucht wurde, wandert rein, alles andere bleibt
-draußen. Geschnitten ist die Bibliothek in Module — Runtime mit Application,
-Concurrency und Diagnostics, Data mit Collections, Type System, Text und
-DateTime, dazu ein paar Extras.
+Angefangen habe ich damit, weil ich dieselben zwanzig Zeilen von einem
+Projekt ins nächste kopiert habe. Was zweimal gebraucht wurde, wandert rein,
+der Rest bleibt draußen.
 
-Bewusst kein Framework: kein Container, den man übernehmen muss, keine
-Konventionen, die man erst lernen müsste. Ein NuGet-Paket, das Tipparbeit
-spart und sich danach wieder aus dem Weg räumt. Quelltext unter MIT-Lizenz.
+Kein Framework, kein Container, keine Konventionen. Ein NuGet-Paket unter
+MIT-Lizenz, das sich benutzen lässt, ohne den Rest der Anwendung danach
+auszurichten.
