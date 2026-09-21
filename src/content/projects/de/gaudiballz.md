@@ -11,12 +11,11 @@ links:
   demo: 'https://gaudiballz.leberkas.org/'
 ---
 
-Bälle werden von Kolben zu Kolben umgeschichtet, bis in jedem Kolben nur noch
-eine Farbe liegt.
+In Gaudi Ballz geht es um das Sortieren von Kugeln, bis alle Farben sauber
+sortiert sind. Einzige Regel: Man darf nur auf gleichfarbige Kugeln ablegen.
 
-Gebaut habe ich das Spiel, weil die Werbung in vergleichbaren Spielen das
-Schlimmste daran ist. Es muss nicht alles ums Geld gehen. Gaudi Ballz ist eine
-Web-App und läuft damit in jedem Browser, kostenlos und ohne Werbung. Auf den
-Homescreen gelegt funktioniert es auch ohne Netz.
+Gebaut habe ich das Spiel, weil die Werbung in vergleichbaren Spielen nervt.
+Es muss nicht alles ums Geld gehen. Gaudi Ballz ist eine PWA (Progressive Web
+App), kostenlos und ohne Werbung.
 
-Sponsoren sind willkommen.
+Finanziert wird der Betrieb durch Sponsoren.

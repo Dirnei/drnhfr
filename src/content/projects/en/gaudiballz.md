@@ -11,11 +11,11 @@ links:
   demo: 'https://gaudiballz.leberkas.org/'
 ---
 
-Balls are moved from flask to flask until each flask holds a single colour.
+Gaudi Ballz is about sorting balls until every colour sits cleanly together.
+Only rule: a ball may only be dropped onto one of the same colour.
 
-I built the game because the advertising in comparable games is the worst
-thing about them. Not everything has to be about money. Gaudi Ballz is a web
-app and therefore runs in any browser, free and without ads. Added to the home
-screen it also works offline.
+I built the game because the advertising in comparable games is annoying. Not
+everything has to be about money. Gaudi Ballz is a PWA (progressive web app),
+free and without ads.
 
-Sponsors are welcome.
+Running it is financed by sponsors.
