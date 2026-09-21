@@ -21,13 +21,17 @@ export const copy = {
    *
    * The last line is the one that has to survive edits: it is the only thing
    * telling a visitor that typing is allowed at all.
+   *
+   * No email address here, and none anywhere else on the home page. It lives
+   * on the contact page and in the Impressum, where someone looking for it
+   * will go — not on the most heavily crawled page of the site, where it is
+   * only there to be harvested.
    */
   motd: [
     'drnhfr-sh 1.0 (x86_64-unknown-linux-gnu)',
     '',
     ' * Documentation:  type "help" or "?"',
-    ' * Support:        christian@dirnhofer.net',
-    ' * Management:     none. this is a personal website.',
+    ' * Getting around: type "ls", then "cd"',
     '',
     'Last login: never, from a machine much like this one.',
   ],
