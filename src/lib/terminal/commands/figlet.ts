@@ -11,7 +11,7 @@ export default {
   name: 'figlet',
   usage: 'figlet <text>',
   summary: 'write it large',
-  order: 12,
+  order: 16,
   async run(arg, ctx) {
     const text = arg.trim() || 'drnhfr';
     if (text.length > MAX_CHARS) {

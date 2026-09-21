@@ -56,7 +56,7 @@ export default {
   name: 'cowsay',
   usage: 'cowsay <text>',
   summary: 'ask the cow to say something',
-  order: 11,
+  order: 15,
   run(arg, ctx) {
     const said = arg.trim() || 'moo';
     // Never wrap wider than the log, or the bubble folds and stops being one.

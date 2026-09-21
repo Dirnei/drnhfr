@@ -177,6 +177,9 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     draw: () => ({ update: () => {}, end: () => {} }),
     columns: () => 80,
     charWidth: () => 7.8,
+    uptimeMs: () => 252000,
+    history: () => [],
+    interrupted: () => new Promise<void>(() => {}),
     reducedMotion: () => true,
     navigate: () => {},
     reboot: () => {},
@@ -293,5 +296,127 @@ describe('figlet', () => {
     await figlet.run('x'.repeat(200), ctx);
     expect(art).toHaveLength(0);
     expect(err[0]).toContain('plenty');
+  });
+});
+
+describe('the small useful ones', () => {
+  it('echo says it back', () => {
+    const { ctx, out } = stubContext();
+    findCommand('echo')!.run('  hello there  ', ctx);
+    expect(out[0]).toBe('hello there');
+  });
+
+  it('uptime humanises the clock', () => {
+    const { ctx, out } = stubContext({ uptimeMs: () => 252_000 });
+    findCommand('uptime')!.run('', ctx);
+    expect(out[0]).toBe('up 4m 12s, 1 user');
+  });
+
+  it('uptime drops the hour until there is one', () => {
+    const { ctx, out } = stubContext({ uptimeMs: () => 9_000 });
+    findCommand('uptime')!.run('', ctx);
+    expect(out[0]).toBe('up 9s, 1 user');
+  });
+
+  it('uptime counts hours once there are', () => {
+    const { ctx, out } = stubContext({ uptimeMs: () => 3_723_000 });
+    findCommand('uptime')!.run('', ctx);
+    expect(out[0]).toBe('up 1h 2m 3s, 1 user');
+  });
+
+  it('history numbers the entries, right-aligned', () => {
+    const many = Array.from({ length: 11 }, (_, index) => `cmd${index + 1}`);
+    const { ctx, out } = stubContext({ history: () => many });
+    findCommand('history')!.run('', ctx);
+    const rows = out[0].split('\n');
+    expect(rows[0]).toBe(' 1  cmd1');
+    expect(rows[10]).toBe('11  cmd11');
+  });
+
+  it('history says so when there is none', () => {
+    const { ctx, out } = stubContext({ history: () => [] });
+    findCommand('history')!.run('', ctx);
+    expect(out[0]).toBe('(nothing yet)');
+  });
+});
+
+describe('fortune', () => {
+  it('prints one of the fortunes', async () => {
+    const { FORTUNES } = await import('../src/lib/terminal/fortunes');
+    const { ctx, out } = stubContext();
+    await findCommand('fortune')!.run('', ctx);
+    expect(FORTUNES).toContain(out[0]);
+  });
+
+  /*
+   * A fortune file that launders someone else's aphorism as your own is worse
+   * than no fortune file. These have to stay unattributed observations.
+   */
+  it('attributes nothing to anyone', async () => {
+    const { FORTUNES } = await import('../src/lib/terminal/fortunes');
+    for (const line of FORTUNES) {
+      expect(line).not.toMatch(/\s[-—]{1,2}\s*[A-Z][a-z]+\s+[A-Z]/);
+    }
+  });
+});
+
+describe('neofetch', () => {
+  it('reports the facts from cv.json, not from a copy', async () => {
+    const cv = (await import('../src/data/cv.json')).default;
+    const { ctx, art } = stubContext();
+    await findCommand('neofetch')!.run('', ctx);
+    const text = art[0];
+    expect(text).toContain('Role:');
+    expect(text).toContain(
+      typeof cv.profile.title === 'string' ? cv.profile.title : cv.profile.title.en,
+    );
+    expect(text).toContain(cv.experience[0].stack[0]);
+  });
+
+  it('reports the cv as locked or unlocked, and says who you are', async () => {
+    const locked = stubContext({ isUnlocked: () => false });
+    await findCommand('neofetch')!.run('', locked.ctx);
+    expect(locked.art[0]).toContain('locked');
+    expect(locked.art[0]).toContain('guest@drnhfr');
+
+    const open = stubContext({ isUnlocked: () => true });
+    await findCommand('neofetch')!.run('', open.ctx);
+    expect(open.art[0]).toContain('unlocked');
+    expect(open.art[0]).toContain('root@drnhfr');
+  });
+
+  it('counts only the commands it would admit to', async () => {
+    const { ctx, art } = stubContext();
+    await findCommand('neofetch')!.run('', ctx);
+    const visible = commands.filter((command) => !command.hidden).length;
+    expect(art[0]).toContain(`${visible} installed`);
+  });
+});
+
+describe('matrix', () => {
+  it('draws a still frame under reduced motion and returns', async () => {
+    let painted = '';
+    const { ctx } = stubContext({
+      reducedMotion: () => true,
+      columns: () => 40,
+      draw: () => ({ update: (text: string) => void (painted = text), end: () => {} }),
+    });
+    await findCommand('matrix')!.run('', ctx);
+    expect(painted.split('\n')).toHaveLength(6);
+  });
+
+  it('stops when interrupted', async () => {
+    let ended = false;
+    let release: () => void = () => {};
+    const { ctx } = stubContext({
+      reducedMotion: () => false,
+      columns: () => 20,
+      draw: () => ({ update: () => {}, end: () => void (ended = true) }),
+      interrupted: () => new Promise<void>((resolve) => (release = resolve)),
+    });
+    const running = findCommand('matrix')!.run('', ctx);
+    release();
+    await running;
+    expect(ended).toBe(true);
   });
 });

@@ -203,6 +203,9 @@ export function boot(): void {
     columns,
     charWidth: measureAdvance,
     reducedMotion,
+    uptimeMs: () => Math.round(performance.now()),
+    history: () => history,
+    interrupted: () => new Promise<void>((resolve) => interruptWaiters.push(resolve)),
     navigate: (href) => {
       window.location.href = href;
     },
@@ -236,6 +239,8 @@ export function boot(): void {
       try {
         await command.run(rest, ctx);
       } finally {
+        // Nothing is waiting on a keypress once the command is done.
+        releaseInterrupt();
         if (!halted) {
           input.disabled = false;
           if (hadFocus) input.focus();
@@ -250,6 +255,21 @@ export function boot(): void {
     stampClock();
     refreshStatus(lastFailed);
   };
+
+  /*
+   * Anything that animates gets a way out. The prompt is disabled while a
+   * command runs, so the keypress lands on the document; this hands it to
+   * whoever is waiting and then rearms.
+   */
+  let interruptWaiters: Array<() => void> = [];
+  const releaseInterrupt = () => {
+    const waiting = interruptWaiters;
+    interruptWaiters = [];
+    for (const resolve of waiting) resolve();
+  };
+  document.addEventListener('keydown', () => {
+    if (interruptWaiters.length > 0) releaseInterrupt();
+  });
 
   // ------------------------------------------------------------- history
   const history: string[] = [];

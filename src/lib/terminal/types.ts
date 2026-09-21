@@ -91,6 +91,16 @@ export interface CommandContext {
   charWidth(sample: string): number;
   /** True when the visitor asked for less motion — animate nothing. */
   reducedMotion(): boolean;
+  /** Milliseconds since the page was opened. */
+  uptimeMs(): number;
+  /** Commands entered this session, oldest first. */
+  history(): readonly string[];
+  /**
+   * Resolves on the next keypress. A long-running command awaits this to let
+   * the visitor out — without it, anything that loops would hold the prompt
+   * hostage until it decided to stop on its own.
+   */
+  interrupted(): Promise<void>;
   navigate(href: string): void;
   /** full = also clear the session flags, so the boot sequence replays. */
   reboot(full: boolean): void;

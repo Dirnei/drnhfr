@@ -4,7 +4,7 @@ export default {
   name: 'reload',
   usage: 'reload',
   summary: 'reload the page',
-  order: 9,
+  order: 18,
   run(_arg, ctx) {
     ctx.reboot(false);
   },
