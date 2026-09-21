@@ -2,7 +2,7 @@
 title: 'Edict'
 summary: 'Ein YAML-Vertrag, der ein Kommando genau einmal beschreibt — für die CLI und für die RCON-Konsole.'
 role: 'Entwurf und Umsetzung'
-period: 'PLATZHALTER: Zeitraum'
+period: '2026 – heute'
 stack: ['YAML']
 featured: true
 order: 20

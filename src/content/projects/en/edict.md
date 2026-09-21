@@ -2,7 +2,7 @@
 title: 'Edict'
 summary: 'A YAML contract that describes a command exactly once — for the CLI and for the RCON console.'
 role: 'Design and implementation'
-period: 'PLACEHOLDER: period'
+period: '2026–present'
 stack: ['YAML']
 featured: true
 order: 20
