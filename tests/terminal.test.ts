@@ -11,6 +11,7 @@ import {
   GLYPH_WIDTH,
   renderBanner,
 } from '../src/lib/terminal/font';
+import { humanise, humaniseCoarse } from '../src/lib/terminal/duration';
 import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
@@ -189,6 +190,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
       otherHomeHref: '/en/',
       searchHref: '/de/search.json',
       introFallbackMs: 0,
+      lastCommit: null,
     },
     print: (text: string) => void out.push(text),
     printArt: (text: string) => void art.push(text),
@@ -527,5 +529,73 @@ describe('curl', () => {
 
   it('answers to wget as well', () => {
     expect(findCommand('wget')?.name).toBe('curl');
+  });
+});
+
+describe('duration formatting', () => {
+  it.each([
+    [9_000, '9s'],
+    [252_000, '4m 12s'],
+    [3_723_000, '1h 2m 3s'],
+    [200_000_000, '2d 7h 33m 20s'],
+    [0, '0s'],
+  ])('%i ms -> %s', (ms, expected) => {
+    expect(humanise(ms)).toBe(expected);
+  });
+
+  it.each([
+    [9_000, '9s'],
+    [252_000, '4m 12s'],
+    [3_723_000, '1h 2m'],
+    [200_000_000, '2d 7h'],
+  ])('coarse: %i ms -> %s', (ms, expected) => {
+    expect(humaniseCoarse(ms)).toBe(expected);
+  });
+});
+
+describe('uptime and the last commit', () => {
+  const withCommit = (iso: string | null, uptimeMs = 252_000) =>
+    stubContext({
+      uptimeMs: () => uptimeMs,
+      config: {
+        lang: 'de',
+        cvHref: '/de/lebenslauf/',
+        otherHomeHref: '/en/',
+        searchHref: '/de/search.json',
+        introFallbackMs: 0,
+        lastCommit: iso,
+      },
+    });
+
+  it('reports the age of the last commit', () => {
+    const twoDaysAgo = new Date(Date.now() - 200_000_000).toISOString();
+    const { ctx, out } = withCommit(twoDaysAgo);
+    findCommand('uptime')!.run('', ctx);
+    expect(out[0]).toBe('up 4m 12s, 1 user');
+    expect(out[1]).toBe('last commit 2d 7h ago');
+  });
+
+  /*
+   * git cannot always answer — a tarball, a shallow export, a machine with no
+   * git at all. Saying nothing is the right answer; inventing a date would
+   * make the site claim it was deployed at a moment it was not.
+   */
+  it('says nothing when git could not answer', () => {
+    const { ctx, out } = withCommit(null);
+    findCommand('uptime')!.run('', ctx);
+    expect(out).toHaveLength(1);
+  });
+
+  it('says nothing rather than "0s ago" when the clock is behind the build', () => {
+    const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const { ctx, out } = withCommit(future);
+    findCommand('uptime')!.run('', ctx);
+    expect(out).toHaveLength(1);
+  });
+
+  it('says nothing when the timestamp is unparseable', () => {
+    const { ctx, out } = withCommit('not-a-date');
+    findCommand('uptime')!.run('', ctx);
+    expect(out).toHaveLength(1);
   });
 });

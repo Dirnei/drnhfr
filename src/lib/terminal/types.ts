@@ -57,6 +57,8 @@ export interface TerminalConfig {
   otherHomeHref: string;
   searchHref: string;
   introFallbackMs: number;
+  /** ISO timestamp of the last commit, or null if git could not say. */
+  lastCommit: string | null;
 }
 
 /**

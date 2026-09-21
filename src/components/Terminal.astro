@@ -5,6 +5,7 @@ import { routePath } from '../i18n/routes';
 import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
 import { bootTiming, bootLines } from '../data/boot';
 import { copy } from '../lib/terminal/copy';
+import { lastCommitIso } from '../lib/build-info';
 
 interface Props {
   lang: Locale;
@@ -35,7 +36,14 @@ const inputLabel = 'Terminal input';
  *
  * The strings live in ../lib/terminal/copy.ts, shared with the client.
  */
-const config = { lang, cvHref, otherHomeHref, searchHref, introFallbackMs };
+const config = {
+  lang,
+  cvHref,
+  otherHomeHref,
+  searchHref,
+  introFallbackMs,
+  lastCommit: lastCommitIso,
+};
 // A literal </script> inside the blob would end the tag early. Nothing here
 // contains one today, but escaping < costs nothing and removes the class.
 const configJson = JSON.stringify(config).replace(/</g, '\\u003c');

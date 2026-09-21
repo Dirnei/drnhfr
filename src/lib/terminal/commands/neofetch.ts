@@ -1,4 +1,5 @@
 import { copy } from '../copy';
+import { humanise, humaniseCoarse } from '../duration';
 import type { Command } from '../types';
 
 /*
@@ -15,19 +16,6 @@ const LOGO = [
   ' |          | ',
   ' ============ ',
 ];
-
-/** "4m 12s" — same shape as the uptime command prints. */
-function humanise(ms: number): string {
-  const total = Math.floor(ms / 1000);
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const seconds = total % 60;
-  const parts: string[] = [];
-  if (hours > 0) parts.push(`${hours}h`);
-  if (hours > 0 || minutes > 0) parts.push(`${minutes}m`);
-  parts.push(`${seconds}s`);
-  return parts.join(' ');
-}
 
 /** cv.json stores a plain string when both languages say the same thing. */
 function pickEn(value: unknown): string {
@@ -56,6 +44,15 @@ export default {
     const cv = (await import('../../../data/cv.json')).default;
     const current = cv.experience[0];
 
+    /* null when git could not answer at build time, or when a skewed clock
+       would make the age negative. Absent beats invented. */
+    const commitAge = (() => {
+      const { lastCommit } = ctx.config;
+      if (!lastCommit) return null;
+      const age = Date.now() - new Date(lastCommit).getTime();
+      return Number.isNaN(age) || age < 0 ? null : age;
+    })();
+
     const rows: Array<[string, string]> = [
       ['Role', pickEn(cv.profile.title)],
       ['Stack', current.stack.slice(0, 5).join(' · ')],
@@ -63,6 +60,9 @@ export default {
       ['Shell', 'drnhfr-sh'],
       ['Commands', `${ctx.commands().filter((command) => !command.hidden).length} installed`],
       ['Uptime', humanise(ctx.uptimeMs())],
+      ...(commitAge === null
+        ? []
+        : ([['Updated', `${humaniseCoarse(commitAge)} ago`]] as Array<[string, string]>)),
       ['CV', ctx.isUnlocked() ? 'unlocked' : 'locked — try su'],
     ];
 
