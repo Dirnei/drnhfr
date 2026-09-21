@@ -37,6 +37,13 @@ built. No marketing, no benefit lists, no closing flourish. The owner's own
 line is the model: "Eine YAML-Spezifikation um CLI oder RCON Commands zu
 beschreiben."
 
+**Plain does not mean short.** The owner's own "Über mich" is the model: he
+names things (Visual Source Safe, ESP32, the Dartomat) instead of categories,
+gives the reason for each step ("Ein Breadboard ist eben nichts auf Dauer und
+Lochrasterplatinen zu langweilig"), says what the work consisted of and how long
+it took, and writes the way he talks ("hab ich mir mal eben einen CO2-Laser
+gebaut"). Cutting his text to terse summary lines is the wrong correction.
+
 Page `<title>` separators are the one exception (`Impressum — Christian
 Dirnhofer`): that is a separator, not prose.
 
