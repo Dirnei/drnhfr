@@ -52,7 +52,13 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     }
   </div>
   <div class="log" id="terminal-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={logLabel}>
-    <p class="line hint">{copy.introLine}</p>
+    {/*
+      One element, not one per line: the log is white-space: pre-wrap, so the
+      blank lines survive as blank lines. Rendered per line they collapsed,
+      because an empty <p> has no height, and a message of the day without
+      its spacing is just a paragraph.
+    */}
+    <p class="line hint">{copy.motd.join(String.fromCharCode(10))}</p>
   </div>
   <form class="term-form" id="terminal-form">
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>

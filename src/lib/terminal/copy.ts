@@ -14,7 +14,23 @@ export const copy = {
   // rendered on the server, so a visitor with no JS is guest.
   promptUser: 'guest@drnhfr',
   promptUserRoot: 'root@drnhfr',
-  introLine: 'type "help" or "?" for a list of commands.',
+  /*
+   * The message of the day, in the shape every Linux login has printed at you
+   * for twenty years. Rendered by the server into the log, so it is there
+   * before any script runs and costs no layout shift.
+   *
+   * The last line is the one that has to survive edits: it is the only thing
+   * telling a visitor that typing is allowed at all.
+   */
+  motd: [
+    'drnhfr-sh 1.0 (x86_64-unknown-linux-gnu)',
+    '',
+    ' * Documentation:  type "help" or "?"',
+    ' * Support:        christian@dirnhofer.net',
+    ' * Management:     none. this is a personal website.',
+    '',
+    'Last login: never, from a machine much like this one.',
+  ],
   reloading: 'reloading …',
   restarting: 'restarting …',
   whoami:
