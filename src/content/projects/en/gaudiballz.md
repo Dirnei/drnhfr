@@ -12,11 +12,10 @@ links:
 ---
 
 Balls are moved from flask to flask until each flask holds a single colour.
-The genre exists a hundred times over in the app stores, there usually with
-advertising between the moves.
 
-Gaudi Ballz runs in the browser, installs onto the home screen as an app and
-works without a connection afterwards. It costs nothing and shows no
-advertising.
+I built the game because the advertising in comparable games is the worst
+thing about them. Not everything has to be about money. Gaudi Ballz is a web
+app and therefore runs in any browser, free and without ads. Added to the home
+screen it also works offline.
 
-I built it for fun.
+Sponsors are welcome.

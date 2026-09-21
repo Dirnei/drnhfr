@@ -12,10 +12,11 @@ links:
 ---
 
 Bälle werden von Kolben zu Kolben umgeschichtet, bis in jedem Kolben nur noch
-eine Farbe liegt. Das Genre gibt es hundertfach in den App-Stores, dort meist
-mit Werbung zwischen den Zügen.
+eine Farbe liegt.
 
-Gaudi Ballz läuft im Browser, lässt sich als App auf den Homescreen legen und
-funktioniert danach auch ohne Netz. Es kostet nichts und zeigt keine Werbung.
+Gebaut habe ich das Spiel, weil die Werbung in vergleichbaren Spielen das
+Schlimmste daran ist. Es muss nicht alles ums Geld gehen. Gaudi Ballz ist eine
+Web-App und läuft damit in jedem Browser, kostenlos und ohne Werbung. Auf den
+Homescreen gelegt funktioniert es auch ohne Netz.
 
-Gebaut habe ich es aus Spaß.
+Sponsoren sind willkommen.
