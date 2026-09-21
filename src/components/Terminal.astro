@@ -150,6 +150,17 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
    * clipped rather than scrolled so a wide frame cannot make the whole page
    * jiggle sideways mid-animation.
    */
+  /*
+   * Art keeps its columns and scrolls sideways if it overflows. A banner is
+   * worth reaching for; the alternative is the log folding it in half and
+   * destroying it.
+   */
+  .log :global(.line.art) {
+    white-space: pre;
+    word-break: normal;
+    overflow-x: auto;
+    line-height: 1.15;
+  }
   .log :global(.line.draw) {
     white-space: pre;
     word-break: normal;

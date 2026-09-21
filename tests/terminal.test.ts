@@ -3,7 +3,8 @@ import { commands, completionNames, findCommand } from '../src/lib/terminal/regi
 import { renderHelp } from '../src/lib/terminal/help-text';
 import { findIn, formatListing, nameFromHref } from '../src/lib/terminal/fs';
 import { codeFor, codeMatches } from '../src/lib/terminal/unlock';
-import type { SearchEntry } from '../src/lib/terminal/types';
+import { FONT, GLYPH_HEIGHT, GLYPH_WIDTH, renderBanner } from '../src/lib/terminal/font';
+import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 /*
  * None of this could be tested before: the whole terminal lived inside a
@@ -137,5 +138,130 @@ describe('the command registry', () => {
       .filter((command) => !command.hidden)
       .map((command) => rows.find((row) => row.startsWith(command.usage))!.indexOf(command.summary));
     expect(new Set(starts).size).toBe(1);
+  });
+});
+
+/*
+ * A stub context. Commands never touch the DOM — they print, navigate and
+ * flip state through this interface — so running one in a test is just
+ * calling it with a fake. None of this was reachable before the refactor.
+ */
+function stubContext(overrides: Partial<CommandContext> = {}) {
+  const out: string[] = [];
+  const art: string[] = [];
+  const err: string[] = [];
+  const ctx = {
+    config: {
+      lang: 'de',
+      cvHref: '/de/lebenslauf/',
+      otherHomeHref: '/en/',
+      searchHref: '/de/search.json',
+      introFallbackMs: 0,
+    },
+    print: (text: string) => void out.push(text),
+    printArt: (text: string) => void art.push(text),
+    printError: (text: string) => void err.push(text),
+    clearScreen: () => {},
+    entries: () => [],
+    find: () => undefined,
+    commands: () => commands,
+    isUnlocked: () => false,
+    setUnlocked: () => {},
+    draw: () => ({ update: () => {}, end: () => {} }),
+    columns: () => 80,
+    reducedMotion: () => true,
+    navigate: () => {},
+    reboot: () => {},
+    ...overrides,
+  } as CommandContext;
+  return { ctx, out, art, err };
+}
+
+describe('the block font', () => {
+  it('has a rectangular grid for every glyph', () => {
+    for (const [char, glyph] of Object.entries(FONT)) {
+      expect(glyph, `${char} height`).toHaveLength(GLYPH_HEIGHT);
+      for (const row of glyph) {
+        expect(row.length, `${char} row "${row}"`).toBe(GLYPH_WIDTH);
+        expect(row, `${char} row "${row}"`).toMatch(/^[#.]+$/);
+      }
+    }
+  });
+
+  it('renders one row per glyph row, whatever the input', () => {
+    expect(renderBanner('drnhfr')).toHaveLength(GLYPH_HEIGHT);
+    expect(renderBanner('')).toHaveLength(GLYPH_HEIGHT);
+  });
+
+  it('falls back to blank for characters it has no glyph for', () => {
+    expect(() => renderBanner('日本語')).not.toThrow();
+    expect(renderBanner('日')).toHaveLength(GLYPH_HEIGHT);
+  });
+
+  it('is case-insensitive', () => {
+    expect(renderBanner('abc')).toEqual(renderBanner('ABC'));
+  });
+});
+
+describe('cowsay', () => {
+  const cowsay = findCommand('cowsay')!;
+
+  it('puts one line in a < > bubble', () => {
+    const { ctx, art } = stubContext();
+    cowsay.run('moo', ctx);
+    const lines = art[0].split('\n');
+    expect(lines[1]).toBe('< moo >');
+    expect(lines[0]).toBe(' _____');
+    expect(lines[2]).toBe(' -----');
+  });
+
+  it('switches to the / | \ frame once it wraps', () => {
+    const { ctx, art } = stubContext({ columns: () => 30 });
+    cowsay.run('the quick brown fox jumps over the lazy dog', ctx);
+    const lines = art[0].split('\n');
+    expect(lines[1].startsWith('/')).toBe(true);
+    expect(lines[1].endsWith(String.fromCharCode(92))).toBe(true);
+    const backslash = String.fromCharCode(92);
+    expect(lines.some((line) => line.startsWith(backslash) && line.endsWith('/'))).toBe(true);
+  });
+
+  it('says moo when given nothing', () => {
+    const { ctx, art } = stubContext();
+    cowsay.run('', ctx);
+    expect(art[0]).toContain('< moo >');
+  });
+
+  it('keeps every bubble line the same width', () => {
+    const { ctx, art } = stubContext({ columns: () => 30 });
+    cowsay.run('one two three four five six seven eight', ctx);
+    // Body lines only: the _____ and ----- rules are inset by one on purpose,
+    // exactly as the original draws them.
+    const body = art[0].split('\n').slice(1, -6);
+    expect(body.length).toBeGreaterThan(1);
+    expect(new Set(body.map((line) => line.length)).size).toBe(1);
+  });
+});
+
+describe('figlet', () => {
+  const figlet = findCommand('figlet')!;
+
+  it('writes the argument large', async () => {
+    const { ctx, art } = stubContext();
+    await figlet.run('hi', ctx);
+    expect(art[0].split('\n')).toHaveLength(GLYPH_HEIGHT);
+    expect(art[0]).toContain('█');
+  });
+
+  it('defaults to the site name', async () => {
+    const { ctx, art } = stubContext();
+    await figlet.run('', ctx);
+    expect(art[0]).toBe(renderBanner('drnhfr').join('\n'));
+  });
+
+  it('refuses a banner nobody asked for', async () => {
+    const { ctx, art, err } = stubContext();
+    await figlet.run('x'.repeat(200), ctx);
+    expect(art).toHaveLength(0);
+    expect(err[0]).toContain('plenty');
   });
 });

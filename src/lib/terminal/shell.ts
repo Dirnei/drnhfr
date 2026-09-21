@@ -183,6 +183,7 @@ export function boot(): void {
   const ctx: CommandContext = {
     config,
     print: (text) => appendLine(text, 'out'),
+    printArt: (text) => appendLine(text, 'art'),
     printError: (text) => {
       lastFailed = true;
       appendLine(text, 'err');

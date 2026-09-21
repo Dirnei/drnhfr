@@ -61,6 +61,12 @@ export interface CommandContext {
   readonly config: TerminalConfig;
   /** Normal output. Multi-line strings are fine; the log preserves newlines. */
   print(text: string): void;
+  /**
+   * Preformatted output that must not be re-wrapped: ASCII art, tables,
+   * anything where a column means something. Stays in the scrollback, unlike
+   * a Drawing, and scrolls sideways rather than folding if it is too wide.
+   */
+  printArt(text: string): void;
   /** Error output. Also lights the ✗ segment in the status line. */
   printError(text: string): void;
   clearScreen(): void;
