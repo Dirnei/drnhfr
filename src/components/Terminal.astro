@@ -161,10 +161,21 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
    * the rows stop touching and every letter is sliced into five visible
    * strips. Same reason letter-spacing has to stay at 0.
    */
+  /*
+   * No overflow of its own. overflow-x: auto here made every banner its own
+   * scroll container — and because CSS refuses to pair a scrolling axis with
+   * a visible one, overflow-y quietly became auto too, so each block carried
+   * its own little scrollbar. The log already scrolls; wide art is its
+   * problem to solve, once, for the whole scrollback.
+   *
+   * line-height 1 is not cosmetic either. The banner is drawn out of U+2588
+   * FULL BLOCK, which fills its em box exactly — at any line-height above 1
+   * the rows stop touching and every letter is sliced into five visible
+   * strips. Same reason letter-spacing has to stay at 0.
+   */
   .log :global(.line.art) {
     white-space: pre;
     word-break: normal;
-    overflow-x: auto;
     line-height: 1;
     letter-spacing: 0;
   }
