@@ -174,6 +174,15 @@ actually needs protecting.
   plain string (same in both) or `{ de, en }`. Zod validates at build time, so
   a missing translation is a build error. Dates are `YYYY-MM` facts, formatted
   per locale at render time.
+- **Project logos are vendored**, like every other asset: `src/assets/projects/`,
+  wired through `logo: image()` in the collection schema. Both are drawn for the
+  light docs sites they come from, so the page sets them on a `--logo-tile`
+  square rather than on the page ground, where a dark-inked mark would vanish.
+  The scanline texture across that tile is `main::after` from `motion.css`, not
+  part of the logo.
+- Link icons are Octicons (MIT), vendored in `src/assets/icons/` with
+  `fill="currentColor"` added; see the README there. `ProjectLinks.astro` maps
+  repo/docs/demo to them.
 - The CV page and the PDF are **the same document**: the PDF is the page
   printed through `src/styles/print.css`. There is no second renderer. On
   screen it is a proportional timeline; `@media print` unwinds that into a

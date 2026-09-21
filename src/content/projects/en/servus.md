@@ -4,6 +4,7 @@ summary: 'The .NET library that has been collecting the same copy-pasted helpers
 role: 'Author and maintainer'
 period: '2017–present'
 stack: ['.NET', 'C#', 'NuGet']
+logo: '../../../assets/projects/servus.png'
 featured: true
 order: 10
 translationKey: 'servus'

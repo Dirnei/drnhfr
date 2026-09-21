@@ -4,6 +4,7 @@ summary: 'Ein YAML-Vertrag, der ein Kommando genau einmal beschreibt — für di
 role: 'Entwurf und Umsetzung'
 period: '2026 – heute'
 stack: ['YAML']
+logo: '../../../assets/projects/edict.png'
 featured: true
 order: 20
 translationKey: 'edict'

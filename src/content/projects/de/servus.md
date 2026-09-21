@@ -4,6 +4,7 @@ summary: 'Die .NET-Bibliothek, in der seit 2017 der Boilerplate landet, den ich 
 role: 'Autor und Maintainer'
 period: '2017 – heute'
 stack: ['.NET', 'C#', 'NuGet']
+logo: '../../../assets/projects/servus.png'
 featured: true
 order: 10
 translationKey: 'servus'

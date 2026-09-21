@@ -1,0 +1,51 @@
+---
+import type { Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import GithubIcon from '../assets/icons/github.svg';
+import ProjectPageIcon from '../assets/icons/project-page.svg';
+import ExternalIcon from '../assets/icons/external.svg';
+
+interface Props {
+  lang: Locale;
+  links: { repo?: string; docs?: string; demo?: string };
+}
+
+const { lang, links } = Astro.props;
+const t = useTranslations(lang);
+const items = [
+  { href: links.repo, label: t('projects.repo'), Icon: GithubIcon },
+  { href: links.docs, label: t('projects.docs'), Icon: ProjectPageIcon },
+  { href: links.demo, label: t('projects.demo'), Icon: ExternalIcon },
+].filter((item) => Boolean(item.href));
+---
+{
+  items.length > 0 && (
+    <p class="mono-label links">
+      {items.map(({ href, label, Icon }) => (
+        <a href={href}>
+          <Icon width={14} height={14} aria-hidden="true" focusable="false" />
+          {label}
+        </a>
+      ))}
+    </p>
+  )
+}
+<style>
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-block: 1.5rem 0;
+  }
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .links a:hover {
+    color: var(--red);
+  }
+  .links :global(svg) {
+    flex: none;
+  }
+</style>
