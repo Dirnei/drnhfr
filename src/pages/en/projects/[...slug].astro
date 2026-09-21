@@ -46,10 +46,7 @@ const altHref = counterpart
           <Image src={logo} alt="" width={128} height={128} densities={[1, 2]} />
         </div>
       )}
-      <div>
-        <p class="mono-label crumb">Project</p>
-        <h1>{project.data.title}</h1>
-      </div>
+      <h1>{project.data.title}</h1>
     </div>
     <p class="summary">{project.data.summary}</p>
     <dl class="facts">
@@ -88,12 +85,9 @@ const altHref = counterpart
     height: 100%;
     object-fit: contain;
   }
-  .crumb {
-    color: var(--text-muted);
-  }
   h1 {
     font-size: clamp(1.9rem, 7vw, 3rem);
-    margin-block: 0.4rem 0;
+    margin: 0;
   }
   @media (max-width: 30rem) {
     .head {
