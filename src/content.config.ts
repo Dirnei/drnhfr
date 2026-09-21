@@ -13,6 +13,7 @@ const projects = defineCollection({
     links: z
       .object({
         repo: z.url().optional(),
+        docs: z.url().optional(),
         demo: z.url().optional(),
       })
       .default({}),

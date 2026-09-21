@@ -11,6 +11,7 @@ export const en: Record<keyof typeof de, string> = {
   'projects.period': 'Period',
   'projects.stack': 'Stack',
   'projects.repo': 'Source',
+  'projects.docs': 'Documentation',
   'projects.demo': 'Demo',
   'projects.empty': 'The first projects are being written up.',
   'cv.title': 'CV',

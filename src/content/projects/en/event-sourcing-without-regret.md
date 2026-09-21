@@ -5,7 +5,7 @@ role: 'Architecture and implementation'
 period: '2024–2026'
 stack: ['.NET', 'Akka.NET', 'PostgreSQL']
 featured: true
-order: 10
+order: 30
 translationKey: 'event-sourcing'
 links: {}
 ---

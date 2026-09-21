@@ -55,6 +55,13 @@ const altHref = counterpart
       )
     }
     {
+      project.data.links.docs && (
+        <p class="mono-label">
+          <a href={project.data.links.docs}>{t('projects.docs')}</a>
+        </p>
+      )
+    }
+    {
       project.data.links.demo && (
         <p class="mono-label">
           <a href={project.data.links.demo}>{t('projects.demo')}</a>

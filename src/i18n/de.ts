@@ -9,6 +9,7 @@ export const de = {
   'projects.period': 'Zeitraum',
   'projects.stack': 'Stack',
   'projects.repo': 'Quellcode',
+  'projects.docs': 'Dokumentation',
   'projects.demo': 'Demo',
   'projects.empty': 'Die ersten Projekte werden gerade aufbereitet.',
   'cv.title': 'Lebenslauf',
