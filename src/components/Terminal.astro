@@ -156,6 +156,17 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     flex: 1 1 auto;
     min-height: 0;
   }
+  /*
+   * Auto margins switch stretch off. .shell and .terminal both centre with
+   * margin: 0 auto, and in a column flex container that means they size to
+   * their content rather than filling the row — the terminal collapsed to
+   * 498px of a 1088px column, because the longest line in it happened to be
+   * short. width restores the fill; max-width still caps it and the auto
+   * margins still centre it.
+   */
+  :global(main:has(.terminal)) > * {
+    width: 100%;
+  }
   :global(main:has(.terminal)) .terminal {
     display: flex;
     flex-direction: column;
