@@ -64,12 +64,6 @@ const xDefaultHref =
     <link rel="alternate" hreflang={lang} href={canonical} />
     {xDefaultHref && <link rel="alternate" hreflang="x-default" href={xDefaultHref} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      title={`Christian Dirnhofer — Blog (${lang})`}
-      href={`/${lang}/rss.xml`}
-    />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Christian Dirnhofer" />
     <meta property="og:locale" content={lang === 'de' ? 'de_DE' : 'en_GB'} />

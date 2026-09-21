@@ -45,9 +45,9 @@ describe('the unlock code', () => {
 
 describe('the filesystem', () => {
   const entries: SearchEntry[] = [
-    { href: '/de/blog/', type: 'page' },
+    { href: '/de/projekte/', type: 'page' },
     { href: '/de/projekte/akka-cluster/', type: 'project' },
-    { href: '/de/blog/split-brain/', type: 'post' },
+    { href: '/de/projekte/split-brain/', type: 'project' },
     { href: '/de/kontakt/', type: 'page' },
   ];
 
@@ -57,17 +57,17 @@ describe('the filesystem', () => {
   });
 
   it('resolves a bare name, ignoring case and slashes', () => {
-    expect(findIn(entries, 'BLOG')?.href).toBe('/de/blog/');
-    expect(findIn(entries, '/blog/')?.href).toBe('/de/blog/');
+    expect(findIn(entries, 'PROJEKTE')?.href).toBe('/de/projekte/');
+    expect(findIn(entries, '/projekte/')?.href).toBe('/de/projekte/');
     expect(findIn(entries, 'nope')).toBeUndefined();
     expect(findIn(entries, '  ')).toBeUndefined();
   });
 
-  it('lists pages first, then projects, then articles', () => {
+  it('lists pages first, then projects', () => {
     const rows = formatListing(entries).split('\n');
     expect(rows.map((row) => row.trim().split(/\s{2,}/)[0])).toEqual([
-      'blog/',
       'kontakt/',
+      'projekte/',
       'akka-cluster',
       'split-brain',
     ]);
@@ -432,9 +432,9 @@ describe('curl', () => {
   });
 
   it('treats a leading slash as a path on this site', () => {
-    expect(resolveTarget('/de/blog/', ORIGIN)).toEqual({
+    expect(resolveTarget('/de/projekte/', ORIGIN)).toEqual({
       ok: true,
-      href: 'https://dirnhofer.net/de/blog/',
+      href: 'https://dirnhofer.net/de/projekte/',
     });
   });
 

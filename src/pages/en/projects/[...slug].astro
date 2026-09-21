@@ -2,7 +2,7 @@
 import { render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Prose from '../../../components/Prose.astro';
-import { getProjects, getPostsForProject } from '../../../lib/entries';
+import { getProjects } from '../../../lib/entries';
 import { slugOf } from '../../../lib/ids';
 import { findCounterpart } from '../../../lib/translations';
 import { useTranslations } from '../../../i18n/ui';
@@ -26,7 +26,6 @@ const altHref = counterpart
   ? `/de/projekte/${slugOf(counterpart.id)}/`
   : routePath('projects', 'de');
 
-const posts = await getPostsForProject(project.id, 'en');
 ---
 <BaseLayout
   lang="en"
@@ -64,20 +63,6 @@ const posts = await getPostsForProject(project.id, 'en');
     }
     <hr />
     <Prose><Content /></Prose>
-    {
-      posts.length > 0 && (
-        <section class="related">
-          <h2 class="mono-label">{t('projects.relatedPosts')}</h2>
-          <ul>
-            {posts.map((post) => (
-              <li>
-                <a href={`/en/blog/${slugOf(post.id)}/`}>{post.data.title}</a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
   </article>
 </BaseLayout>
 <style>

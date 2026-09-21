@@ -1,10 +1,10 @@
 import type { APIContext } from 'astro';
-import { getPosts, getProjects } from '../../lib/entries';
+import { getProjects } from '../../lib/entries';
 import { slugOf } from '../../lib/ids';
 import { routePath } from '../../i18n/routes';
 
 export async function GET(_context: APIContext) {
-  const [posts, projects] = await Promise.all([getPosts('en'), getProjects('en')]);
+  const projects = await getProjects('en');
 
   const entries = [
     { title: 'Home', href: '/en/', kind: 'Page', type: 'page', description: 'The home page, with a terminal.' },
@@ -13,12 +13,6 @@ export async function GET(_context: APIContext) {
       href: routePath('projects', 'en'),
       kind: 'Page', type: 'page',
       description: 'Overview of past and current projects.',
-    },
-    {
-      title: 'Blog',
-      href: routePath('blog', 'en'),
-      kind: 'Page', type: 'page',
-      description: 'Articles on distributed systems, .NET and actor models.',
     },
     {
       title: 'Contact',
@@ -43,12 +37,6 @@ export async function GET(_context: APIContext) {
       href: `/en/projects/${slugOf(p.id)}/`,
       kind: 'Project', type: 'project',
       description: p.data.summary,
-    })),
-    ...posts.map((p) => ({
-      title: p.data.title,
-      href: `/en/blog/${slugOf(p.id)}/`,
-      kind: 'Article', type: 'post',
-      description: p.data.description,
     })),
   ];
 

@@ -13,7 +13,7 @@ interface Props {
 
 const { lang, current, altHref, altAvailable = true } = Astro.props;
 const t = useTranslations(lang);
-const items: RouteKey[] = ['projects', 'blog', 'contact'];
+const items: RouteKey[] = ['projects', 'contact'];
 ---
 <ul class="nav-list">
   {

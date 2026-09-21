@@ -29,7 +29,7 @@ export const copy = {
   exitIdle: 'already guest.',
   chips: [
     { label: 'ls', run: 'ls' },
-    { label: 'cd blog', run: 'cd blog' },
+    { label: 'neofetch', run: 'neofetch' },
     { label: 'help', run: 'help' },
   ],
 } as const;

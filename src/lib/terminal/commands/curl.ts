@@ -10,7 +10,7 @@ export function resolveTarget(input: string, base: string): Resolved {
 
   let url: URL;
   try {
-    // A bare "example.com" is a host, not a path — but "/de/blog/" is a path.
+    // A bare "example.com" is a host, not a path — but "/de/projekte/" is a path.
     const looksAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(raw);
     const looksLikeHost = !looksAbsolute && !raw.startsWith('/') && raw.includes('.');
     url = new URL(looksLikeHost ? `https://${raw}` : raw, base);

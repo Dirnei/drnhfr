@@ -10,9 +10,8 @@ export function nameFromHref(href: string): string {
 export const TYPE_LABEL: Record<string, string> = {
   page: 'Page',
   project: 'Project',
-  post: 'Article',
 };
-const TYPE_ORDER: Record<string, number> = { page: 0, project: 1, post: 2 };
+const TYPE_ORDER: Record<string, number> = { page: 0, project: 1 };
 
 export function isPageType(type: string): boolean {
   return type === 'page';

@@ -2,7 +2,6 @@ import type { Locale } from './locales';
 
 export const routeSegments = {
   projects: { de: 'projekte', en: 'projects' },
-  blog: { de: 'blog', en: 'blog' },
   cv: { de: 'lebenslauf', en: 'cv' },
   contact: { de: 'kontakt', en: 'contact' },
   imprint: { de: 'impressum', en: 'imprint' },
