@@ -6,14 +6,13 @@ export const en: Record<keyof typeof de, string> = {
   'nav.contact': 'Contact',
   'nav.imprint': 'Imprint',
   'nav.privacy': 'Privacy',
-  'projects.title': 'Projects',
   'projects.role': 'Role',
   'projects.period': 'Period',
   'projects.stack': 'Stack',
   'projects.repo': 'GitHub',
   'projects.docs': 'Project page',
   'projects.demo': 'Try it',
-  'projects.empty': 'The first projects are being written up.',
+  'projects.kind': 'Project',
   'cv.title': 'CV',
   'cv.print': 'Print as PDF',
   'cv.timeline': 'Career',
@@ -22,6 +21,5 @@ export const en: Record<keyof typeof de, string> = {
   'contact.title': 'Contact',
   'lang.switch': 'Switch language',
   'lang.missing': 'This article is not available in German yet.',
-  'legal.bindingNotice':
-    'This is a translation for convenience. The German version is the legally binding one.',
+  'search.page': 'Page',
 };

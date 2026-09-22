@@ -37,7 +37,8 @@ built. No marketing, no benefit lists, no closing flourish. The owner's own
 line is the model: "Eine YAML-Spezifikation um CLI oder RCON Commands zu
 beschreiben."
 
-**Plain does not mean short.** The owner's own "Über mich" is the model: he
+**Plain does not mean short.** The owner's own "Über mich"
+(`src/content/pages/contact/contact.de.md`) is the model: he
 names things (Visual Source Safe, ESP32, the Dartomat) instead of categories,
 gives the reason for each step ("Ein Breadboard ist eben nichts auf Dauer und
 Lochrasterplatinen zu langweilig"), says what the work consisted of and how long
@@ -121,7 +122,10 @@ grid. `figlet` measures its ink before drawing with it for exactly this reason.
 ## Astro 7 notes
 
 Rust compiler: unclosed tags are errors. Markdown runs through **Sätteri** —
-do **not** install `@astrojs/markdown-remark`.
+do **not** install `@astrojs/markdown-remark`. Since the page split below,
+Sätteri renders every page's prose, not just project entries, so swapping it
+out would reformat the legal pages too. It applies smart quotes: straight `"`
+and `'` in a content file come out typographic.
 
 **Scoped styles only reach elements Astro rendered.** Astro stamps
 `data-astro-cid-*` at build time, so anything created by `document.createElement`
@@ -131,6 +135,65 @@ ever checked. Log line styles therefore use `.log :global(.line…)`; the
 `:global` is load-bearing, do not tidy it away.
 
 ---
+
+## Pages
+
+A page is one folder under `src/content/pages/`, and nothing about it lives
+anywhere else:
+
+```
+src/content/pages/contact/
+  route.ts        where it sits in the URL tree
+  Contact.astro   markup + <style>, rendered for both languages
+  contact.de.md   prose
+  contact.en.md
+```
+
+`src/pages/` holds three files in total and you should almost never open them:
+`[...path].astro` renders whatever slice a URL resolves to, `[lang]/search.json.ts`
+emits both search indexes, and `404.astro` is the one page Astro insists on
+having by name.
+
+### Adding a page
+
+Add the folder. `route.ts` is the whole installation step — `import.meta.glob`
+in `src/lib/page-routes.ts` finds it, the same way `import.meta.glob` finds
+terminal commands:
+
+```ts
+import type { PageSlice } from '../../lib/page-routes';
+import Contact from './Contact.astro';
+
+export default { routes: [{ key: 'contact', component: Contact }] } satisfies PageSlice;
+```
+
+`key` is a `RouteKey`, so the URL segments come from `routeSegments` in
+`src/i18n/routes.ts` and a typo is a type error. That map stays central because
+the nav, the footer and the language switch need it without loading any page
+component. A key in it with no slice behind it **fails the build** by name.
+
+One slice can own several routes (`legal/route.ts` returns imprint and privacy,
+both pointing at `Legal.astro` with a different `props.page`) and a route can
+own dynamic children (`projects/route.ts` returns one child per project entry,
+rendered by `ProjectDetail.astro`).
+
+**Markup never forks per language.** A difference between DE and EN has to be
+expressible as content or it is not a difference the site is allowed to have.
+The hero headline is an array, so German is one line and English two with no
+second `<h1>`. The "translation for convenience" banner is an optional `notice`
+block, present only in the English legal files. Before the split the same
+banner had grown five lines of CSS that the German pages never got, and nobody
+noticed, because the two files were only ever read one at a time.
+
+Consequence of rendering prose through markdown: **a page component's styles
+for that prose must be `is:global`**, prefixed with the page's own class, the
+way `Prose.astro` does it. Markdown output is not Astro-rendered, so it carries
+no `data-astro-cid-*` and a scoped rule slides straight off it. That is why
+`Legal.astro` styles `.legal h2` instead of relying on `class="mono-label"` —
+markdown cannot put a class on a heading.
+
+`tests/content-pages.test.ts` fails the build if a page has one language and not
+the other.
 
 ## The terminal
 
@@ -193,18 +256,34 @@ actually needs protecting.
 
 ## Content and data
 
+- **Every content file is `<name>.<lang>.md`**, in a folder named after the
+  thing it belongs to: `src/content/projects/edict/edict.de.md`,
+  `src/content/pages/contact/contact.de.md`. One `localised()` loader in
+  `src/content.config.ts` defines that convention once, and `langOf` / `slugOf`
+  in `src/lib/ids.ts` read it back. Nothing about a file's language or
+  identity appears inside it: a frontmatter `lang` or `translationKey` could
+  contradict the filename, and both used to. Two entries are translations of
+  each other when their slugs match, which is what `findCounterpart` compares.
+- **Each page kind gets its own collection** in `src/content.config.ts` rather
+  than one loose `pages` collection, so every schema is exact and a missing
+  field is a build error instead of an `undefined` in the markup.
 - **`src/data/cv.json` is one file for both languages.** A field is either a
   plain string (same in both) or `{ de, en }`. Zod validates at build time, so
   a missing translation is a build error. Dates are `YYYY-MM` facts, formatted
   per locale at render time.
-- **Project logos are vendored**, like every other asset: `src/assets/projects/`,
-  mapped to a project in `src/lib/project-logos.ts` by `translationKey`. They are
-  deliberately **not** an `image()` field on the collection: in Astro 7.3.3 the dev
-  server writes `.astro/content-assets.mjs` empty, so an `image()` field rehydrates
-  to nothing and the logo is invisible in `astro dev` while being fine in a build.
-  A plain ESM import behaves the same in both. Both logos are drawn for the
-  light docs sites they come from, so the page sets them on a `--logo-tile`
-  square rather than on the page ground, where a dark-inked mark would vanish.
+- **A project's logo lives in the project's folder**, named
+  `<slug>.<light|dark>.png`. `src/lib/project-logos.ts` finds it with
+  `import.meta.glob`, so there is no list to keep in step — but the tile shade
+  has to ride in the filename, because it is per project and not per language,
+  and putting it in frontmatter would mean writing it into both `.de.md` and
+  `.en.md` where the two could disagree. The logo is deliberately **not** an
+  `image()` field on the collection: in Astro 7.3.3 the dev server writes
+  `.astro/content-assets.mjs` empty, so an `image()` field rehydrates to nothing
+  and the logo is invisible in `astro dev` while being fine in a build. A glob
+  or plain ESM import behaves the same in both — check any change to this in
+  `astro dev`, not just a build. The marks are drawn for the light docs sites
+  they come from, so the page sets them on a `--logo-tile` square rather than
+  on the page ground, where a dark-inked mark would vanish.
   The scanline texture across that tile is `main::after` from `motion.css`, not
   part of the logo.
 - Link icons are Octicons (MIT), vendored in `src/assets/icons/` with
@@ -219,10 +298,10 @@ actually needs protecting.
 
 ## The email address
 
-Contact page and Impressum. Also the Datenschutz/Privacy pages, where Art. 13
-GDPR requires the controller's contact details — that one stays. It is
-deliberately **not** in the footer or the terminal MOTD; the home page is the
-most crawled page on the site. If you are about to add a contact line
+`src/content/pages/contact/contact.*.md` and `legal/imprint.*.md`. Also
+`legal/privacy.*.md`, where Art. 13 GDPR requires the controller's contact
+details — that one stays. It is deliberately **not** in the footer or the
+terminal MOTD; the home page is the most crawled page on the site. If you are about to add a contact line
 somewhere, don't.
 
 ---
@@ -242,8 +321,9 @@ somewhere, don't.
   trailers, no attribution.
 - Generated directories get a self-ignoring `.gitignore` containing `*` inside
   them, not a root-level entry.
-- `src/pages/*/index.astro` carry the owner's own hero copy. He edits them
-  directly; leave uncommitted changes there alone unless asked.
+- `src/content/pages/home/home.*.md` carries the owner's own hero copy. He edits
+  it directly; leave uncommitted changes there alone unless asked. No copy
+  lives under `src/pages/` at all.
 
 ## Before launch (owner's list)
 

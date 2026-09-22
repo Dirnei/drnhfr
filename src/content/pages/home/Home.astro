@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import DecodeText from '../../../components/DecodeText.astro';
+import Terminal from '../../../components/Terminal.astro';
+import { getHomePage } from '../../../lib/entries';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const { data } = await getHomePage(lang);
+const HEADLINE_STEP_MS = 210;
+---
+<BaseLayout
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  altHref={`/${otherLocale(lang)}/`}
+  showIntro
+>
+  <div class="shell hero">
+    <p class="mono-label kicker">{data.kicker}</p>
+    <h1>
+      {
+        data.headline.map((line, index) => (
+          <>
+            {index > 0 && <br />}
+            <DecodeText text={line} delay={data.headlineDelay + index * HEADLINE_STEP_MS} />
+          </>
+        ))
+      }
+    </h1>
+    <p class="sub">
+      {
+        data.sub.map((line, index) => (
+          <>
+            {index > 0 && <br />}
+            {line}
+          </>
+        ))
+      }
+    </p>
+  </div>
+  <Terminal lang={lang} />
+</BaseLayout>
+<style>
+  .hero {
+    padding-block: 3rem 1.5rem;
+  }
+  .kicker {
+    color: var(--text-muted);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 12vw, 5.5rem);
+  }
+  .sub {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 44ch;
+    margin-top: 1.25rem;
+  }
+</style>

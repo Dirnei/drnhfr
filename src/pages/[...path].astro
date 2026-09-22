@@ -1,0 +1,10 @@
+---
+import { collectRoutes } from '../lib/page-routes';
+
+export async function getStaticPaths() {
+  return collectRoutes();
+}
+
+const { Component, componentProps } = Astro.props;
+---
+<Component {...componentProps} />

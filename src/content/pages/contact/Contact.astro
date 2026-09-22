@@ -1,0 +1,138 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import portrait from '../../../assets/christian-dirnhofer.jpg';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { routePath } from '../../../i18n/routes';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { getContactPage } from '../../../lib/entries';
+import MailIcon from '../../../assets/icons/mail.svg';
+import LinkedInIcon from '../../../assets/icons/linkedin.svg';
+import GithubIcon from '../../../assets/icons/github.svg';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const entry = await getContactPage(lang);
+const { data } = entry;
+const { Content } = await render(entry);
+---
+<BaseLayout
+  lang={lang}
+  current="contact"
+  title={data.title}
+  description={data.description}
+  altHref={routePath('contact', otherLocale(lang))}
+>
+  <div class="shell contact">
+    <h1>{data.heading}</h1>
+    <div class="top">
+      <Image
+        src={portrait}
+        alt="Christian Dirnhofer"
+        width={180}
+        height={180}
+        class="portrait"
+        loading="eager"
+      />
+      <div class="reach">
+        <ul class="links">
+          <li>
+            <span class="mono-label">
+              <MailIcon width={14} height={14} aria-hidden="true" focusable="false" />{data.labels.email}
+            </span>
+            <a href="mailto:christian@dirnhofer.net">christian@dirnhofer.net</a>
+          </li>
+          <li>
+            <span class="mono-label">
+              <LinkedInIcon width={14} height={14} aria-hidden="true" focusable="false" />{data.labels.linkedin}
+            </span>
+            <a href="https://www.linkedin.com/in/christian-dirnhofer-a89b4a229/">
+              christian-dirnhofer
+            </a>
+          </li>
+          <li>
+            <span class="mono-label">
+              <GithubIcon width={14} height={14} aria-hidden="true" focusable="false" />{data.labels.github}
+            </span>
+            <a href="https://github.com/Dirnei">Dirnei</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <section class="about">
+      <h2>{data.aboutHeading}</h2>
+      <Content />
+    </section>
+  </div>
+</BaseLayout>
+<style>
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 1rem;
+  }
+  .top {
+    display: grid;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (min-width: 46rem) {
+    .top {
+      grid-template-columns: 180px 1fr;
+      gap: 2.5rem;
+    }
+  }
+  .portrait {
+    display: block;
+    width: 180px;
+    height: auto;
+    margin: 0;
+    border: 1px solid var(--hairline);
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+  }
+  .links li {
+    border-top: 1px solid var(--hairline-soft);
+    padding-block: 0.75rem;
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    align-items: baseline;
+  }
+  .links .mono-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .links a:hover {
+    color: var(--red);
+  }
+  .about {
+    border-top: 1px solid var(--hairline);
+    margin-top: 3rem;
+    padding-top: 2rem;
+  }
+  .about h2 {
+    font-size: 1.5rem;
+    margin-block: 0 1rem;
+  }
+</style>
+<style is:global>
+  .contact .about p {
+    max-width: var(--measure);
+    color: var(--text-body);
+  }
+  .contact .about a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-color: var(--hairline);
+  }
+  .contact .about a:hover {
+    color: var(--red);
+    text-decoration-color: var(--red);
+  }
+</style>

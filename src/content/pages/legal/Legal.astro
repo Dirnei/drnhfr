@@ -1,0 +1,66 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { routePath } from '../../../i18n/routes';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { getLegalPage, type LegalPage } from '../../../lib/entries';
+
+interface Props {
+  lang: Locale;
+  page: LegalPage;
+}
+
+const { lang, page } = Astro.props;
+const entry = await getLegalPage(page, lang);
+const { data } = entry;
+const { Content } = await render(entry);
+const bindingHref = routePath(page, 'de');
+// set:html below: the German privacy heading carries a soft hyphen.
+---
+<BaseLayout
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  altHref={routePath(page, otherLocale(lang))}
+>
+  <div class="shell legal">
+    <h1 set:html={data.heading} />
+
+    {
+      data.notice && (
+        <p class="notice mono-label">
+          {data.notice.before}
+          <a href={bindingHref}>{bindingHref}</a>
+          {data.notice.after}
+        </p>
+      )
+    }
+
+    <Content />
+  </div>
+</BaseLayout>
+<style is:global>
+  .legal {
+    line-height: 1.7;
+  }
+  .legal h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 1rem;
+  }
+  .legal h2 {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 2rem;
+  }
+  .legal a:hover {
+    color: var(--red);
+  }
+  .legal .notice {
+    border-left: 3px solid var(--red);
+    padding-left: 0.75rem;
+    color: var(--text-muted);
+  }
+</style>

@@ -1,0 +1,69 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CvDocument from '../../../components/CvDocument.astro';
+import { routePath } from '../../../i18n/routes';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { getCvGatePage } from '../../../lib/entries';
+import { UNLOCK_KEY } from '../../../lib/terminal/unlock';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const entry = await getCvGatePage(lang);
+const { data } = entry;
+const { Content } = await render(entry);
+---
+<BaseLayout
+  lang={lang}
+  current="cv"
+  title={data.title}
+  description={data.description}
+  altHref={routePath('cv', otherLocale(lang))}
+  noindex
+>
+  <div class="shell cv-locked" id="cv-locked">
+    <p class="line">{data.command}</p>
+    <p class="line err">{data.error}</p>
+    <Content />
+  </div>
+  <div class="shell cv" id="cv-content" hidden>
+    <CvDocument lang={lang} />
+  </div>
+</BaseLayout>
+<style is:global>
+  .cv {
+    max-width: 50rem;
+  }
+  .cv-locked {
+    max-width: 50rem;
+    padding-block: 3rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.8;
+  }
+  .cv-locked p {
+    margin: 0;
+  }
+  .cv-locked .err {
+    color: var(--red-text);
+  }
+  .cv-locked a {
+    color: var(--boot-info);
+  }
+  .cv-locked a:hover {
+    color: var(--red-text);
+  }
+</style>
+<script is:inline define:vars={{ storageKey: UNLOCK_KEY }}>
+  try {
+    if (sessionStorage.getItem(storageKey) === '1') {
+      document.getElementById('cv-locked').hidden = true;
+      document.getElementById('cv-content').hidden = false;
+    }
+  } catch {
+    // Not fatal: worst case the cv stays locked for this visit.
+  }
+</script>

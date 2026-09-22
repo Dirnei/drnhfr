@@ -1,16 +1,25 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { locales } from '../src/i18n/locales';
-import { routeSegments } from '../src/i18n/routes';
+import { routePath, routeSegments, type RouteKey } from '../src/i18n/routes';
 
-describe('routeSegments matches an actual page on disk', () => {
-  for (const key of Object.keys(routeSegments) as (keyof typeof routeSegments)[]) {
-    for (const locale of locales) {
+const keys = Object.keys(routeSegments) as RouteKey[];
+
+describe('route segments', () => {
+  for (const locale of locales) {
+    it(`are unique within ${locale}`, () => {
+      const segments = keys.map((key) => routeSegments[key][locale]);
+      expect(new Set(segments).size).toBe(segments.length);
+    });
+
+    for (const key of keys) {
       const segment = routeSegments[key][locale];
-      it(`src/pages/${locale}/${segment}/index.astro exists (routeSegments.${key}.${locale})`, () => {
-        const path = join(process.cwd(), 'src', 'pages', locale, segment, 'index.astro');
-        expect(existsSync(path)).toBe(true);
+
+      it(`${key}.${locale} is a bare url-safe segment`, () => {
+        expect(segment).toMatch(/^[a-z0-9-]+$/);
+      });
+
+      it(`${key}.${locale} builds an absolute path`, () => {
+        expect(routePath(key, locale)).toBe(`/${locale}/${segment}/`);
       });
     }
   }

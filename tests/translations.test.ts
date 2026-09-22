@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { findCounterpart } from '../src/lib/translations';
 
-const entries = [
-  { id: 'en/split-brain', data: { translationKey: 'split-brain' } },
-  { id: 'en/event-sourcing', data: { translationKey: 'event-sourcing' } },
-];
+const entries = [{ id: 'split-brain.en' }, { id: 'event-sourcing.en' }];
 
 describe('findCounterpart', () => {
-  it('finds the entry with the matching translation key', () => {
-    expect(findCounterpart(entries, 'split-brain')?.id).toBe('en/split-brain');
+  it('finds the entry whose slug matches', () => {
+    expect(findCounterpart(entries, 'split-brain')?.id).toBe('split-brain.en');
   });
 
   it('returns undefined when no counterpart exists', () => {
