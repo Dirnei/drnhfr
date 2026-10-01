@@ -2,14 +2,6 @@
 title: 'HomeRacker'
 summary: 'Website und Konfigurator für HomeRacker, das modulare 3D-Druck-Racksystem von Patrick Pötz.'
 role: 'Redesign der Website und Konfigurator'
-period: '2026 – heute'
-stack: ['Astro', 'SVG']
-featured: true
-order: 30
-links:
-  repo: 'https://github.com/kellerlabs/homeracker'
-  docs: 'https://homeracker.org/'
-  demo: 'https://homeracker.org/configurator/'
 ---
 
 HomeRacker ist ein Racksystem zum Selberdrucken. Alle Teile lassen sich

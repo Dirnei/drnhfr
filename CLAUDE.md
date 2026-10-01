@@ -264,6 +264,15 @@ actually needs protecting.
   identity appears inside it: a frontmatter `lang` or `translationKey` could
   contradict the filename, and both used to. Two entries are translations of
   each other when their slugs match, which is what `findCounterpart` compares.
+- **A project's untranslated facts live once, in `<slug>.json`** next to its
+  texts: `begin`, optional `end` (`YYYY` or `YYYY-MM`), `stack`, `links`,
+  `featured`, `order`. The `.de.md` / `.en.md` files carry only `title`,
+  `summary`, `role` and the body. The period used to be a string in both
+  files and they disagreed ("heute" vs "present"); now it is two facts and
+  `formatRange` words it per language. `getProjects()` joins the two
+  collections and throws on either half missing, and
+  `tests/projects-content.test.ts` fails if a shared field creeps back into
+  a text file.
 - **Each page kind gets its own collection** in `src/content.config.ts` rather
   than one loose `pages` collection, so every schema is exact and a missing
   field is a build error instead of an `undefined` in the markup.

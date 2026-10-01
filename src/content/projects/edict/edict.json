@@ -1,0 +1,9 @@
+{
+  "begin": "2026",
+  "stack": ["YAML", "Docker", "C#", "OpenAPI", "MongoDB", "Akka.NET"],
+  "links": {
+    "docs": "https://edict.leberkas.org/"
+  },
+  "featured": true,
+  "order": 20
+}

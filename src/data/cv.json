@@ -17,39 +17,43 @@
       "start": "2025-01",
       "end": null,
       "organisation": "DiIT GmbH",
+      "field": { "de": "MES für die Kabelbaumfertigung", "en": "MES for wire harness production" },
       "role": "Software Architect & Technical Consultant",
       "summary": {
         "de": "Softwarearchitekt und technischer Berater für die Kabelbaumfertigung der Komax Group. Entwurf einer verteilten MES-Architektur, Etablierung technischer Standards und Evaluierung des Technologie-Stacks.",
         "en": "Software Architect and Technical Consultant for Komax Group's wire harness manufacturing division. Architected distributed MES system design, established technical standards, and evaluated the technology stack."
       },
-      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry"]
+      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry", "C#", "OpenAPI", "Ansible"]
     },
     {
       "start": "2020-04",
       "end": "2025-01",
       "organisation": "advastore SE",
+      "field": { "de": "Lagerautomatisierung", "en": "Warehouse automation" },
       "role": "Lead Software Architect",
       "summary": {
         "de": "Lead Software Architect für das Warehouse-Management-System: eine ereignisgetriebene, cloud-native Microservice-Anwendung auf Basis von Akka.NET, die auf Kubernetes läuft und ein vollautomatisiertes Lager samt aller Maschinen und Roboter steuert.",
         "en": "Lead Software Architect for the Warehouse Management System: an event-driven, cloud native microservice application based on Akka.NET, running on Kubernetes and capable of managing a fully automated warehouse and all machines and robots associated with the process."
       },
-      "stack": ["C#", "Akka.NET", ".NET 8", "MongoDB", "MQTT", "Kubernetes", "Terraform"]
+      "stack": ["C#", "Akka.NET", ".NET 8", "MongoDB", "MQTT", "Kubernetes", "Terraform", "Docker", "OpenAPI", "Ansible"]
     },
     {
       "start": "2018-01",
       "end": "2020-04",
       "organisation": "serva transport systems GmbH",
+      "field": { "de": "Fahrerlose Transportsysteme", "en": "Automated guided vehicles" },
       "role": "",
       "summary": {
         "de": "Entwicklung einer Fleet Control für AGVs (Automated Guided Vehicles). Vollständiges Refactoring aller Front- und Backend-Anwendungen.",
         "en": "Development of a Fleet Control for AGVs (Automated Guided Vehicles). Complete refactoring of all front- and backend applications."
       },
-      "stack": ["C#", ".NET 4.7", ".NET Standard", ".NET Core", "ASP.NET", "MSSQL"]
+      "stack": ["C#", ".NET 4.7", ".NET Standard", ".NET Core", "ASP.NET", "MSSQL", "OpenAPI", "WPF"]
     },
     {
       "start": "2017-01",
       "end": "2018-01",
       "organisation": "sixData GmbH",
+      "field": { "de": "Steuerung von Straßenbeleuchtung", "en": "Street light control" },
       "role": "",
       "summary": {
         "de": "Entwicklung eines Management-Informationssystems für Straßenbeleuchtung. Hauptentwickler von luxData.control, einem Modul zur Steuerung von Straßenlampen.",
@@ -61,17 +65,19 @@
       "start": "2015-01",
       "end": "2017-01",
       "organisation": "COS Informationstechnologie GmbH",
+      "field": { "de": "Websites und Hosting", "en": "Websites and hosting" },
       "role": "",
       "summary": {
         "de": "Entwicklung von Kunden-Websites und einer internen Webanwendung zur Analyse und zum Vergleich von Produktdaten. Aufbau und Betrieb der internen Hosting-Plattform.",
         "en": "Development of customer websites and an internal web application to analyse and compare product data. Building and supporting the internal hosting platform."
       },
-      "stack": ["PHP", "Java (Vaadin)", "Contao", "TYPO3"]
+      "stack": ["PHP", "Java (Vaadin)", "Contao", "TYPO3", "Docker", "C#"]
     },
     {
       "start": "2014-02",
       "end": "2015-01",
       "organisation": "wista Informationstechnologie GmbH",
+      "field": { "de": "Software für Automobil- und Furnierindustrie", "en": "Software for the automotive and veneer industry" },
       "role": "",
       "summary": {
         "de": "Entwicklung kundenspezifischer Software für die Automobil- und Furnierindustrie, Back- und Frontend.",

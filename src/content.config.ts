@@ -15,7 +15,22 @@ const projects = defineCollection({
     title: z.string(),
     summary: z.string(),
     role: z.string(),
-    period: z.string(),
+  }),
+});
+
+const yearOrMonth = z
+  .string()
+  .regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/, "expected YYYY or YYYY-MM");
+
+const projectFacts = defineCollection({
+  loader: glob({
+    base: "./src/content/projects",
+    pattern: "*/*.json",
+    generateId: ({ entry }) => entry.split("/").pop()!.replace(/\.json$/, ""),
+  }),
+  schema: z.object({
+    begin: yearOrMonth,
+    end: yearOrMonth.optional(),
     stack: z.array(z.string()).default([]),
     links: z
       .object({
@@ -93,6 +108,30 @@ const projectsIndex = pageCollection(
   }),
 );
 
+const skills = pageCollection(
+  "skills",
+  listed.extend({
+    heading: z.string(),
+    intro: z.string(),
+    connected: z.string(),
+    present: z.string(),
+    legend: z.object({
+      job: z.string(),
+      project: z.string(),
+      area: z.string(),
+      tech: z.string(),
+      related: z.string(),
+    }),
+    controls: z.object({
+      zoomIn: z.string(),
+      zoomOut: z.string(),
+      reset: z.string(),
+      wheelHint: z.string(),
+      wheelHintMac: z.string(),
+    }),
+  }),
+);
+
 const notFound = pageCollection(
   "notfound",
   z.object({
@@ -105,10 +144,12 @@ const notFound = pageCollection(
 
 export const collections = {
   projects,
+  projectFacts,
   home,
   contact,
   legal,
   cvGate,
   projectsIndex,
+  skills,
   notFound,
 };

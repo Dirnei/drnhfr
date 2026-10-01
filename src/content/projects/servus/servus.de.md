@@ -2,13 +2,6 @@
 title: 'Servus'
 summary: 'Eine .NET-Bibliothek mit dem Code, den ich sonst in jedem Projekt neu schreibe.'
 role: 'Autor und Maintainer'
-period: '2017 – heute'
-stack: ['.NET', 'C#', 'NuGet']
-featured: true
-order: 10
-links:
-  repo: 'https://github.com/Leberkas-org/servus'
-  docs: 'https://servus.leberkas.org'
 ---
 
 Servus sammelt die Helfer, die ich seit 2017 in fast jedem .NET-Projekt

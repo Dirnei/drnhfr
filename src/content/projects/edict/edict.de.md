@@ -2,12 +2,6 @@
 title: 'Edict'
 summary: 'Eine YAML-Spezifikation um CLI oder RCON Commands zu beschreiben.'
 role: 'Entwurf und Umsetzung'
-period: '2026 – heute'
-stack: ['YAML']
-featured: true
-order: 20
-links:
-  docs: 'https://edict.leberkas.org/'
 ---
 
 Edict versucht, mit einer YAML-Datei CLI-Apps zu beschreiben, ähnlich wie es

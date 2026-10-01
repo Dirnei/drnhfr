@@ -1,5 +1,6 @@
 export const de = {
   'nav.projects': 'Projekte',
+  'nav.skills': 'Skills',
   'nav.cv': 'Lebenslauf',
   'nav.contact': 'Kontakt',
   'nav.imprint': 'Impressum',

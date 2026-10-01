@@ -1,0 +1,11 @@
+{
+  "begin": "2026",
+  "stack": ["Astro", "SVG", "Docker"],
+  "links": {
+    "repo": "https://github.com/kellerlabs/homeracker",
+    "docs": "https://homeracker.org/",
+    "demo": "https://homeracker.org/configurator/"
+  },
+  "featured": true,
+  "order": 30
+}

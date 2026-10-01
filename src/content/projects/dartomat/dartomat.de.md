@@ -2,12 +2,6 @@
 title: 'Dartomat'
 summary: 'Ein selbst gebauter Dartautomat, seit 2013 gewachsen, heute mit Online-Multiplayer und eigenen Spielmodi.'
 role: 'Idee, Hardware und Software'
-period: '2013 – heute'
-stack: ['Arduino', 'ESP32', 'Raspberry Pi', 'Akka.NET', 'React']
-featured: true
-order: 5
-links:
-  demo: 'https://cloud.dartomat.com'
 ---
 
 2013 habe ich eine billige Dartscheibe auseinandergenommen und mit einem Arduino

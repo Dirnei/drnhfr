@@ -2,13 +2,6 @@
 title: 'E3DC.NET'
 summary: 'Eine .NET-Bibliothek für das RSCP-Protokoll von E3DC, um die Daten vom S10 Hauskraftwerk lokal abzufragen.'
 role: 'Autor und Maintainer'
-period: '2026 – heute'
-stack: ['.NET', 'C#', 'Akka.NET']
-featured: true
-order: 50
-links:
-  repo: 'https://github.com/Leberkas-org/e3dc.net'
-  docs: 'https://e3dc.leberkas.org/'
 ---
 
 E3DC.NET spricht RSCP, das binäre Protokoll, über das ein E3DC S10 im lokalen

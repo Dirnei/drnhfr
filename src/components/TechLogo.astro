@@ -1,0 +1,29 @@
+---
+import { techIcon } from '../lib/tech-icons';
+
+interface Props {
+  name: string;
+}
+
+const icon = techIcon(Astro.props.name);
+---
+{
+  icon && (
+    <svg
+      class="tech-logo"
+      viewBox={icon.viewBox}
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+      set:html={icon.body}
+    />
+  )
+}
+<style>
+  .tech-logo {
+    width: 1em;
+    height: 1em;
+    flex: none;
+    color: var(--text-muted);
+  }
+</style>

@@ -2,13 +2,6 @@
 title: 'Gaudi Ballz'
 summary: 'A colour sorting puzzle for the phone, free and without ads.'
 role: 'Idea and implementation'
-period: '2026–present'
-stack: ['React', 'Vite', 'PWA']
-featured: true
-order: 40
-links:
-  demo: 'https://gaudiballz.leberkas.org/'
-  repo: 'https://github.com/Dirnei/gaudiballz'
 ---
 
 Gaudi Ballz is about sorting balls until every colour sits cleanly together.

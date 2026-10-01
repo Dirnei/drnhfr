@@ -2,6 +2,7 @@ import type { de } from './de';
 
 export const en: Record<keyof typeof de, string> = {
   'nav.projects': 'Projects',
+  'nav.skills': 'Skills',
   'nav.cv': 'CV',
   'nav.contact': 'Contact',
   'nav.imprint': 'Imprint',

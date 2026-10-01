@@ -1,0 +1,543 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getProjects, getSkillsPage } from '../../../lib/entries';
+import { slugOf } from '../../../lib/ids';
+import { cvFor } from '../../../data/cv';
+import { skillExtrasFor } from '../../../data/skill-extras';
+import { routePath } from '../../../i18n/routes';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { buildGraph, layoutGraph, LAYOUTS, neighbours, type GraphNode } from '../../../lib/skill-graph';
+import { iconBySlug } from '../../../lib/tech-icons';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const { data } = await getSkillsPage(lang);
+const projectBase = routePath('projects', lang);
+const projects = await getProjects(lang);
+
+const graph = buildGraph({
+  jobs: cvFor(lang).experience,
+  projects: projects.map((project) => ({
+    slug: slugOf(project.id),
+    title: project.data.title,
+    href: `${projectBase}${slugOf(project.id)}/`,
+    stack: project.facts.stack,
+  })),
+  ...skillExtrasFor(lang),
+  present: data.present,
+  projectLabel: data.legend.project,
+  areaLabel: data.legend.area,
+});
+
+const FONT = 13;
+const layouts = LAYOUTS.map((layout) => ({
+  ...layout,
+  placed: new Map(
+    layoutGraph(graph, { width: layout.width, height: layout.height, fontSize: FONT }).map(
+      (node) => [node.id, node],
+    ),
+  ),
+}));
+
+const byId = new Map(graph.nodes.map((node) => [node.id, node]));
+const logos = [...new Set(graph.nodes.flatMap((node) => (node.icon ? [node.icon] : [])))]
+  .map((slug) => iconBySlug(slug)!)
+  .filter(Boolean);
+const KIND_ORDER = { job: 0, project: 1, area: 2, tech: 3 };
+const linksOf = (id: string): GraphNode[] =>
+  neighbours(graph, id)
+    .map((other) => byId.get(other)!)
+    .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.label.localeCompare(b.label));
+---
+<BaseLayout
+  lang={lang}
+  current="skills"
+  title={data.title}
+  description={data.description}
+  altHref={routePath('skills', otherLocale(lang))}
+>
+  <div class="shell skills">
+    <h1>{data.heading}</h1>
+    <p class="intro">{data.intro}</p>
+    <ul class="legend">
+      <li><span class="key job"></span>{data.legend.job}</li>
+      <li><span class="key project"></span>{data.legend.project}</li>
+      <li><span class="key area"></span>{data.legend.area}</li>
+      <li><span class="key tech"></span>{data.legend.tech}</li>
+      <li><span class="key related"></span>{data.legend.related}</li>
+    </ul>
+    <div class="controls" id="skill-controls" hidden>
+      <button type="button" data-zoom="in" aria-label={data.controls.zoomIn}>+</button>
+      <button type="button" data-zoom="out" aria-label={data.controls.zoomOut}>&minus;</button>
+      <button type="button" data-zoom="reset">{data.controls.reset}</button>
+    </div>
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      {logos.map((logo) => <symbol id={`tech-${logo.slug}`} viewBox={logo.viewBox} set:html={logo.body} />)}
+    </svg>
+    <div class="graph" id="skill-graph">
+      <p
+        class="wheel-hint"
+        id="skill-wheel-hint"
+        data-mac={data.controls.wheelHintMac}
+        aria-hidden="true"
+      >
+        {data.controls.wheelHint}
+      </p>
+      {
+        layouts.map((layout) => (
+          <svg
+            class={`layout ${layout.name}`}
+            viewBox={`0 0 ${layout.width} ${layout.height}`}
+            role="group"
+            aria-label={data.heading}
+            data-font={FONT}
+          >
+            <g class="viewport">
+            <g class="edges">
+              {graph.edges.map((edge) => {
+                const a = layout.placed.get(edge.a)!;
+                const b = layout.placed.get(edge.b)!;
+                return (
+                  <line
+                    class={edge.kind}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    data-a={edge.a}
+                    data-b={edge.b}
+                  />
+                );
+              })}
+            </g>
+            <g class="nodes">
+              {graph.nodes.map((node) => {
+                const place = layout.placed.get(node.id)!;
+                const textX = place.x + place.size / 2 + 6;
+                return (
+                  <g
+                    class={`node ${node.kind}${node.icon ? ' has-logo' : ''}`}
+                    data-node={node.id}
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    aria-label={node.detail ? `${node.label}, ${node.detail}` : node.label}
+                    data-x={place.x}
+                    data-y={place.y}
+                    data-size={place.size}
+                    data-w={place.labelWidth}
+                    data-h={place.height}
+                  >
+                    <rect
+                      x={place.x - place.size / 2}
+                      y={place.y - place.size / 2}
+                      width={place.size}
+                      height={place.size}
+                    />
+                    {node.icon && (
+                      <use
+                        href={`#tech-${node.icon}`}
+                        x={place.x - place.size / 2}
+                        y={place.y - place.size / 2}
+                        width={place.size}
+                        height={place.size}
+                      />
+                    )}
+                    <text
+                      class="label"
+                      x={textX}
+                      y={node.detail ? place.y - FONT * 0.6 : place.y}
+                      dominant-baseline="central"
+                      font-size={FONT}
+                    >
+                      {node.label}
+                    </text>
+                    {node.detail && (
+                      <text
+                        class="detail"
+                        x={textX}
+                        y={place.y + FONT * 0.65}
+                        dominant-baseline="central"
+                        font-size={FONT - 2}
+                      >
+                        {node.detail}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+            </g>
+          </svg>
+        ))
+      }
+    </div>
+    <div class="panels">
+      {
+        graph.nodes.map((node) => (
+          <section class="panel" data-panel={node.id}>
+            <h2>
+              {node.icon && (
+                <svg class="logo" aria-hidden="true">
+                  <use href={`#tech-${node.icon}`} />
+                </svg>
+              )}
+              {node.href ? <a href={node.href}>{node.label}</a> : node.label}
+              {node.detail && <span class="detail">{node.detail}</span>}
+            </h2>
+            <p class="mono-label">{data.connected}</p>
+            <ul>
+              {linksOf(node.id).map((other) => (
+                <li class={other.kind}>
+                  {other.icon && (
+                    <svg class="logo" aria-hidden="true">
+                      <use href={`#tech-${other.icon}`} />
+                    </svg>
+                  )}
+                  {other.href ? <a href={other.href}>{other.label}</a> : other.label}
+                  {other.detail && other.kind === 'job' && <span class="detail">{other.detail}</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>
+<style>
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding-block: 2rem 0.75rem;
+  }
+  .intro {
+    max-width: var(--measure);
+    color: var(--text-body);
+    margin: 0 0 1.25rem;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .key {
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    margin-right: 0.45rem;
+    vertical-align: -0.05rem;
+  }
+  .key.job,
+  .node.job rect {
+    background: var(--graph-work);
+    fill: var(--graph-work);
+  }
+  .key.project,
+  .node.project rect {
+    background: var(--boot-info);
+    fill: var(--boot-info);
+  }
+  .key.area,
+  .node.area rect {
+    background: var(--graph-private);
+    fill: var(--graph-private);
+  }
+  .key.tech,
+  .node.tech rect {
+    background: var(--text-muted);
+    fill: var(--text-muted);
+  }
+  .node.has-logo rect {
+    fill: transparent;
+  }
+  .node use,
+  .panel .logo {
+    color: var(--text-muted);
+    fill: currentColor;
+  }
+  .sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .panel .logo {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.4em;
+    vertical-align: -0.12em;
+  }
+  .key.related {
+    width: 1.4rem;
+    height: 0;
+    border-top: 1px dashed var(--text-muted);
+    vertical-align: 0.2rem;
+  }
+  .edges line.related {
+    stroke-dasharray: 4 4;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.4rem;
+    margin: 0 0 0.5rem;
+  }
+  .controls[hidden] {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .controls {
+      display: none;
+    }
+  }
+  .controls button {
+    min-width: 2rem;
+    padding: 0.3rem 0.6rem;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  .controls button:hover,
+  .controls button:focus-visible {
+    color: var(--red-text);
+    border-color: var(--red-text);
+  }
+
+  .graph {
+    position: relative;
+    border: 1px solid var(--hairline);
+  }
+  .wheel-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    background: color-mix(in srgb, var(--ink) 72%, transparent);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .wheel-hint.shown {
+    opacity: 1;
+    transition-duration: 0.15s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel-hint {
+      transition: none;
+    }
+  }
+  .layout {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .layout.zoomed {
+    touch-action: none;
+    cursor: grab;
+  }
+  .layout.tall {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .layout.wide {
+      display: none;
+    }
+    .layout.tall {
+      display: block;
+    }
+  }
+  .edges line {
+    stroke: var(--hairline);
+    stroke-width: 1;
+    transition: opacity 0.2s, stroke 0.2s;
+  }
+  .node {
+    cursor: grab;
+    outline: none;
+    touch-action: none;
+    transition: opacity 0.2s;
+  }
+  .node text {
+    font-family: var(--font-mono);
+    fill: var(--text-body);
+    paint-order: stroke;
+    stroke: var(--ink);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+  .node text.detail {
+    fill: var(--text-dim);
+  }
+  .node rect {
+    stroke: transparent;
+    stroke-width: 2;
+  }
+  .node:hover text:not(.detail),
+  .node:focus-visible text:not(.detail) {
+    fill: var(--text);
+  }
+  .node:focus-visible rect {
+    stroke: var(--red);
+  }
+  .node.selected text:not(.detail) {
+    fill: var(--text);
+    font-weight: 700;
+  }
+  .graph.active .node:not(.lit) {
+    opacity: 0.18;
+  }
+  .graph.active .edges line:not(.lit) {
+    opacity: 0.12;
+  }
+  .graph.active .edges line.lit {
+    stroke: var(--text-muted);
+  }
+
+  .panels {
+    margin-top: 0.75rem;
+  }
+  .panel[hidden] {
+    display: none;
+  }
+  .panel {
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .panel h2 {
+    font-size: 1.25rem;
+    margin: 0 0 0.35rem;
+  }
+  .panel .detail {
+    margin-left: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-dim);
+  }
+  .panel ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text-body);
+  }
+  .panel a {
+    color: var(--text);
+  }
+  .panel a:hover,
+  .panel a:focus-visible {
+    color: var(--red-text);
+  }
+</style>
+
+<script>
+  import { attachGraph, type GraphControls } from '../../../lib/skill-graph-client';
+
+  const root = document.getElementById('skill-graph');
+  const controlsBar = document.getElementById('skill-controls');
+  const panels = [...document.querySelectorAll<HTMLElement>('.panel')];
+
+  if (root && controlsBar) {
+    const nodes = [...root.querySelectorAll<SVGGElement>('[data-node]')];
+    const edges = [...root.querySelectorAll<SVGLineElement>('.edges line')];
+    let active: string | null = null;
+
+    const select = (id: string | null) => {
+      active = id;
+      root.classList.toggle('active', id !== null);
+      const lit = new Set<string>(id ? [id] : []);
+      for (const edge of edges) {
+        const on = id !== null && (edge.dataset.a === id || edge.dataset.b === id);
+        edge.classList.toggle('lit', on);
+        if (on) {
+          lit.add(edge.dataset.a!);
+          lit.add(edge.dataset.b!);
+        }
+      }
+      for (const node of nodes) {
+        const own = node.dataset.node === id;
+        node.classList.toggle('lit', lit.has(node.dataset.node!));
+        node.classList.toggle('selected', own);
+        node.setAttribute('aria-pressed', String(own));
+      }
+      for (const panel of panels) panel.hidden = panel.dataset.panel !== id;
+    };
+    const toggle = (id: string) => select(active === id ? null : id);
+
+    const wheelHint = document.getElementById('skill-wheel-hint');
+    if (wheelHint && /Mac|iPhone|iPad/.test(navigator.platform)) {
+      wheelHint.textContent = wheelHint.dataset.mac ?? wheelHint.textContent;
+    }
+    let wheelTimer = 0;
+    const showWheelHint = () => {
+      if (!wheelHint) return;
+      wheelHint.classList.add('shown');
+      window.clearTimeout(wheelTimer);
+      wheelTimer = window.setTimeout(() => wheelHint.classList.remove('shown'), 1200);
+    };
+
+    const graphs = new Map<SVGSVGElement, GraphControls>();
+    for (const svg of root.querySelectorAll<SVGSVGElement>('svg.layout')) {
+      graphs.set(
+        svg,
+        attachGraph(svg, {
+          onTap: toggle,
+          onBackground: () => select(null),
+          onPlainWheel: showWheelHint,
+        }),
+      );
+    }
+    const visible = () =>
+      [...graphs.entries()].find(([svg]) => svg.getBoundingClientRect().width > 0)?.[1];
+
+    for (const node of nodes) {
+      node.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        toggle(node.dataset.node!);
+      });
+    }
+    controlsBar.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-zoom]');
+      if (!button) return;
+      const graph = visible();
+      if (button.dataset.zoom === 'in') graph?.zoom(1.4);
+      else if (button.dataset.zoom === 'out') graph?.zoom(1 / 1.4);
+      else for (const each of graphs.values()) each.reset();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && active) select(null);
+      const resetKey = (event.ctrlKey || event.metaKey) && (event.key === '0' || event.code === 'Numpad0');
+      if (!resetKey || !(root.matches(':hover') || root.contains(document.activeElement))) return;
+      event.preventDefault();
+      visible()?.resetView();
+    });
+    controlsBar.hidden = false;
+    select(null);
+  }
+</script>

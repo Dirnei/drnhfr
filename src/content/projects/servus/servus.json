@@ -1,0 +1,10 @@
+{
+  "begin": "2017",
+  "stack": [".NET", "C#", "NuGet", "OpenTelemetry"],
+  "links": {
+    "repo": "https://github.com/Leberkas-org/servus",
+    "docs": "https://servus.leberkas.org"
+  },
+  "featured": true,
+  "order": 10
+}

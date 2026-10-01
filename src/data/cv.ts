@@ -32,6 +32,7 @@ const cvSchema = z.object({
         // null means "still there" and prints as heute / present.
         end: yearMonth.nullable(),
         organisation: z.string().min(1),
+        field: localized,
         role: optionalLocalized,
         summary: localized,
         stack: z.array(z.string().min(1)),
@@ -75,6 +76,7 @@ export interface CV {
     start: string;
     end: string | null;
     organisation: string;
+    field: string;
     role: string;
     summary: string;
     stack: string[];
@@ -107,6 +109,7 @@ function resolve(locale: Locale): CV {
       start: entry.start,
       end: entry.end,
       organisation: entry.organisation,
+      field: pick(entry.field, locale),
       role: pickOptional(entry.role, locale),
       summary: pick(entry.summary, locale),
       stack: entry.stack,
@@ -133,12 +136,14 @@ export function cvFor(locale: Locale): CV {
   return resolved[locale];
 }
 
+/** `YYYY-MM` as a month, or a bare `YYYY` as just the year. */
 export function formatMonth(value: string, locale: Locale): string {
   const [year, month] = value.split('-');
+  if (!month) return year;
   return locale === 'de' ? `${month}.${year}` : `${month}/${year}`;
 }
 
-export function formatRange(start: string, end: string | null, locale: Locale): string {
+export function formatRange(start: string, end: string | null | undefined, locale: Locale): string {
   const open = locale === 'de' ? 'heute' : 'present';
   return `${formatMonth(start, locale)} – ${end ? formatMonth(end, locale) : open}`;
 }

@@ -1,0 +1,5 @@
+{
+  ".NET": [".NET 2.0", ".NET 3.5", ".NET 4.7", ".NET 8", ".NET Core", ".NET Standard"],
+  "Java": ["Java (Vaadin)"],
+  "WinForms": ["Windows Forms"]
+}

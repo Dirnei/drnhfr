@@ -7,6 +7,7 @@ import {
   getLegalPage,
   getProjects,
   getProjectsPage,
+  getSkillsPage,
 } from './entries';
 
 export interface SearchEntry {
@@ -26,6 +27,7 @@ export async function searchIndex(locale: Locale): Promise<SearchEntry[]> {
 
   const pages = [
     { entry: await getProjectsPage(locale), key: 'projects' as const },
+    { entry: await getSkillsPage(locale), key: 'skills' as const },
     { entry: await getContactPage(locale), key: 'contact' as const },
     { entry: await getLegalPage('imprint', locale), key: 'imprint' as const },
     { entry: await getLegalPage('privacy', locale), key: 'privacy' as const },

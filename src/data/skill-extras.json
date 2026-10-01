@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "id": "website",
+      "label": "dirnhofer.net",
+      "href": { "de": "/de/", "en": "/en/" },
+      "stack": ["Astro", "TypeScript", "SVG", "Vitest", "GitHub Actions", "GitHub Pages"]
+    }
+  ],
+  "areas": [
+    {
+      "id": "homelab",
+      "label": "Homelab",
+      "projects": ["e3dc"],
+      "stack": ["Proxmox", "Docker", "Kubernetes", "Ansible", "Terraform", "C#", "Raspberry Pi"]
+    },
+    {
+      "id": "workshop",
+      "label": { "de": "Werkstatt", "en": "Workshop" },
+      "stack": [
+        { "de": "3D-Druck", "en": "3D printing" },
+        { "de": "CAD", "en": "CAD" },
+        { "de": "CO2-Laser", "en": "CO2 laser" },
+        { "de": "Platinen ätzen", "en": "PCB etching" },
+        "Arduino",
+        "ESP32",
+        "Docker",
+        "Raspberry Pi"
+      ]
+    }
+  ],
+  "related": {
+    "homeracker": [
+      { "de": "3D-Druck", "en": "3D printing" },
+      { "de": "CAD", "en": "CAD" }
+    ]
+  },
+  "platforms": [".NET"],
+  "pairs": [
+    { "tech": ".NET", "with": ["C#", "VB.NET", "UWP", "WPF", "ASP.NET"] },
+    { "tech": "Raspberry Pi", "with": ["Ansible", "Docker", "MQTT"] },
+    { "tech": { "de": "CO2-Laser", "en": "CO2 laser" }, "with": ["SVG", "CAD"] }
+  ]
+}

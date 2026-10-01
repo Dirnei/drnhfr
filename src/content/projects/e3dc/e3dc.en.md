@@ -2,13 +2,6 @@
 title: 'E3DC.NET'
 summary: 'A .NET library for the E3DC RSCP protocol, to read the data of the S10 home battery system locally.'
 role: 'Author and maintainer'
-period: '2026–present'
-stack: ['.NET', 'C#', 'Akka.NET']
-featured: true
-order: 50
-links:
-  repo: 'https://github.com/Leberkas-org/e3dc.net'
-  docs: 'https://e3dc.leberkas.org/'
 ---
 
 E3DC.NET speaks RSCP, the binary protocol an E3DC S10 uses to hand out its

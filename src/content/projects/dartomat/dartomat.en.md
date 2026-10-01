@@ -2,12 +2,6 @@
 title: 'Dartomat'
 summary: 'A self-built dart machine, growing since 2013, today with online multiplayer and your own game modes.'
 role: 'Idea, hardware and software'
-period: '2013–present'
-stack: ['Arduino', 'ESP32', 'Raspberry Pi', 'Akka.NET', 'React']
-featured: true
-order: 5
-links:
-  demo: 'https://cloud.dartomat.com'
 ---
 
 In 2013 I took a cheap dartboard apart and read it out with an Arduino, just to

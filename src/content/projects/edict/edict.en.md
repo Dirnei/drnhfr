@@ -2,12 +2,6 @@
 title: 'Edict'
 summary: 'A YAML specification for describing CLI and RCON commands.'
 role: 'Design and implementation'
-period: '2026–present'
-stack: ['YAML']
-featured: true
-order: 20
-links:
-  docs: 'https://edict.leberkas.org/'
 ---
 
 Edict tries to describe CLI apps with a YAML file, in the way OpenAPI does it

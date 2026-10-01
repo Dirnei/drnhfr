@@ -1,0 +1,10 @@
+{
+  "begin": "2026",
+  "stack": ["React", "Vite", "PWA", "Docker", "C#", "MongoDB", "Akka.NET", "Ansible"],
+  "links": {
+    "demo": "https://gaudiballz.leberkas.org/",
+    "repo": "https://github.com/Dirnei/gaudiballz"
+  },
+  "featured": true,
+  "order": 40
+}
