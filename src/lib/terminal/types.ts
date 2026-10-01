@@ -66,4 +66,8 @@ export interface CommandContext {
   openTab(href: string): boolean;
   /** full = also clear the session flags, so the boot sequence replays. */
   reboot(full: boolean): void;
+  /** Hides the entry at `href` from the filesystem and its links from the page, until reload. */
+  remove(href: string): void;
+  /** Replaces the whole page with the logo, until reload. */
+  wipe(): void;
 }

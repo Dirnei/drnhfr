@@ -8,7 +8,7 @@ export default {
   usage: 'su <password>',
   summary: 'become root and unlock the cv',
   listed: (ctx) => !ctx.isUnlocked(),
-  order: 8,
+  order: 9,
   run(arg, ctx) {
     const code = arg.trim();
     if (!code) {

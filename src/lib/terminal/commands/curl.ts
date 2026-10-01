@@ -29,7 +29,7 @@ export default {
   aliases: ['wget'],
   usage: 'curl <url>',
   summary: 'open a url in a new tab',
-  order: 4,
+  order: 5,
   run(arg, ctx) {
     const target = resolveTarget(arg, ctx.origin);
     if (!target.ok) {

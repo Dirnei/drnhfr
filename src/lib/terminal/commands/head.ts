@@ -1,23 +1,13 @@
-import { stdinLines } from '../pipeline';
+import { parseLineCount, stdinLines } from '../pipeline';
 import type { Command } from '../types';
-
-const DEFAULT_COUNT = 10;
-
-/** Accepts `-n 3`, `-n3` and `-3`, like the real one. */
-export function parseCount(arg: string): number | null {
-  const trimmed = arg.trim();
-  if (!trimmed) return DEFAULT_COUNT;
-  const match = trimmed.match(/^(?:-n\s*|-)(\d+)$/);
-  return match ? Number(match[1]) : null;
-}
 
 export default {
   name: 'head',
   usage: 'head [-n count]',
   summary: 'only the first lines, 10 unless told otherwise',
-  order: 15,
+  order: 16,
   run(arg, ctx) {
-    const count = parseCount(arg);
+    const count = parseLineCount(arg);
     if (count === null) {
       ctx.printError(`head: not a line count: ${arg.trim()}`);
       return;

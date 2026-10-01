@@ -4,7 +4,7 @@ export default {
   name: 'date',
   usage: 'date',
   summary: 'the time on your clock, not mine',
-  order: 11,
+  order: 12,
   run(_arg, ctx) {
     ctx.print(new Date().toString());
   },

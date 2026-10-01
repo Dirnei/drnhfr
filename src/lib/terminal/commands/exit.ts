@@ -6,7 +6,7 @@ export default {
   usage: 'exit',
   summary: 'drop back to guest and re-lock the cv',
   listed: (ctx) => ctx.isUnlocked(),
-  order: 9,
+  order: 10,
   run(_arg, ctx) {
     const wasUnlocked = ctx.isUnlocked();
     ctx.setUnlocked(false);

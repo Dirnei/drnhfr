@@ -14,7 +14,8 @@ import {
 import { humanise, humaniseCoarse } from '../src/lib/terminal/duration';
 import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import { runPipeline, splitPipeline } from '../src/lib/terminal/pipeline';
-import { parseCount } from '../src/lib/terminal/commands/head';
+import { parseLineCount } from '../src/lib/terminal/pipeline';
+import { parseRm } from '../src/lib/terminal/commands/rm';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 describe('the unlock code', () => {
@@ -188,6 +189,8 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     origin: 'https://www.dirnhofer.net',
     stdin: null,
     reboot: () => {},
+    remove: () => {},
+    wipe: () => {},
     ...overrides,
   } as CommandContext;
   return { ctx, out, art, err };
@@ -446,11 +449,11 @@ describe('the filters', () => {
   });
 
   it('head reads -n 2, -n2 and -2 the same way', async () => {
-    expect(parseCount('-n 2')).toBe(2);
-    expect(parseCount('-n2')).toBe(2);
-    expect(parseCount('-2')).toBe(2);
-    expect(parseCount('')).toBe(10);
-    expect(parseCount('two')).toBeNull();
+    expect(parseLineCount('-n 2')).toBe(2);
+    expect(parseLineCount('-n2')).toBe(2);
+    expect(parseLineCount('-2')).toBe(2);
+    expect(parseLineCount('')).toBe(10);
+    expect(parseLineCount('two')).toBeNull();
     const { out } = await piped('head -n 2', text);
     expect(out).toEqual([['alpha one', 'Beta two'].join(NL)]);
   });
@@ -463,10 +466,126 @@ describe('the filters', () => {
     expect((await piped('wc -x', text)).err[0]).toContain('unknown option');
   });
 
+  it('tail keeps the last lines', async () => {
+    const { out } = await piped('tail -n 2', text);
+    expect(out).toEqual([['gamma three', 'beta four'].join(NL)]);
+  });
+
+  it('sort orders lines, -r reverses, -n compares numbers', async () => {
+    expect((await piped('sort', text)).out).toEqual([['alpha one', 'beta four', 'Beta two', 'gamma three'].join(NL)]);
+    expect((await piped('sort -r', text)).out[0].split(NL)[0]).toBe('gamma three');
+    const numbers = ['10', '9', '100'].join(NL);
+    expect((await piped('sort -n', numbers)).out).toEqual([['9', '10', '100'].join(NL)]);
+    expect((await piped('sort -rn', numbers)).out).toEqual([['100', '10', '9'].join(NL)]);
+    expect((await piped('sort -x', text)).err[0]).toContain('unknown option');
+  });
+
+  it('uniq folds neighbouring repeats only, -c counts them', async () => {
+    const repeats = ['ls', 'ls', 'cd', 'ls'].join(NL);
+    expect((await piped('uniq', repeats)).out).toEqual([['ls', 'cd', 'ls'].join(NL)]);
+    expect((await piped('sort | uniq -c', repeats)).out).toEqual([
+      ['      1 cd', '      3 ls'].join(NL),
+    ]);
+  });
+
+  it('tail, sort and uniq explain themselves when nothing is piped in', async () => {
+    for (const name of ['tail', 'sort', 'uniq']) {
+      const { ctx, err } = stubContext();
+      await runPipeline(resolve(name), ctx);
+      expect(err[0], name).toContain('pipe something in');
+    }
+  });
+
   it('chains through several stages', async () => {
     const { ctx, out } = stubContext({ history: () => ['ls', 'cd projekte', 'ls', 'cd ..', 'help'] });
     await runPipeline(resolve('history | grep cd | wc -l'), ctx);
     expect(out).toEqual(['2']);
+  });
+});
+
+describe('rm', () => {
+  const rm = findCommand('rm')!;
+  const ENTRIES: SearchEntry[] = [
+    { href: '/en/contact/', type: 'page' },
+    { href: '/en/imprint/', type: 'page' },
+    { href: '/en/projects/', type: 'page' },
+    { href: '/en/projects/edict/', type: 'project' },
+    { href: '/en/projects/servus/', type: 'project' },
+  ];
+  const fsContext = () => {
+    const removed: string[] = [];
+    let wiped = false;
+    const visible = () => ENTRIES.filter((entry) => !removed.includes(entry.href));
+    const result = stubContext({
+      entries: visible,
+      find: (name: string) => findIn(visible(), name),
+      remove: (href: string) => void removed.push(href),
+      wipe: () => void (wiped = true),
+    });
+    return { ...result, removed, wiped: () => wiped };
+  };
+
+  it('reads flags in any order and keeps every target', () => {
+    const { flags, targets } = parseRm('-r -v contact /imprint');
+    expect([...flags].sort()).toEqual(['r', 'v']);
+    expect(targets).toEqual(['contact', '/imprint']);
+    expect([...parseRm('-rfv x').flags].sort()).toEqual(['f', 'r', 'v']);
+  });
+
+  it('removes a page', () => {
+    const { ctx, removed, out, err } = fsContext();
+    rm.run('contact', ctx);
+    expect(removed).toEqual(['/en/contact/']);
+    expect(out).toHaveLength(0);
+    expect(err).toHaveLength(0);
+  });
+
+  it('removes several targets and says so with -v', () => {
+    const { ctx, removed, out } = fsContext();
+    rm.run('-v contact imprint', ctx);
+    expect(removed).toEqual(['/en/contact/', '/en/imprint/']);
+    expect(out).toEqual(["removed 'contact/'", "removed 'imprint/'"]);
+  });
+
+  it('wants -r for a directory with things in it', () => {
+    const plain = fsContext();
+    rm.run('projects', plain.ctx);
+    expect(plain.removed).toHaveLength(0);
+    expect(plain.err[0]).toBe("rm: cannot remove 'projects/': Is a directory");
+
+    const recursive = fsContext();
+    rm.run('-r projects', recursive.ctx);
+    expect(recursive.removed).toEqual(['/en/projects/edict/', '/en/projects/servus/', '/en/projects/']);
+  });
+
+  it('says so when the target does not exist, or no longer does', () => {
+    const { ctx, err } = fsContext();
+    rm.run('nope', ctx);
+    rm.run('contact', ctx);
+    rm.run('contact', ctx);
+    expect(err).toEqual([
+      "rm: cannot remove 'nope': No such file or directory",
+      "rm: cannot remove 'contact': No such file or directory",
+    ]);
+  });
+
+  it('wipes everything for rm -rf /', () => {
+    for (const arg of ['-rf /', '-fr /*', '-r -f /', '-rf --no-preserve-root /']) {
+      const { ctx, wiped } = fsContext();
+      rm.run(arg, ctx);
+      expect(wiped(), arg).toBe(true);
+    }
+  });
+
+  it('refuses / without -r and complains about a missing operand', () => {
+    const root = fsContext();
+    rm.run('/', root.ctx);
+    expect(root.wiped()).toBe(false);
+    expect(root.err[0]).toContain('Is a directory');
+
+    const empty = fsContext();
+    rm.run('-rf', empty.ctx);
+    expect(empty.err[0]).toBe('rm: missing operand');
   });
 });
 

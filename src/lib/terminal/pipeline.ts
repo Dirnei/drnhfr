@@ -42,3 +42,11 @@ export function stdinLines(ctx: CommandContext): string[] | null {
   if (ctx.stdin === null) return null;
   return ctx.stdin === '' ? [] : ctx.stdin.split('\n');
 }
+
+/** Accepts `-n 3`, `-n3` and `-3`, like head and tail do. */
+export function parseLineCount(arg: string, fallback = 10): number | null {
+  const trimmed = arg.trim();
+  if (!trimmed) return fallback;
+  const match = trimmed.match(/^(?:-n\s*|-)(\d+)$/);
+  return match ? Number(match[1]) : null;
+}

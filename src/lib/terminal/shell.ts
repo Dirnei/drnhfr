@@ -38,7 +38,16 @@ export function boot(): void {
     type: 'page',
     description: copy.cvDescription,
   };
-  const visibleEntries = (): SearchEntry[] => (isUnlocked() ? [...entries, cvEntry] : entries);
+  const removed = new Set<string>();
+  const visibleEntries = (): SearchEntry[] =>
+    (isUnlocked() ? [...entries, cvEntry] : entries).filter((entry) => !removed.has(entry.href));
+
+  const remove = (href: string) => {
+    removed.add(href);
+    document.querySelectorAll<HTMLAnchorElement>(`a[href="${CSS.escape(href)}"]`).forEach((link) => {
+      (link.closest('li') ?? link).hidden = true;
+    });
+  };
 
   const appendLine = (text: string, className: string) => {
     const el = document.createElement('p');
@@ -118,6 +127,20 @@ export function boot(): void {
     if (navCv) navCv.hidden = !unlocked;
   };
 
+  const wipe = () => {
+    halted = true;
+    const mark = document.querySelector('.site-header svg')?.cloneNode(true);
+    const ground = document.createElement('div');
+    ground.style.cssText =
+      'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--ink)';
+    if (mark instanceof SVGElement) {
+      mark.setAttribute('width', '160');
+      mark.setAttribute('height', '160');
+      ground.append(mark);
+    }
+    document.body.replaceChildren(ground);
+  };
+
   const reboot = (full: boolean) => {
     halted = true;
     if (full) clearSessionFlags();
@@ -165,6 +188,8 @@ export function boot(): void {
       return true;
     },
     reboot,
+    remove,
+    wipe,
   };
 
   const execute = async (raw: string) => {
@@ -260,7 +285,8 @@ export function boot(): void {
       }
       const name = value.slice(0, spaceIndex).toLowerCase();
       if (!findCommand(name)?.completesEntries) return;
-      const partial = value.slice(spaceIndex + 1).toLowerCase();
+      const lastSpace = value.lastIndexOf(' ');
+      const partial = value.slice(lastSpace + 1).toLowerCase();
       const matches = visibleEntries()
         .map((entry) => nameFromHref(entry.href))
         .filter(
@@ -269,7 +295,7 @@ export function boot(): void {
         );
       if (matches.length === 1) {
         event.preventDefault();
-        input.value = `${head}${name} ${matches[0]}`;
+        input.value = `${head}${value.slice(0, lastSpace + 1)}${matches[0]}`;
       }
     }
   });

@@ -4,7 +4,7 @@ export default {
   name: 'restart',
   usage: 'restart',
   summary: 'reboot, replay the boot sequence and re-lock the cv',
-  order: 21,
+  order: 25,
   run(_arg, ctx) {
     ctx.reboot(true);
   },

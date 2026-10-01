@@ -4,7 +4,7 @@ export default {
   name: 'echo',
   usage: 'echo <text>',
   summary: 'say it back',
-  order: 10,
+  order: 11,
   run(arg, ctx) {
     ctx.print(arg.trim());
   },
