@@ -47,9 +47,9 @@ export default {
   name: 'cowsay',
   usage: 'cowsay <text>',
   summary: 'ask the cow to say something',
-  order: 16,
+  order: 18,
   run(arg, ctx) {
-    const said = arg.trim() || 'moo';
+    const said = arg.trim() || ctx.stdin?.trim() || 'moo';
     // Never wrap wider than the log, or the bubble folds and stops being one.
     const width = Math.max(12, Math.min(WRAP_AT, ctx.columns() - 6));
     ctx.printArt([...bubble(said, width), ...COW].join('\n'));

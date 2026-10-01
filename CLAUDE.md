@@ -230,7 +230,7 @@ a command in a test is just calling it with a fake.
 
 **Heavy payloads load lazily** — `await import()` inside `run`, so the metadata
 stays static for `help` while the data only arrives on first use. See
-`figlet` (font), `fortune` (the lines), `neofetch` (cv.json).
+`figlet` (font), `fortune` (the lines).
 
 Anything that animates must await `ctx.interrupted()` so a keypress gets the
 prompt back, and must call `drawing.end()` in a `finally`.

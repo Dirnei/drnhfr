@@ -13,6 +13,8 @@ import {
 } from '../src/lib/terminal/font';
 import { humanise, humaniseCoarse } from '../src/lib/terminal/duration';
 import { resolveTarget } from '../src/lib/terminal/commands/curl';
+import { runPipeline, splitPipeline } from '../src/lib/terminal/pipeline';
+import { parseCount } from '../src/lib/terminal/commands/head';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 describe('the unlock code', () => {
@@ -184,6 +186,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     navigate: () => {},
     openTab: () => true,
     origin: 'https://www.dirnhofer.net',
+    stdin: null,
     reboot: () => {},
     ...overrides,
   } as CommandContext;
@@ -349,63 +352,121 @@ describe('fortune', () => {
   });
 });
 
-describe('neofetch', () => {
-  it('reports the facts from cv.json, not from a copy', async () => {
-    const cv = (await import('../src/data/cv.json')).default;
-    const { ctx, art } = stubContext();
-    await findCommand('neofetch')!.run('', ctx);
-    const text = art[0];
-    expect(text).toContain('Role:');
-    const title: unknown = cv.profile.title;
-    expect(text).toContain(typeof title === 'string' ? title : (title as { en: string }).en);
-    expect(text).toContain(cv.experience[0].stack[0]);
+describe('pipes', () => {
+  const resolve = (raw: string) =>
+    splitPipeline(raw)!.map((stage) => ({ ...stage, command: findCommand(stage.name)! }));
+
+  it('splits on | and keeps each argument', () => {
+    expect(splitPipeline('echo hi there | cowsay')).toEqual([
+      { name: 'echo', arg: 'hi there' },
+      { name: 'cowsay', arg: '' },
+    ]);
   });
 
-  it('reports the cv as locked or unlocked, and says who you are', async () => {
-    const locked = stubContext({ isUnlocked: () => false });
-    await findCommand('neofetch')!.run('', locked.ctx);
-    expect(locked.art[0]).toContain('locked');
-    expect(locked.art[0]).toContain('guest@drnhfr');
-
-    const open = stubContext({ isUnlocked: () => true });
-    await findCommand('neofetch')!.run('', open.ctx);
-    expect(open.art[0]).toContain('unlocked');
-    expect(open.art[0]).toContain('root@drnhfr');
+  it('rejects an empty stage', () => {
+    expect(splitPipeline('fortune |')).toBeNull();
+    expect(splitPipeline('| cowsay')).toBeNull();
+    expect(splitPipeline('fortune || cowsay')).toBeNull();
   });
 
-  it('counts only the commands it would admit to', async () => {
+  it('hands the output of one command to the next', async () => {
+    const { ctx, out, art } = stubContext();
+    await runPipeline(resolve('echo hello there | cowsay'), ctx);
+    expect(out).toHaveLength(0);
+    expect(art[0]).toContain('< hello there >');
+  });
+
+  it('lets fortune feed the cow', async () => {
+    const { FORTUNES } = await import('../src/lib/terminal/fortunes');
+    const { ctx, out, art } = stubContext({ columns: () => 200 });
+    await runPipeline(resolve('fortune | cowsay'), ctx);
+    expect(out).toHaveLength(0);
+    const bubbleEdges = ['<', '|', '/', String.fromCharCode(92)];
+    const said = art[0]
+      .split(String.fromCharCode(10))
+      .filter((line) => bubbleEdges.includes(line[0]))
+      .map((line) => line.slice(2, -2).trim())
+      .join(' ');
+    expect(FORTUNES).toContain(said);
+  });
+
+  it('prefers an argument over piped input', async () => {
     const { ctx, art } = stubContext();
-    await findCommand('neofetch')!.run('', ctx);
-    const visible = commands.filter((command) => !command.hidden).length;
-    expect(art[0]).toContain(`${visible} installed`);
+    await runPipeline(resolve('echo ignored | cowsay moo'), ctx);
+    expect(art[0]).toContain('< moo >');
+  });
+
+  it('still shows errors from the middle of a pipe', async () => {
+    const { ctx, err, art } = stubContext();
+    await runPipeline(resolve('cat | cowsay'), ctx);
+    expect(err[0]).toContain('missing operand');
+    expect(art[0]).toContain('< moo >');
+  });
+
+  it('cat passes piped input straight through', async () => {
+    const { ctx, out } = stubContext();
+    await runPipeline(resolve('echo hi there | cat'), ctx);
+    expect(out).toEqual(['hi there']);
   });
 });
 
-describe('matrix', () => {
-  it('draws a still frame under reduced motion and returns', async () => {
-    let painted = '';
-    const { ctx } = stubContext({
-      reducedMotion: () => true,
-      columns: () => 40,
-      draw: () => ({ update: (text: string) => void (painted = text), end: () => {} }),
-    });
-    await findCommand('matrix')!.run('', ctx);
-    expect(painted.split('\n')).toHaveLength(6);
+describe('the filters', () => {
+  const resolve = (raw: string) =>
+    splitPipeline(raw)!.map((stage) => ({ ...stage, command: findCommand(stage.name)! }));
+  const piped = async (raw: string, stdin: string) => {
+    const result = stubContext({ stdin });
+    await runPipeline(resolve(raw), result.ctx);
+    return result;
+  };
+  const NL = String.fromCharCode(10);
+  const text = ['alpha one', 'Beta two', 'gamma three', 'beta four'].join(NL);
+
+  it('grep keeps matching lines, case-sensitive like the real one', async () => {
+    expect((await piped('grep beta', text)).out).toEqual(['beta four']);
+    expect((await piped('grep -i beta', text)).out).toEqual([['Beta two', 'beta four'].join(NL)]);
   });
 
-  it('stops when interrupted', async () => {
-    let ended = false;
-    let release: () => void = () => {};
-    const { ctx } = stubContext({
-      reducedMotion: () => false,
-      columns: () => 20,
-      draw: () => ({ update: () => {}, end: () => void (ended = true) }),
-      interrupted: () => new Promise<void>((resolve) => (release = resolve)),
-    });
-    const running = findCommand('matrix')!.run('', ctx);
-    release();
-    await running;
-    expect(ended).toBe(true);
+  it('grep prints nothing when nothing matches', async () => {
+    const { out, err } = await piped('grep delta', text);
+    expect(out).toHaveLength(0);
+    expect(err).toHaveLength(0);
+  });
+
+  it('grep, head and wc explain themselves when nothing is piped in', async () => {
+    for (const name of ['grep x', 'head', 'wc']) {
+      const { ctx, err } = stubContext();
+      await runPipeline(resolve(name), ctx);
+      expect(err[0], name).toContain('pipe something in');
+    }
+  });
+
+  it('grep asks for a word', async () => {
+    const { err } = await piped('grep', text);
+    expect(err[0]).toContain('look for');
+  });
+
+  it('head reads -n 2, -n2 and -2 the same way', async () => {
+    expect(parseCount('-n 2')).toBe(2);
+    expect(parseCount('-n2')).toBe(2);
+    expect(parseCount('-2')).toBe(2);
+    expect(parseCount('')).toBe(10);
+    expect(parseCount('two')).toBeNull();
+    const { out } = await piped('head -n 2', text);
+    expect(out).toEqual([['alpha one', 'Beta two'].join(NL)]);
+  });
+
+  it('wc counts lines, words and characters like the real one', async () => {
+    expect((await piped('wc -l', text)).out).toEqual(['4']);
+    expect((await piped('wc -w', text)).out).toEqual(['8']);
+    expect((await piped('wc -c', text)).out).toEqual([String(text.length + 1)]);
+    expect((await piped('wc', text)).out[0].trim().split(/\s+/)).toEqual(['4', '8', String(text.length + 1)]);
+    expect((await piped('wc -x', text)).err[0]).toContain('unknown option');
+  });
+
+  it('chains through several stages', async () => {
+    const { ctx, out } = stubContext({ history: () => ['ls', 'cd projekte', 'ls', 'cd ..', 'help'] });
+    await runPipeline(resolve('history | grep cd | wc -l'), ctx);
+    expect(out).toEqual(['2']);
   });
 });
 

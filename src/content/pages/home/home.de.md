@@ -7,5 +7,5 @@ headline:
   - dann bauen.
 headlineDelay: 210
 sub:
-  - Ich will erst wissen, was du eigentlich brauchst. Die Lösung ist oft kleiner, als man denkt.
+  - Gute Systeme brauchen oft weniger, als man denkt. Nicht alles muss skalieren, aber falls doch, kann ich helfen.
 ---

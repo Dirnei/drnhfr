@@ -1,5 +1,6 @@
 import { playBoot } from './boot-log';
 import { copy } from './copy';
+import { runPipeline, splitPipeline } from './pipeline';
 import { findIn, nameFromHref } from './fs';
 import { renderHelp } from './help-text';
 import { commands, completionNames, findCommand } from './registry';
@@ -129,6 +130,7 @@ export function boot(): void {
   const ctx: CommandContext = {
     config,
     origin: window.location.origin,
+    stdin: null,
     print: (text) => appendLine(text, 'out'),
     printArt: (text) => appendLine(text, 'art'),
     printError: (text) => {
@@ -165,36 +167,38 @@ export function boot(): void {
     reboot,
   };
 
-  const parse = (raw: string): [string, string] => {
-    const trimmed = raw.trim();
-    const spaceIndex = trimmed.indexOf(' ');
-    if (spaceIndex === -1) return [trimmed, ''];
-    return [trimmed.slice(0, spaceIndex), trimmed.slice(spaceIndex + 1)];
+  const execute = async (raw: string) => {
+    const stages = splitPipeline(raw);
+    if (!stages) {
+      ctx.printError(copy.pipeSyntax);
+      return;
+    }
+    const missing = stages.find((stage) => !findCommand(stage.name));
+    if (missing) {
+      ctx.printError(`${missing.name}: ${copy.cmdNotFoundSuffix}`);
+      ctx.print(renderHelp(commands, ctx));
+      return;
+    }
+    const resolved = stages.map((stage) => ({ ...stage, command: findCommand(stage.name)! }));
+    const hadFocus = document.activeElement === input;
+    input.disabled = true;
+    try {
+      await runPipeline(resolved, ctx);
+    } finally {
+      releaseInterrupt();
+      if (!halted) {
+        input.disabled = false;
+        if (hadFocus) input.focus();
+      }
+    }
   };
 
   const run = async (raw: string) => {
     echo(raw);
     if (!raw.trim()) return;
     await entriesPromise;
-    const [name, rest] = parse(raw);
     lastFailed = false;
-    const command = findCommand(name);
-    if (command) {
-      const hadFocus = document.activeElement === input;
-      input.disabled = true;
-      try {
-        await command.run(rest, ctx);
-      } finally {
-        releaseInterrupt();
-        if (!halted) {
-          input.disabled = false;
-          if (hadFocus) input.focus();
-        }
-      }
-    } else {
-      ctx.printError(`${name}: ${copy.cmdNotFoundSuffix}`);
-      ctx.print(renderHelp(commands, ctx));
-    }
+    await execute(raw);
     stampClock();
     refreshStatus(lastFailed);
   };
@@ -239,7 +243,9 @@ export function boot(): void {
       input.value = historyCursor === history.length ? draft : history[historyCursor];
       input.setSelectionRange(input.value.length, input.value.length);
     } else if (event.key === 'Tab') {
-      const value = input.value;
+      const pipeIndex = input.value.lastIndexOf('|');
+      const head = pipeIndex === -1 ? '' : `${input.value.slice(0, pipeIndex + 1)} `;
+      const value = input.value.slice(pipeIndex + 1).trimStart();
       const spaceIndex = value.indexOf(' ');
       if (spaceIndex === -1) {
         const typed = value.toLowerCase();
@@ -248,7 +254,7 @@ export function boot(): void {
         );
         if (matches.length === 1) {
           event.preventDefault();
-          input.value = `${matches[0]} `;
+          input.value = `${head}${matches[0]} `;
         }
         return;
       }
@@ -263,7 +269,7 @@ export function boot(): void {
         );
       if (matches.length === 1) {
         event.preventDefault();
-        input.value = `${name} ${matches[0]}`;
+        input.value = `${head}${name} ${matches[0]}`;
       }
     }
   });

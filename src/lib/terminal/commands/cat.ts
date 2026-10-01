@@ -9,6 +9,10 @@ export default {
   completesEntries: true,
   run(arg, ctx) {
     const trimmed = arg.trim();
+    if (!trimmed && ctx.stdin !== null) {
+      ctx.print(ctx.stdin);
+      return;
+    }
     if (!trimmed) {
       ctx.printError(copy.catMissing);
       return;

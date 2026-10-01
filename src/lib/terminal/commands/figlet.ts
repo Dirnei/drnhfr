@@ -6,9 +6,9 @@ export default {
   name: 'figlet',
   usage: 'figlet <text>',
   summary: 'write it large',
-  order: 17,
+  order: 19,
   async run(arg, ctx) {
-    const text = arg.trim() || 'drnhfr';
+    const text = arg.trim() || ctx.stdin?.trim() || 'drnhfr';
     if (text.length > MAX_CHARS) {
       ctx.printError(`figlet: ${MAX_CHARS} characters is plenty`);
       return;

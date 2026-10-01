@@ -32,6 +32,7 @@ export const copy = {
     'christian dirnhofer. builds distributed systems for a living, actors and circuit boards for fun.',
   emptyLs: '(empty)',
   cmdNotFoundSuffix: 'command not found',
+  pipeSyntax: "syntax error near unexpected token '|'",
   helpHeading: 'available commands:',
   catMissing: 'cat: missing operand',
   catNotFoundPrefix: 'cat: no such file: ',
@@ -46,7 +47,6 @@ export const copy = {
   exitIdle: 'already guest.',
   chips: [
     { label: 'ls', run: 'ls' },
-    { label: 'neofetch', run: 'neofetch' },
     { label: 'help', run: 'help' },
   ],
 } as const;

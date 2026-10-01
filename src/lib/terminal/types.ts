@@ -42,6 +42,8 @@ export interface CommandContext {
   readonly config: TerminalConfig;
   /** Base for resolving anything relative the visitor types. */
   readonly origin: string;
+  /** Output of the previous command in a pipeline, or null when nothing was piped in. */
+  readonly stdin: string | null;
   print(text: string): void;
   printArt(text: string): void;
   /** Error output. Also lights the ✗ segment in the status line. */
