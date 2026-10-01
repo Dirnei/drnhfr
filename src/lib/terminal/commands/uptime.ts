@@ -5,7 +5,7 @@ export default {
   name: 'uptime',
   usage: 'uptime',
   summary: 'how long this tab, and this site, have been up',
-  order: 13,
+  order: 14,
   run(_arg, ctx) {
     ctx.print(`up ${humanise(ctx.uptimeMs())}, 1 user`);
 

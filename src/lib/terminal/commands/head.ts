@@ -5,7 +5,7 @@ export default {
   name: 'head',
   usage: 'head [-n count]',
   summary: 'only the first lines, 10 unless told otherwise',
-  order: 16,
+  order: 17,
   run(arg, ctx) {
     const count = parseLineCount(arg);
     if (count === null) {

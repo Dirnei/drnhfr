@@ -5,7 +5,7 @@ export default {
   name: 'wc',
   usage: 'wc [-l|-w|-c]',
   summary: 'count what is piped in, -l for lines only',
-  order: 20,
+  order: 21,
   run(arg, ctx) {
     const lines = stdinLines(ctx);
     if (lines === null) {

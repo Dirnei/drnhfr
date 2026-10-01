@@ -5,7 +5,7 @@ export default {
   name: 'uniq',
   usage: 'uniq [-c]',
   summary: 'fold repeated neighbouring lines, -c counts them',
-  order: 19,
+  order: 20,
   run(arg, ctx) {
     const flag = arg.trim();
     if (flag && flag !== '-c') {

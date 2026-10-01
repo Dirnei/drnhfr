@@ -5,7 +5,7 @@ export default {
   name: 'sort',
   usage: 'sort [-rn]',
   summary: 'sort the lines, -r reverses, -n compares numbers',
-  order: 18,
+  order: 19,
   run(arg, ctx) {
     const flags = arg.trim();
     if (flags && !/^(-[rn]+\s*)+$/.test(flags)) {

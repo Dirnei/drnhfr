@@ -16,6 +16,7 @@ import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import { runPipeline, splitPipeline } from '../src/lib/terminal/pipeline';
 import { parseLineCount } from '../src/lib/terminal/pipeline';
 import { parseRm } from '../src/lib/terminal/commands/rm';
+import { bar } from '../src/lib/terminal/commands/skills';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 
 describe('the unlock code', () => {
@@ -599,6 +600,65 @@ describe('rm', () => {
     const empty = fsContext();
     rm.run('-rf', empty.ctx);
     expect(empty.err[0]).toBe('rm: missing operand');
+  });
+});
+
+describe('skills', () => {
+  const resolve = (raw: string) =>
+    splitPipeline(raw)!.map((stage) => ({ ...stage, command: findCommand(stage.name)! }));
+  const NL = String.fromCharCode(10);
+
+  it('draws a ten-cell bar from the level', () => {
+    expect(bar(98)).toBe('██████████');
+    expect(bar(45)).toBe('█████░░░░░');
+    expect(bar(0, '#', '-')).toBe('----------');
+  });
+
+  it('prints one line per skill in cv.json, level first', async () => {
+    const cv = (await import('../src/data/cv.json')).default;
+    const total = cv.expertise.reduce((sum, group) => sum + group.skills.length, 0);
+    const { ctx, out } = stubContext({ columns: () => 120 });
+    await findCommand('skills')!.run('', ctx);
+    const lines = out[0].split(NL);
+    expect(lines).toHaveLength(total);
+    for (const line of lines) expect(line).toMatch(/^\s*\d{1,3}  /);
+    expect(lines[0]).toContain(cv.expertise[0].group);
+  });
+
+  it('feeds sort, head and grep', async () => {
+    const cv = (await import('../src/data/cv.json')).default;
+    const top = Math.max(...cv.expertise.flatMap((group) => group.skills.map((skill) => skill.level)));
+    const sorted = stubContext({ columns: () => 120 });
+    await runPipeline(resolve('skills | sort -rn | head -n 1'), sorted.ctx);
+    expect(parseInt(sorted.out[0], 10)).toBe(top);
+
+    const grepped = stubContext({ columns: () => 120 });
+    await runPipeline(resolve('skills | grep Databases'), grepped.ctx);
+    expect(grepped.out[0].split(NL)).toHaveLength(
+      cv.expertise.find((group) => group.group === 'Databases')!.skills.length,
+    );
+  });
+
+  it('drops the group column when the log is narrow', async () => {
+    const { ctx, out } = stubContext({ columns: () => 40 });
+    await findCommand('skills')!.run('', ctx);
+    expect(out[0]).not.toContain('Programming Languages');
+  });
+
+  it('falls back to ASCII bars when the block glyph is not cell-perfect', async () => {
+    const { ctx, out } = stubContext({
+      columns: () => 120,
+      charWidth: (sample: string) => (sample.includes('█') ? 9.4 : 7.8),
+    });
+    await findCommand('skills')!.run('', ctx);
+    expect(out[0]).not.toContain('█');
+    expect(out[0]).toContain('#');
+  });
+
+  it('points at grep when given an argument', async () => {
+    const { ctx, err } = stubContext();
+    await findCommand('skills')!.run('devops', ctx);
+    expect(err[0]).toContain('skills | grep');
   });
 });
 

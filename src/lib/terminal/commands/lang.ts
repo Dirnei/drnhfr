@@ -4,7 +4,7 @@ export default {
   name: 'lang',
   usage: 'lang',
   summary: 'switch between /de/ and /en/',
-  order: 7,
+  order: 8,
   run(_arg, ctx) {
     ctx.navigate(ctx.config.otherHomeHref);
   },

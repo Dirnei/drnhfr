@@ -5,7 +5,7 @@ export default {
   name: 'tail',
   usage: 'tail [-n count]',
   summary: 'only the last lines, 10 unless told otherwise',
-  order: 17,
+  order: 18,
   run(arg, ctx) {
     const count = parseLineCount(arg);
     if (count === null) {

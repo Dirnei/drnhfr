@@ -5,7 +5,7 @@ export default {
   name: 'grep',
   usage: 'grep [-i] <word>',
   summary: 'keep only the lines that contain <word>, -i to ignore case',
-  order: 15,
+  order: 16,
   run(arg, ctx) {
     const ignoreCase = /^-i\s/.test(arg.trim());
     const word = (ignoreCase ? arg.trim().slice(2) : arg).trim();

@@ -4,7 +4,7 @@ export default {
   name: 'clear',
   usage: 'clear',
   summary: 'clear the screen',
-  order: 8,
+  order: 9,
   run(_arg, ctx) {
     ctx.clearScreen();
   },
