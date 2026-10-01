@@ -1,6 +1,6 @@
 {
   "begin": "2026",
-  "stack": ["React", "Vite", "PWA", "Docker", "C#", "MongoDB", "Akka.NET", "Ansible"],
+  "stack": ["React", "Vite", "PWA", "Docker", "C#", "MongoDB", "Akka.NET", "Ansible", "GitHub Pages"],
   "links": {
     "demo": "https://gaudiballz.leberkas.org/",
     "repo": "https://github.com/Dirnei/gaudiballz"

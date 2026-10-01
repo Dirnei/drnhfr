@@ -23,7 +23,7 @@
         "de": "Softwarearchitekt und technischer Berater für die Kabelbaumfertigung der Komax Group. Entwurf einer verteilten MES-Architektur, Etablierung technischer Standards und Evaluierung des Technologie-Stacks.",
         "en": "Software Architect and Technical Consultant for Komax Group's wire harness manufacturing division. Architected distributed MES system design, established technical standards, and evaluated the technology stack."
       },
-      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry", "C#", "OpenAPI", "Ansible"]
+      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry", "C#", "OpenAPI", "Ansible", "MQTT"]
     },
     {
       "start": "2020-04",

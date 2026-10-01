@@ -1,6 +1,6 @@
 {
   "begin": "2013",
-  "stack": ["Arduino", "ESP32", "Raspberry Pi", "Akka.NET", "React", "Docker", "C#", "OpenAPI", "MongoDB", "Ansible", "OpenTelemetry", "UWP"],
+  "stack": ["Arduino", "ESP32", "Raspberry Pi", "Akka.NET", "React", "Docker", "C#", "OpenAPI", "MongoDB", "Ansible", "OpenTelemetry", "UWP", "MQTT"],
   "links": {
     "demo": "https://cloud.dartomat.com"
   },

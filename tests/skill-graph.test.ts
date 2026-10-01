@@ -114,7 +114,7 @@ describe('the skill graph', () => {
 
   it('links a platform only to the languages on it', () => {
     const graph = buildGraph(realSource());
-    expect(neighbours(graph, 'tech:net').sort()).toEqual(['tech:asp-net', 'tech:c', 'tech:uwp', 'tech:vb-net', 'tech:wpf']);
+    expect(neighbours(graph, 'tech:net').sort()).toEqual(['tech:asp-net', 'tech:c', 'tech:uwp', 'tech:vb-net', 'tech:winforms', 'tech:wpf']);
     const platformLines = graph.edges.filter((edge) => edge.a === 'tech:net' || edge.b === 'tech:net');
     expect(platformLines.every((edge) => edge.kind === 'related')).toBe(true);
     expect(neighbours(graph, 'tech:uwp')).toContain('project:dartomat');

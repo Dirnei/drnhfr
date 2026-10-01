@@ -12,7 +12,7 @@
       "id": "homelab",
       "label": "Homelab",
       "projects": ["e3dc"],
-      "stack": ["Proxmox", "Docker", "Kubernetes", "Ansible", "Terraform", "C#", "Raspberry Pi"]
+      "stack": ["Proxmox", "Docker", "Kubernetes", "Ansible", "Terraform", "C#", "Raspberry Pi", "MQTT"]
     },
     {
       "id": "workshop",
@@ -25,7 +25,8 @@
         "Arduino",
         "ESP32",
         "Docker",
-        "Raspberry Pi"
+        "Raspberry Pi",
+        "MQTT"
       ]
     }
   ],
@@ -37,7 +38,7 @@
   },
   "platforms": [".NET"],
   "pairs": [
-    { "tech": ".NET", "with": ["C#", "VB.NET", "UWP", "WPF", "ASP.NET"] },
+    { "tech": ".NET", "with": ["C#", "VB.NET", "UWP", "WPF", "WinForms", "ASP.NET"] },
     { "tech": "Raspberry Pi", "with": ["Ansible", "Docker", "MQTT"] },
     { "tech": { "de": "CO2-Laser", "en": "CO2 laser" }, "with": ["SVG", "CAD"] }
   ]
