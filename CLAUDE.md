@@ -68,6 +68,18 @@ can drive it over CDP with no install:
 Serve `dist/` on a throwaway port rather than testing against the dev server —
 it has served stale CSS and sent a debugging session in the wrong direction.
 
+The owner does work in `astro dev`, though, so check it too after these two
+kinds of change, which it has got wrong while the build was fine:
+
+- **A new file found by `import.meta.glob` is not seen until a restart.** Four
+  commands added at once: the watcher caught three and `rm` stayed "command not
+  found". Restart after adding commands, tech logos or page slices.
+- **A schema change can leave stale content behind.** Parsed entries are cached
+  in `.astro/data-store.json` by file digest. Fields added to `content.config.ts`
+  together with the content that uses them were stripped by the old schema and
+  stayed stripped across restarts. After any schema change: stop the server,
+  delete that file (git-ignored, regenerated), start again.
+
 Three traps that have already cost time here:
 
 - **`--hide-scrollbars` hides real bugs.** Every art block once carried its own
@@ -223,10 +235,23 @@ export default {
 ```
 
 Commands never touch the DOM. They go through `CommandContext` — `print`,
-`printArt`, `printError`, `find`, `navigate`, `openTab`, `draw`, `columns`,
-`charWidth`, `uptimeMs`, `history`, `interrupted`, `reboot`. That is what makes
-them testable: `tests/terminal.test.ts` has a `stubContext` helper, and running
-a command in a test is just calling it with a fake.
+`printArt`, `printError`, `find`, `entries`, `navigate`, `openTab`, `draw`,
+`columns`, `charWidth`, `uptimeMs`, `history`, `interrupted`, `reboot`,
+`remove`, `wipe`, `stdin`. That is what makes them testable:
+`tests/terminal.test.ts` has a `stubContext` helper, and running a command in a
+test is just calling it with a fake.
+
+**Pipes.** `a | b` runs through `src/lib/terminal/pipeline.ts`: every stage but
+the last prints into a buffer, and the next stage reads it as `ctx.stdin`
+(`null` when nothing was piped in). Errors skip the buffer, like stderr. A
+filter reads `stdinLines(ctx)` (grep, head, tail, sort, uniq, wc); a command
+that takes text uses its argument first and `ctx.stdin` second (cowsay,
+figlet, cat). Keep output one fact per line with no header, the way `skills`
+does, or `sort -rn` has nothing to sort.
+
+Names resolve in both languages: search entries carry `aliases` built from
+`routeSegments`, so `cd contact` works on a German page and `cd kontakt` on an
+English one. `ls` and Tab still prefer the page's own language.
 
 **Heavy payloads load lazily** — `await import()` inside `run`, so the metadata
 stays static for `help` while the data only arrives on first use. See
@@ -251,6 +276,40 @@ scripts read the flag; that ordering is why it is not on the CV page itself.
 full markup and merely hides it, so the content is public to anyone who reads
 the HTML. Never describe it as protection, and never put anything there that
 actually needs protecting.
+
+---
+
+## The skills graph
+
+`src/content/pages/skills/` draws it; `src/lib/skill-graph.ts` builds and lays
+it out, and `src/lib/skill-graph-client.ts` handles drag, pan and zoom.
+
+- **Where the lines come from.** The `stack` of every job (`cv.json`) and
+  project (`<slug>.json`), plus `src/data/skill-extras.json` for what has no
+  page: `projects` (this site), `areas` (Homelab, Werkstatt, which may list
+  `projects`), `related` (dashed: related, not used), `pairs` (technology to
+  technology) and `platforms` (linked only through pairs, all those lines
+  dashed; that is how .NET sits under C#, VB.NET, ASP.NET, UWP and WPF). Jobs
+  are labelled by their neutral `field` in `cv.json`, company underneath.
+- **One node per technology.** `tech-names.json` merges spellings (`.NET 8` →
+  `.NET`); `tech-icons.json` maps a node to its logo in `src/assets/tech/`
+  (Simple Icons CC0 and Devicon MIT, colours stripped; see the README there).
+  Wordmark logos shrink to a dash at 14 px, which is why Oracle and GitHub
+  Pages keep their square.
+- **The layout is computed at build time**, seeded, for both canvases in
+  `LAYOUTS`. The tests read the same constant and fail on any label overlap or
+  spill. When added data crowds the tall canvas, make it taller rather than
+  adding passes; it failed once with 25 of 56 nodes pressed against the edges.
+- **Live dragging is a damped spring model (`springStep`), not the layout
+  forces.** Re-running the layout fought its own overlap pass and made every
+  neighbour flicker (119 direction changes in 120 frames). A node's mass is its
+  line count, so hubs do not overshoot. Overlaps under half a pixel are ignored
+  and the push grows from zero at that edge; a push that jumped in made nodes
+  chatter. `tests/skill-graph.test.ts` holds the built layout perfectly still
+  and counts direction changes during a drag. Keep both.
+- Work and private nodes have their own tokens (`--graph-work`,
+  `--graph-private`). A selected node is shown by bold text and fading the
+  rest, not by red; red only marks keyboard focus.
 
 ---
 
@@ -297,7 +356,8 @@ actually needs protecting.
   part of the logo.
 - Link icons are Octicons (MIT), vendored in `src/assets/icons/` with
   `fill="currentColor"` added; see the README there. `ProjectLinks.astro` maps
-  repo/docs/demo to them.
+  repo/docs/demo to them. Technology logos for the graph and the project
+  stacks are a separate set in `src/assets/tech/` (see "The skills graph").
 - The CV page and the PDF are **the same document**: the PDF is the page
   printed through `src/styles/print.css`. There is no second renderer. On
   screen it is a proportional timeline; `@media print` unwinds that into a
