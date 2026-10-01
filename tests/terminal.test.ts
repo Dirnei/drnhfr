@@ -162,7 +162,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
       cvHref: '/de/lebenslauf/',
       otherHomeHref: '/en/',
       searchHref: '/de/search.json',
-      introFallbackMs: 0,
+      boot: { lines: [], lineStepMinMs: 0, lineStepMaxMs: 0 },
       lastCommit: null,
     },
     print: (text: string) => void out.push(text),
@@ -516,7 +516,7 @@ describe('uptime and the last commit', () => {
         cvHref: '/de/lebenslauf/',
         otherHomeHref: '/en/',
         searchHref: '/de/search.json',
-        introFallbackMs: 0,
+        boot: { lines: [], lineStepMinMs: 0, lineStepMaxMs: 0 },
         lastCommit: iso,
       },
     });

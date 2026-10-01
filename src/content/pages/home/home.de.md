@@ -1,13 +1,11 @@
 ---
 title: Softwarearchitekt / Consultant / Maker
-description: Verteilte Systeme mit Akka.net, Event-basiert, hochverfügbar und flexibel.
+description: Erst verstehen, dann bauen.
 kicker: // Softwarearchitekt / Consultant / Maker
 headline:
-  - Systeme, nachhaltig denken.
+  - Erst verstehen,
+  - dann bauen.
 headlineDelay: 210
 sub:
-  - Verteilte Systeme mit Akka.net, Event-basiert, hochverfügbar und flexibel.
-search:
-  title: Startseite
-  description: Die Startseite mit Terminal.
+  - Ich will erst wissen, was du eigentlich brauchst. Die Lösung ist oft kleiner, als man denkt.
 ---

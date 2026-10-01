@@ -2,7 +2,6 @@
 import '../styles/base.css';
 import Logo from '../components/Logo.astro';
 import SiteNav from '../components/SiteNav.astro';
-import BootIntro from '../components/BootIntro.astro';
 import TerminalShortcut from '../components/TerminalShortcut.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
@@ -15,7 +14,6 @@ interface Props {
   altHref: string;
   current?: RouteKey;
   altAvailable?: boolean;
-  showIntro?: boolean;
   noindex?: boolean;
 }
 
@@ -26,7 +24,6 @@ const {
   altHref,
   current,
   altAvailable = true,
-  showIntro = false,
   noindex = false,
 } = Astro.props;
 const other = lang === 'de' ? 'en' : 'de';
@@ -93,7 +90,6 @@ const xDefaultHref =
     </script>
   </head>
   <body>
-    {showIntro && <BootIntro lang={lang} />}
     <a class="skip-link" href="#main">
       {lang === 'de' ? 'Zum Inhalt springen' : 'Skip to content'}
     </a>

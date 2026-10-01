@@ -4,7 +4,6 @@ import { useTranslations } from '../i18n/ui';
 import { slugOf } from './ids';
 import {
   getContactPage,
-  getHomePage,
   getLegalPage,
   getProjects,
   getProjectsPage,
@@ -24,7 +23,6 @@ export async function searchIndex(locale: Locale): Promise<SearchEntry[]> {
   const projectKind = t('projects.kind');
 
   const pages = [
-    { entry: await getHomePage(locale), href: `/${locale}/` },
     { entry: await getProjectsPage(locale), href: routePath('projects', locale) },
     { entry: await getContactPage(locale), href: routePath('contact', locale) },
     { entry: await getLegalPage('imprint', locale), href: routePath('imprint', locale) },

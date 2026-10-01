@@ -72,7 +72,7 @@ const number = String(index + 1).padStart(2, '0');
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-intro='running']) .row {
+    .row {
       animation: row-in 0.42s cubic-bezier(0.16, 0.84, 0.26, 1) both;
       animation-delay: calc(var(--row-index, 0) * 90ms);
     }

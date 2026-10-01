@@ -1,3 +1,5 @@
+import type { BootConfig } from './boot-log';
+
 export interface Command {
   name: string;
   aliases?: string[];
@@ -31,7 +33,7 @@ export interface TerminalConfig {
   cvHref: string;
   otherHomeHref: string;
   searchHref: string;
-  introFallbackMs: number;
+  boot: BootConfig;
   /** ISO timestamp of the last commit, or null if git could not say. */
   lastCommit: string | null;
 }

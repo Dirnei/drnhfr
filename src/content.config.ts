@@ -46,7 +46,7 @@ const listed = meta.extend({
 
 const home = pageCollection(
   "home",
-  listed.extend({
+  meta.extend({
     kicker: z.string(),
     headline: z.array(z.string()).min(1),
     headlineDelay: z.number().default(0),

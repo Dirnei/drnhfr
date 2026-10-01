@@ -8,9 +8,6 @@ const { text, delay = 0 } = Astro.props;
 <span class="decode" data-text={text} data-delay={delay}>{text}</span>
 
 <script>
-  import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
-  import { bootTiming, bootLines } from '../data/boot';
-
   const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const LOWER = 'abcdefghijklmnopqrstuvwxyz';
   const DIGITS = '0123456789';
@@ -70,38 +67,6 @@ const { text, delay = 0 } = Astro.props;
       }
     };
 
-    if (document.documentElement.dataset.intro === 'running') {
-      const fallbackMs =
-        Math.max(
-          computeBootSchedule(bootTiming, bootLines('de').length).finishAt,
-          computeBootSchedule(bootTiming, bootLines('en').length).finishAt,
-        ) + DECODE_FALLBACK_MARGIN_MS;
-
-      let done = false;
-      let timeoutId: number;
-      const start = () => {
-        if (done) return;
-        done = true;
-        clearTimeout(timeoutId);
-        run();
-      };
-      document.addEventListener('intro:finished', start, { once: true });
-
-      const armFallback = () => {
-        timeoutId = window.setTimeout(start, fallbackMs);
-      };
-      if (document.visibilityState === 'visible') {
-        armFallback();
-      } else {
-        const onVisible = () => {
-          if (document.visibilityState !== 'visible') return;
-          document.removeEventListener('visibilitychange', onVisible);
-          armFallback();
-        };
-        document.addEventListener('visibilitychange', onVisible);
-      }
-    } else {
-      run();
-    }
+    run();
   }
 </script>

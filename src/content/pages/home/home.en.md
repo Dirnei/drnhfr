@@ -1,14 +1,11 @@
 ---
-title: Christian Dirnhofer — Software Architect & Tinkerer
-description: Distributed systems, .NET and actor models. Projects, articles and resume.
-kicker: // Software architect & tinkerer
+title: Softwarearchitect / Consultant / Maker
+description: Understand first, then build.
+kicker: // Softwarearchitect / Consultant / Maker
 headline:
-  - Systems
-  - that hold.
+  - Understand first,
+  - then build.
 sub:
-  - Distributed systems, .NET and actor models, at work.
-  - Circuit boards, containers and a basement full of cables, at home.
-search:
-  title: Home
-  description: The home page, with a terminal.
+  - Before I write a line of code, I want to know what you actually need.
+  - Honestly, the fix is often smaller than you'd think.
 ---

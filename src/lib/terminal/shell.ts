@@ -1,3 +1,4 @@
+import { playBoot } from './boot-log';
 import { copy } from './copy';
 import { findIn, nameFromHref } from './fs';
 import { renderHelp } from './help-text';
@@ -23,9 +24,7 @@ export function boot(): void {
   const entriesPromise = fetch(config.searchHref)
     .then((response) => response.json())
     .then((data: unknown) => {
-      entries = Array.isArray(data)
-        ? (data as SearchEntry[]).filter((entry) => entry.href !== `/${config.lang}/`)
-        : [];
+      entries = Array.isArray(data) ? (data as SearchEntry[]) : [];
       return entries;
     })
     .catch(() => {
@@ -315,16 +314,14 @@ export function boot(): void {
   stampClock();
   refreshStatus(false);
 
-  if (document.documentElement.dataset.intro === 'running') {
-    let enabled = false;
-    const enableOnce = () => {
-      if (enabled) return;
-      enabled = true;
-      enable();
-    };
-    document.addEventListener('intro:finished', enableOnce, { once: true });
-    window.setTimeout(enableOnce, config.introFallbackMs);
-  } else {
+  if (log.dataset.boot === undefined) {
     enable();
+    return;
   }
+  const motd = log.querySelector('.motd');
+  void playBoot(log, motd, config.boot, section, reducedMotion()).then(() => {
+    delete log.dataset.boot;
+    log.scrollTop = log.scrollHeight;
+    enable();
+  });
 }

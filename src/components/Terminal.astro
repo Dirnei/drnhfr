@@ -2,8 +2,8 @@
 import type { Locale } from '../i18n/locales';
 import { otherLocale } from '../i18n/locales';
 import { routePath } from '../i18n/routes';
-import { computeBootSchedule, DECODE_FALLBACK_MARGIN_MS } from '../lib/boot-timing';
 import { bootTiming, bootLines } from '../data/boot';
+import { INTRO_KEY } from '../lib/terminal/unlock';
 import { copy } from '../lib/terminal/copy';
 import { lastCommitIso } from '../lib/build-info';
 
@@ -15,11 +15,6 @@ const { lang } = Astro.props;
 const cvHref = routePath('cv', lang);
 const otherHomeHref = `/${otherLocale(lang)}/`;
 const searchHref = `/${lang}/search.json`;
-const introFallbackMs =
-  Math.max(
-    computeBootSchedule(bootTiming, bootLines('de').length).finishAt,
-    computeBootSchedule(bootTiming, bootLines('en').length).finishAt,
-  ) + DECODE_FALLBACK_MARGIN_MS;
 const terminalLabel = 'Interactive terminal';
 const logLabel = lang === 'de' ? 'Terminal-Ausgabe' : 'Terminal output';
 const inputLabel = 'Terminal input';
@@ -29,9 +24,11 @@ const config = {
   cvHref,
   otherHomeHref,
   searchHref,
-  introFallbackMs,
+  boot: { ...bootTiming, lines: bootLines },
   lastCommit: lastCommitIso,
 };
+const nl = String.fromCharCode(10);
+const logoBar = '='.repeat(Math.max(...copy.logo.map((row) => row.length)));
 const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
 ---
 
@@ -46,8 +43,18 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     }
   </div>
   <div class="log" id="terminal-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={logLabel}>
-    <p class="line hint">{copy.motd.join(String.fromCharCode(10))}</p>
+    <p class="line art motd logo-art" aria-hidden="true"><span class="bar">{logoBar}</span>{nl}{copy.logo.join(nl)}{nl}<span class="bar">{logoBar}</span></p>
+    <p class="line hint motd">{copy.motd.join(nl)}</p>
   </div>
+  <script is:inline define:vars={{ introKey: INTRO_KEY }}>
+    try {
+      if (sessionStorage.getItem(introKey) !== '1') {
+        document.getElementById('terminal-log').dataset.boot = '';
+      }
+    } catch {
+      // Storage blocked: skip the boot log rather than replay it on every load.
+    }
+  </script>
   <form class="term-form" id="terminal-form">
     <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
     <span class="seg seg-err" id="terminal-status" hidden aria-hidden="true">&#10007;</span>
@@ -118,7 +125,7 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
       flex: 1 1 auto;
       min-height: 0;
     }
-    :global(main:has(.terminal)) > * {
+    :global(main:has(.terminal) > *) {
       width: 100%;
     }
     :global(main:has(.terminal)) .terminal {
@@ -173,6 +180,54 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   }
   .log :global(.line.err) {
     color: var(--red-text);
+  }
+  .logo-art {
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .logo-art .bar {
+    color: var(--text-dim);
+  }
+  .log[data-boot] .motd {
+    display: none;
+  }
+  .log :global(.line.boot) {
+    margin: 0;
+    color: var(--text-muted);
+  }
+  .log :global(.boot .tag) {
+    color: var(--red-text);
+  }
+  .log :global(.boot .tag[data-tag='OK']) {
+    color: var(--boot-ok);
+  }
+  .log :global(.boot .tag[data-tag='WAIT']),
+  .log :global(.boot .tag[data-tag='INFO']) {
+    color: var(--boot-info);
+  }
+  .log :global(.wait-cue) {
+    margin-left: 0.3em;
+  }
+  .log :global(.wait-cue i) {
+    font-style: normal;
+    opacity: 0.2;
+    animation: wait-dot 1.4s ease-in-out infinite;
+  }
+  .log :global(.wait-cue i:nth-child(2)) {
+    animation-delay: 0.2s;
+  }
+  .log :global(.wait-cue i:nth-child(3)) {
+    animation-delay: 0.4s;
+  }
+  @keyframes wait-dot {
+    0%,
+    80%,
+    100% {
+      opacity: 0.2;
+    }
+    40% {
+      opacity: 1;
+    }
   }
   .term-form {
     display: flex;

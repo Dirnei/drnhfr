@@ -15,10 +15,25 @@ const TEXT = token('text');
 const TEXT_MUTED = token('text-muted');
 const RED = token('red');
 
-const COPY = {
-  de: { headline: 'SYSTEME, DIE HALTEN.', kicker: 'SOFTWAREARCHITEKT &amp; TINKERER' },
-  en: { headline: 'SYSTEMS THAT HOLD.', kicker: 'SOFTWARE ARCHITECT &amp; TINKERER' },
-};
+const escapeXml = (text) =>
+  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+async function homeCopy(lang) {
+  const path = new URL(`../src/content/pages/home/home.${lang}.md`, import.meta.url);
+  const lines = (await readFile(path, 'utf8')).split(/\r?\n/);
+  const unquote = (value) => value.trim().replace(/^(["'])(.*)\1$/, '$2');
+  const upper = (text) => escapeXml(unquote(text).toUpperCase());
+
+  const kicker = lines.find((line) => line.startsWith('kicker:')).slice('kicker:'.length);
+  const headline = [];
+  for (const line of lines.slice(lines.indexOf('headline:') + 1)) {
+    if (!line.trim().startsWith('- ')) break;
+    headline.push(upper(line.trim().slice(2)));
+  }
+  return { kicker: upper(unquote(kicker).replace(/^\/\/\s*/, '')), headline };
+}
+
+const COPY = { de: await homeCopy('de'), en: await homeCopy('en') };
 
 function card({ headline, kicker }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
@@ -33,10 +48,12 @@ function card({ headline, kicker }) {
       </g>
     </g>
   </g>
-  <text x="80" y="420" fill="${RED}" font-family="monospace" font-size="22"
+  <text x="80" y="330" fill="${RED}" font-family="monospace" font-size="22"
         letter-spacing="6">${kicker}</text>
-  <text x="80" y="510" fill="${TEXT}" font-family="sans-serif" font-size="82"
-        font-weight="800" letter-spacing="-2">${headline}</text>
+  <text x="80" y="420" fill="${TEXT}" font-family="sans-serif" font-size="82"
+        font-weight="800" letter-spacing="-2">${headline
+          .map((line, index) => `<tspan x="80" dy="${index === 0 ? 0 : 84}">${line}</tspan>`)
+          .join('')}</text>
   <text x="80" y="566" fill="${TEXT_MUTED}" font-family="monospace" font-size="22">dirnhofer.net</text>
 </svg>`;
 }

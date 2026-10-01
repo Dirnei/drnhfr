@@ -11,8 +11,6 @@ const homeHref = `/${lang}/`;
   const FOCUS_KEY = 'focus-terminal';
 
   document.addEventListener('keydown', (event) => {
-    if (document.documentElement.dataset.intro === 'running') return;
-
     const bare = !event.metaKey && !event.ctrlKey && !event.altKey;
     const isSlash = event.key === '/' && bare;
     const isK = (event.key === 'k' || event.key === 'K') && (event.metaKey || event.ctrlKey);
