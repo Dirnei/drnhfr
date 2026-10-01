@@ -51,7 +51,7 @@ describe('the filesystem', () => {
     { href: '/de/projekte/', type: 'page' },
     { href: '/de/projekte/akka-cluster/', type: 'project' },
     { href: '/de/projekte/split-brain/', type: 'project' },
-    { href: '/de/kontakt/', type: 'page' },
+    { href: '/de/kontakt/', type: 'page', aliases: ['kontakt', 'contact'] },
   ];
 
   it('takes the last segment as the name', () => {
@@ -64,6 +64,12 @@ describe('the filesystem', () => {
     expect(findIn(entries, '/projekte/')?.href).toBe('/de/projekte/');
     expect(findIn(entries, 'nope')).toBeUndefined();
     expect(findIn(entries, '  ')).toBeUndefined();
+  });
+
+  it('resolves the name in the other language too', () => {
+    expect(findIn(entries, 'contact')?.href).toBe('/de/kontakt/');
+    expect(findIn(entries, 'Contact/')?.href).toBe('/de/kontakt/');
+    expect(findIn(entries, 'kontakt')?.href).toBe('/de/kontakt/');
   });
 
   it('lists pages first, then projects', () => {
@@ -163,6 +169,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     config: {
       lang: 'de',
       cvHref: '/de/lebenslauf/',
+      cvAliases: ['lebenslauf', 'cv'],
       otherHomeHref: '/en/',
       searchHref: '/de/search.json',
       boot: { lines: [], lineStepMinMs: 0, lineStepMaxMs: 0 },
@@ -506,7 +513,7 @@ describe('the filters', () => {
 describe('rm', () => {
   const rm = findCommand('rm')!;
   const ENTRIES: SearchEntry[] = [
-    { href: '/en/contact/', type: 'page' },
+    { href: '/en/contact/', type: 'page', aliases: ['kontakt', 'contact'] },
     { href: '/en/imprint/', type: 'page' },
     { href: '/en/projects/', type: 'page' },
     { href: '/en/projects/edict/', type: 'project' },
@@ -538,6 +545,12 @@ describe('rm', () => {
     expect(removed).toEqual(['/en/contact/']);
     expect(out).toHaveLength(0);
     expect(err).toHaveLength(0);
+  });
+
+  it('removes a page by its name in the other language', () => {
+    const { ctx, removed } = fsContext();
+    rm.run('kontakt', ctx);
+    expect(removed).toEqual(['/en/contact/']);
   });
 
   it('removes several targets and says so with -v', () => {
@@ -694,6 +707,7 @@ describe('uptime and the last commit', () => {
       config: {
         lang: 'de',
         cvHref: '/de/lebenslauf/',
+      cvAliases: ['lebenslauf', 'cv'],
         otherHomeHref: '/en/',
         searchHref: '/de/search.json',
         boot: { lines: [], lineStepMinMs: 0, lineStepMaxMs: 0 },

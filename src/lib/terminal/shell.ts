@@ -36,6 +36,7 @@ export function boot(): void {
   const cvEntry: SearchEntry = {
     href: config.cvHref,
     type: 'page',
+    aliases: config.cvAliases,
     description: copy.cvDescription,
   };
   const removed = new Set<string>();
@@ -287,12 +288,14 @@ export function boot(): void {
       if (!findCommand(name)?.completesEntries) return;
       const lastSpace = value.lastIndexOf(' ');
       const partial = value.slice(lastSpace + 1).toLowerCase();
-      const matches = visibleEntries()
-        .map((entry) => nameFromHref(entry.href))
-        .filter(
+      const startsWith = (names: string[]) =>
+        names.filter(
           (candidate, index, all) =>
             all.indexOf(candidate) === index && candidate.toLowerCase().startsWith(partial),
         );
+      const own = startsWith(visibleEntries().map((entry) => nameFromHref(entry.href)));
+      const matches =
+        own.length > 0 ? own : startsWith(visibleEntries().flatMap((entry) => entry.aliases ?? []));
       if (matches.length === 1) {
         event.preventDefault();
         input.value = `${head}${value.slice(0, lastSpace + 1)}${matches[0]}`;

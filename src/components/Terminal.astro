@@ -1,7 +1,7 @@
 ---
 import type { Locale } from '../i18n/locales';
 import { otherLocale } from '../i18n/locales';
-import { routePath } from '../i18n/routes';
+import { routePath, routeSegments } from '../i18n/routes';
 import { bootTiming, bootLines } from '../data/boot';
 import { INTRO_KEY } from '../lib/terminal/unlock';
 import { copy } from '../lib/terminal/copy';
@@ -22,6 +22,7 @@ const inputLabel = 'Terminal input';
 const config = {
   lang,
   cvHref,
+  cvAliases: Object.values(routeSegments.cv),
   otherHomeHref,
   searchHref,
   boot: { ...bootTiming, lines: bootLines },

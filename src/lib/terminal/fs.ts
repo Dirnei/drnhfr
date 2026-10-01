@@ -20,7 +20,9 @@ export function isPageType(type: string): boolean {
 export function findIn(entries: SearchEntry[], argRaw: string): SearchEntry | undefined {
   const needle = argRaw.trim().replace(/^\/+/, '').replace(/\/+$/, '').toLowerCase();
   if (!needle) return undefined;
-  return entries.find((entry) => nameFromHref(entry.href).toLowerCase() === needle);
+  return entries.find((entry) =>
+    [nameFromHref(entry.href), ...(entry.aliases ?? [])].some((name) => name.toLowerCase() === needle),
+  );
 }
 
 export function formatListing(entries: SearchEntry[]): string {

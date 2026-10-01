@@ -26,11 +26,13 @@ export interface SearchEntry {
   kind?: string;
   title?: string;
   description?: string;
+  aliases?: string[];
 }
 
 export interface TerminalConfig {
   lang: string;
   cvHref: string;
+  cvAliases: string[];
   otherHomeHref: string;
   searchHref: string;
   boot: BootConfig;
