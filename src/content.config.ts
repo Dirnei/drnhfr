@@ -148,6 +148,7 @@ const ctf = pageCollection(
       unknown: z.string(),
     }),
     download: z.string(),
+    finishedIn: z.string(),
   }),
 );
 

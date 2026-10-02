@@ -8,6 +8,7 @@ export const en: Record<keyof typeof de, string> = {
   'nav.imprint': 'Imprint',
   'nav.privacy': 'Privacy',
   'nav.ctf': 'CTF',
+  'nav.ctfMain': 'Overview',
   'nav.ctfLocked': 'Locked door',
   'projects.role': 'Role',
   'projects.period': 'Period',

@@ -12,7 +12,5 @@ sub:
 
 ## Capture the Flag
 
-PLACEHOLDER: Why this site has a small capture the flag game and how it is
-built. Five doors, each encrypted with AES-GCM, and the flag is the key. The
-first flag is somewhere on this page. Enter it in the terminal below with
-`submit`, and `hint` helps if you are stuck.
+This site hides a small capture the flag game. Start it in the terminal
+below with `ctf`.

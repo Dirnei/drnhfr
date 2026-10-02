@@ -51,11 +51,13 @@ Aufruf weiß, dass sie freigeschaltet wurde. Ein dritter Eintrag hält die
 Ausgabe und die eingegebenen Befehle des Terminals, damit es beim Wechsel
 auf eine andere Seite weiterläuft.
 
-Über dasselbe Terminal lässt sich ein kleines Capture-the-Flag-Spiel spielen.
-Wer mit `submit` eine richtige Flagge eingibt, öffnet eine verschlüsselte
-Seite. Damit sie beim Seitenwechsel offen bleibt, speichert ein vierter
-Eintrag im `sessionStorage` den aus der Flagge abgeleiteten Schlüssel jeder
-geöffneten Seite und wie viele Hinweise mit `hint` abgerufen wurden.
+Über dasselbe Terminal lässt sich mit `ctf` ein kleines Capture-the-Flag-Spiel
+starten. Wer danach mit `submit` eine richtige Flagge eingibt, öffnet eine
+verschlüsselte Seite. Ein vierter Eintrag im `sessionStorage` hält fest, ob
+und wann das Spiel gestartet und wann es beendet wurde, dazu den aus der
+Flagge abgeleiteten Schlüssel jeder geöffneten Seite und wie viele Hinweise
+mit `hint` abgerufen wurden. Damit bleiben geöffnete Seiten beim
+Seitenwechsel offen, und am Ende lässt sich die benötigte Zeit anzeigen.
 
 Alle vier Einträge enthalten keine personenbezogenen Daten, werden nicht an
 mich übertragen und beim Schließen des Browser-Tabs gelöscht.

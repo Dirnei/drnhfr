@@ -12,7 +12,5 @@ sub:
 
 ## Capture the Flag
 
-PLATZHALTER: Hier steht, warum es auf dieser Seite ein kleines Capture the Flag
-gibt und wie es gebaut ist. Fünf Türen, jede mit AES-GCM verschlüsselt, und die
-Flagge ist der Schlüssel. Die erste Flagge liegt irgendwo auf dieser Seite.
-Eingegeben wird sie im Terminal unten mit `submit`, und `hint` hilft weiter.
+Auf dieser Seite steckt ein kleines Capture the Flag. Gestartet wird es im
+Terminal unten mit `ctf`.

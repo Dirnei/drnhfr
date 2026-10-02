@@ -6,8 +6,14 @@ function render() {
   const opened = new Map(ctf.opened().map(({ door, payload }) => [door, payload]));
 
   const menu = document.getElementById('nav-ctf');
-  if (menu) menu.hidden = opened.size === 0;
+  if (menu) menu.hidden = !ctf.started();
+  const main = document.querySelector<HTMLAnchorElement>('[data-ctf-main]');
   let here = false;
+  if (main) {
+    here = window.location.pathname === main.getAttribute('href');
+    main.classList.toggle('on', here);
+    if (here) main.setAttribute('aria-current', 'page');
+  }
   document.querySelectorAll<HTMLElement>('[data-ctf-nav]').forEach((item) => {
     const payload = opened.get(item.dataset.ctfNav ?? '');
     const link = item.querySelector('a');
@@ -72,4 +78,5 @@ function setupMenu() {
 
 setupMenu();
 ctf.onChange(render);
+render();
 void ready.then(render);

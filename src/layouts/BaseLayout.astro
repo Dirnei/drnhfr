@@ -6,6 +6,7 @@ import Terminal from '../components/Terminal.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
 import { UNLOCK_KEY, BYPASS_HASH } from '../lib/terminal/unlock';
+import publicData from '../data/ctf/public.json';
 
 interface Props {
   lang: 'de' | 'en';
@@ -90,6 +91,7 @@ const xDefaultHref =
     </script>
   </head>
   <body>
+    <Fragment set:html={`<!-- ${publicData.entry} -->`} />
     <a class="skip-link" href="#main">
       {lang === 'de' ? 'Zum Inhalt springen' : 'Skip to content'}
     </a>

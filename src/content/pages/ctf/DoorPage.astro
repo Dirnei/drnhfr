@@ -31,6 +31,7 @@ const { data } = await getCtfPage(lang);
       <h1 data-door-title></h1>
       <Prose><div data-door-html></div></Prose>
       <ul class="downloads" data-door-downloads></ul>
+      <p class="finished" data-door-finished hidden>{data.finishedIn}: <span></span></p>
     </article>
   </div>
 </BaseLayout>
@@ -59,6 +60,18 @@ const { data } = await getCtfPage(lang);
     .mobile {
       display: block;
     }
+  }
+  .finished {
+    margin: 2rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  .finished span {
+    color: var(--text);
+  }
+  .finished[hidden] {
+    display: none;
   }
   article[hidden] {
     display: none;
@@ -92,6 +105,7 @@ const { data } = await getCtfPage(lang);
 <script>
   import { ctf, ready } from '../../../lib/ctf/client';
   import { pick } from '../../../lib/ctf/paths';
+  import { clock } from '../../../lib/terminal/duration';
 
   const root = document.querySelector<HTMLElement>('[data-door]');
   const show = () => {
@@ -103,6 +117,11 @@ const { data } = await getCtfPage(lang);
     root.querySelector<HTMLElement>('[data-door-story]')!.hidden = false;
     root.querySelector('[data-door-title]')!.textContent = pick(payload.title, lang);
     root.querySelector('[data-door-html]')!.innerHTML = pick(payload.html, lang);
+    const finished = root.querySelector<HTMLElement>('[data-door-finished]')!;
+    const total = ctf.finishedIn();
+    const last = ctf.doors[ctf.doors.length - 1] === root.dataset.door;
+    finished.hidden = !last || total === null;
+    if (last && total !== null) finished.querySelector('span')!.textContent = clock(total);
     const list = root.querySelector('[data-door-downloads]')!;
     list.replaceChildren(
       ...payload.downloads.map((file) => {

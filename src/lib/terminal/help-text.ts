@@ -3,6 +3,7 @@ import type { Command, CommandContext } from './types';
 
 export function isListed(command: Command, ctx: CommandContext): boolean {
   if (command.hidden) return false;
+  if (command.available && !command.available(ctx)) return false;
   return command.listed?.(ctx) ?? true;
 }
 

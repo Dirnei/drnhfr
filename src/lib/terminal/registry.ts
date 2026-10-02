@@ -7,10 +7,12 @@ export const commands: Command[] = Object.values(modules)
   .map((module) => module.default)
   .sort((a, b) => a.order - b.order);
 
-export function findCommand(name: string): Command | undefined {
+export function findCommand(name: string, ctx?: CommandContext): Command | undefined {
   const needle = name.toLowerCase();
   return commands.find(
-    (command) => command.name === needle || command.aliases?.includes(needle),
+    (command) =>
+      (command.name === needle || command.aliases?.includes(needle)) &&
+      (!ctx || !command.available || command.available(ctx)),
   );
 }
 

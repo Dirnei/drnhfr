@@ -6,6 +6,7 @@ export const de = {
   'nav.imprint': 'Impressum',
   'nav.privacy': 'Datenschutz',
   'nav.ctf': 'CTF',
+  'nav.ctfMain': 'Übersicht',
   'nav.ctfLocked': 'Verschlossene Tür',
   'projects.role': 'Rolle',
   'projects.period': 'Zeitraum',

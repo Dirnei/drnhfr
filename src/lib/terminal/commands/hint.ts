@@ -5,7 +5,8 @@ export default {
   name: 'hint',
   usage: 'hint',
   summary: 'a nudge towards the next flag',
-  order: 28,
+  available: (ctx) => ctx.ctf().started(),
+  order: 29,
   run(_arg, ctx) {
     const result = ctx.ctf().hint();
     if (result.kind === 'done') {

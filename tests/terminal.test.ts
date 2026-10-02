@@ -11,7 +11,7 @@ import {
   GLYPH_WIDTH,
   renderBanner,
 } from '../src/lib/terminal/font';
-import { humanise, humaniseCoarse } from '../src/lib/terminal/duration';
+import { clock, humanise, humaniseCoarse } from '../src/lib/terminal/duration';
 import { resolveTarget } from '../src/lib/terminal/commands/curl';
 import { runPipeline, splitPipeline } from '../src/lib/terminal/pipeline';
 import { parseLineCount } from '../src/lib/terminal/pipeline';
@@ -28,6 +28,10 @@ const noCtf: Ctf = {
   opened: () => [],
   payload: () => undefined,
   onChange: () => {},
+  started: () => false,
+  start: () => {},
+  elapsed: () => null,
+  finishedIn: () => null,
 };
 
 describe('the unlock code', () => {
@@ -1049,5 +1053,105 @@ describe('curl on the homelab network', () => {
 describe('restart', () => {
   it('answers to reboot too', () => {
     expect(findCommand('reboot')?.name).toBe('restart');
+  });
+});
+
+describe('clock', () => {
+  it.each([
+    [0, '0:00:00'],
+    [59_999, '0:00:59'],
+    [61_000, '0:01:01'],
+    [3_723_000, '1:02:03'],
+    [36_000_000, '10:00:00'],
+  ])('%i ms -> %s', (ms, expected) => {
+    expect(clock(ms)).toBe(expected);
+  });
+});
+
+describe('game commands before and after ctf', () => {
+  const before = () => stubContext({ ctf: () => fakeCtf({}) });
+  const after = () => stubContext({ ctf: () => fakeCtf({}, { started: () => true }) });
+
+  it('are not found before the start', () => {
+    const { ctx } = before();
+    expect(findCommand('submit', ctx)).toBeUndefined();
+    expect(findCommand('hint', ctx)).toBeUndefined();
+    expect(findCommand('ctf', ctx)?.name).toBe('ctf');
+  });
+
+  it('are neither listed nor completed before the start', () => {
+    const { ctx } = before();
+    const help = renderHelp(commands, ctx);
+    expect(help).not.toMatch(/^submit/m);
+    expect(help).not.toMatch(/^hint/m);
+    expect(help).toMatch(/^ctf/m);
+    expect(completionNames(ctx)).not.toContain('submit');
+  });
+
+  it('exist, are listed and complete after the start', () => {
+    const { ctx } = after();
+    expect(findCommand('submit', ctx)?.name).toBe('submit');
+    expect(renderHelp(commands, ctx)).toMatch(/^submit/m);
+    expect(completionNames(ctx)).toEqual(expect.arrayContaining(['submit', 'hint']));
+  });
+});
+
+describe('ctf', () => {
+  it('starts the game and opens the main page', async () => {
+    const started: number[] = [];
+    const visited: string[] = [];
+    const { ctx, out } = stubContext({
+      ctf: () => fakeCtf({}, { start: (at) => void started.push(at) }),
+      navigate: (href) => void visited.push(href),
+    });
+    await run('ctf', ctx);
+    expect(started).toHaveLength(1);
+    expect(out[0]).toMatch(/ctf started/);
+    expect(visited).toEqual(['/de/ctf/']);
+  });
+
+  it('reports the running time without restarting the clock', async () => {
+    const started: number[] = [];
+    const { ctx, out } = stubContext({
+      ctf: () =>
+        fakeCtf({}, { started: () => true, start: (at) => void started.push(at), elapsed: () => 125_000 }),
+    });
+    await run('ctf', ctx);
+    expect(started).toEqual([]);
+    expect(out).toEqual(['ctf running for 0:02:05']);
+  });
+
+  it('reports the final time once every door is open', async () => {
+    const { ctx, out } = stubContext({
+      ctf: () => fakeCtf({}, { started: () => true, finishedIn: () => 3_723_000 }),
+    });
+    await run('ctf', ctx);
+    expect(out).toEqual(['every door is open. your time: 1:02:03']);
+  });
+
+  it('stays put when already on the main page', async () => {
+    const visited: string[] = [];
+    const { ctx } = stubContext({
+      path: '/en/ctf/',
+      config: { ...stubContext().ctx.config, lang: 'en' },
+      ctf: () => fakeCtf({}, { started: () => true, elapsed: () => 0 }),
+      navigate: (href) => void visited.push(href),
+    });
+    await run('ctf', ctx);
+    expect(visited).toEqual([]);
+  });
+});
+
+describe('submit on the last door', () => {
+  it('prints the total time', async () => {
+    const { ctx, out } = stubContext({
+      ctf: () =>
+        fakeCtf(
+          { smarthome: door({ title: both('Smarthome') }) },
+          { submit: async () => ({ kind: 'opened', door: 'smarthome', persisted: true }), finishedIn: () => 754_000 },
+        ),
+    });
+    await run('submit x', ctx);
+    expect(out).toContain('every door is open. your time: 0:12:34');
   });
 });

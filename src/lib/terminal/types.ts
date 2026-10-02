@@ -11,6 +11,8 @@ export interface Command {
   /** Kept out of `help` and tab completion, always. */
   hidden?: boolean;
   listed?(ctx: CommandContext): boolean;
+  /** When false the command does not exist: not found, not listed, not completed. */
+  available?(ctx: CommandContext): boolean;
   /** Tab-completes its argument against the visible filesystem. */
   completesEntries?: boolean;
   run(arg: string, ctx: CommandContext): void | Promise<void>;

@@ -48,6 +48,10 @@ export interface Ctf {
   opened(): Array<{ door: string; payload: DoorPayload }>;
   payload(door: string): DoorPayload | undefined;
   onChange(listener: () => void): void;
+  started(): boolean;
+  start(now: number): void;
+  elapsed(now: number): number | null;
+  finishedIn(): number | null;
 }
 
 export function normaliseFlag(raw: string): string {
@@ -55,7 +59,12 @@ export function normaliseFlag(raw: string): string {
   return /^drnhfr\{.*\}$/.test(flag) ? flag : `drnhfr{${flag}}`;
 }
 
-export function createCtf(pub: PublicCtf, sealed: Record<string, Sealed>, store: ProgressStore): Ctf {
+export function createCtf(
+  pub: PublicCtf,
+  sealed: Record<string, Sealed>,
+  store: ProgressStore,
+  now: () => number = Date.now,
+): Ctf {
   const open = new Map<string, DoorPayload>();
   const listeners: Array<() => void> = [];
   const progress = store.read();
@@ -94,6 +103,9 @@ export function createCtf(pub: PublicCtf, sealed: Record<string, Sealed>, store:
         if (!payload) continue;
         open.set(door, payload);
         progress.keys[door] = toBase64(key);
+        if (open.size === pub.doors.length && progress.startedAt !== undefined) {
+          progress.finishedAt ??= now();
+        }
         const persisted = store.write(progress);
         changed();
         return { kind: 'opened', door, persisted };
@@ -123,6 +135,27 @@ export function createCtf(pub: PublicCtf, sealed: Record<string, Sealed>, store:
 
     onChange(listener) {
       listeners.push(listener);
+    },
+
+    started() {
+      return progress.startedAt !== undefined;
+    },
+
+    start(at) {
+      if (progress.startedAt !== undefined) return;
+      progress.startedAt = at;
+      store.write(progress);
+      changed();
+    },
+
+    elapsed(at) {
+      if (progress.startedAt === undefined) return null;
+      return (progress.finishedAt ?? at) - progress.startedAt;
+    },
+
+    finishedIn() {
+      if (progress.startedAt === undefined || progress.finishedAt === undefined) return null;
+      return progress.finishedAt - progress.startedAt;
     },
   };
 }

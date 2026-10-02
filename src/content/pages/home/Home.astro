@@ -2,7 +2,6 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import DecodeText from '../../../components/DecodeText.astro';
 import Prose from '../../../components/Prose.astro';
-import publicData from '../../../data/ctf/public.json';
 import { render } from 'astro:content';
 import { getCtfPage, getHomePage } from '../../../lib/entries';
 import { otherLocale, type Locale } from '../../../i18n/locales';
@@ -47,7 +46,6 @@ const HEADLINE_STEP_MS = 210;
       }
     </p>
   </div>
-  <Fragment set:html={`<!-- ${publicData.entry} -->`} />
   <section class="shell ctf">
     <Prose><Content /></Prose>
     <p class="mobile">{ctfPage.data.mobile}</p>

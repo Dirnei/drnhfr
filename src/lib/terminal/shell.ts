@@ -223,13 +223,13 @@ export function boot(): void {
       ctx.printError(copy.pipeSyntax);
       return;
     }
-    const missing = stages.find((stage) => !findCommand(stage.name));
+    const missing = stages.find((stage) => !findCommand(stage.name, ctx));
     if (missing) {
       ctx.printError(`${missing.name}: ${copy.cmdNotFoundSuffix}`);
       ctx.print(renderHelp(commands, ctx));
       return;
     }
-    const resolved = stages.map((stage) => ({ ...stage, command: findCommand(stage.name)! }));
+    const resolved = stages.map((stage) => ({ ...stage, command: findCommand(stage.name, ctx)! }));
     const hadFocus = document.activeElement === input;
     input.disabled = true;
     try {
@@ -368,7 +368,7 @@ export function boot(): void {
         return;
       }
       const name = value.slice(0, spaceIndex).toLowerCase();
-      if (!findCommand(name)?.completesEntries) return;
+      if (!findCommand(name, ctx)?.completesEntries) return;
       const lastSpace = value.lastIndexOf(' ');
       const partial = value.slice(lastSpace + 1).toLowerCase();
       const startsWith = (names: string[]) =>

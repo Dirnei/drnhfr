@@ -51,11 +51,13 @@ unlocked when it is opened. A third entry holds the terminal's output and
 the commands typed into it, so it carries on when you move to another
 page.
 
-The same terminal runs a small capture the flag game. Entering a correct
-flag with `submit` opens an encrypted page. So that it stays open when you
-move to another page, a fourth `sessionStorage` entry holds the key derived
-from the flag for each opened page, and how many hints were requested with
-`hint`.
+The same terminal starts a small capture the flag game with `ctf`. After
+that, entering a correct flag with `submit` opens an encrypted page. A fourth
+`sessionStorage` entry records whether and when the game was started and
+when it was finished, the key derived from the flag for each opened page,
+and how many hints were requested with `hint`. This keeps opened pages open
+when you move to another page and lets the site show the time you took at
+the end.
 
 All four entries contain no personal data, are never transmitted to me, and
 are deleted when the browser tab is closed. The legal basis is § 25

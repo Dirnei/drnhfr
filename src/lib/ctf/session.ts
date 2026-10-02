@@ -3,6 +3,8 @@ export const CTF_KEY = 'ctf';
 export interface CtfProgress {
   keys: Record<string, string>;
   hints: Record<string, number>;
+  startedAt?: number;
+  finishedAt?: number;
 }
 
 export interface ProgressStore {
@@ -19,6 +21,8 @@ export function parseProgress(raw: string | null): CtfProgress {
     return {
       keys: typeof value.keys === 'object' && value.keys ? value.keys : {},
       hints: typeof value.hints === 'object' && value.hints ? value.hints : {},
+      startedAt: typeof value.startedAt === 'number' ? value.startedAt : undefined,
+      finishedAt: typeof value.finishedAt === 'number' ? value.finishedAt : undefined,
     };
   } catch {
     return empty();

@@ -6,17 +6,63 @@ doorTitle: Verschlossene Tür — Christian Dirnhofer
 locked:
   command: $ cat tuer
   error: 'cat: tuer: verschlüsselt (AES-256-GCM)'
-  line: Diese Tür ist noch zu. Die passende Flagge öffnet sie, im Terminal mit submit und der Flagge dahinter. Wer nicht weiterkommt, tippt hint.
+  line: Diese Tür ist noch zu. Wer das Spiel noch nicht gestartet hat, tippt zuerst ctf ins Terminal. Danach öffnet die passende Flagge die Tür mit submit, und hint hilft weiter.
 mobile: Das Spiel läuft im Terminal, und das gibt es erst ab Tablet-Breite.
 progress:
   label: Türen offen
   unknown: '?????'
 download: Herunterladen
+finishedIn: Deine Zeit
 ---
 
-Hinter fünf Türen stehen Geschichten über Dinge, die ich gebaut habe. Jede Tür
-ist verschlüsselt, und die Flagge ist der Schlüssel. Die erste Flagge liegt
-irgendwo auf dieser Seite, jede weitere hinter der Tür davor.
+## Woher das kommt
+
+Capture the Flag ist ursprünglich ein Geländespiel, bei dem zwei Teams
+versuchen, die Fahne des anderen ins eigene Lager zu holen. In der
+IT-Sicherheit ist daraus ein Wettbewerbsformat geworden. Der bekannteste
+Wettbewerb läuft seit 1996 auf der DEF CON in Las Vegas.
+
+Die meisten CTFs sind heute im Jeopardy-Format. Es gibt eine Liste von
+Aufgaben, sortiert nach Kategorien wie Web, Kryptografie, Forensik oder
+Reverse Engineering. Wer eine Aufgabe löst, findet eine Flagge, also eine
+Zeichenkette in einem festen Format, und bekommt dafür Punkte. Beim
+Attack-Defense-Format betreibt dagegen jedes Team dieselben verwundbaren
+Dienste, flickt die eigenen und greift die der anderen an.
+
+Für den Einstieg gibt es Wettbewerbe wie picoCTF, die sich an Schüler und
+Studenten richten. Eine Übersicht über laufende CTFs und die Teams dahinter
+führt CTFtime.
+
+## Wie ich dazu gekommen bin
+
+PLATZHALTER: Wann und wo ich das erste Mal von CTFs gehört habe, was mein
+erstes war und was mich daran gepackt hat.
+
+## Werkzeuge
+
+Wer noch nie ein CTF gespielt hat, kommt mit erstaunlich wenig aus. Für
+dieses Spiel reicht ein Browser. Für andere CTFs sind diese Werkzeuge ein
+guter Anfang:
+
+- **Entwicklerwerkzeuge im Browser** (F12) und **Quelltext anzeigen**
+  (Strg+U) zeigen, was eine Seite wirklich ausliefert, auch das, was nicht
+  angezeigt wird.
+- **CyberChef** ist eine Webanwendung, die Kodierungen wie Base64 oder Hex
+  umwandelt und dabei viele Schritte hintereinander ausführen kann.
+- **curl** schickt HTTP-Anfragen von der Kommandozeile und zeigt auch die
+  Header der Antwort.
+- **strings** und **file** verraten, was in einer unbekannten Datei steckt.
+- **Wireshark** öffnet Mitschnitte von Netzwerkverkehr und zerlegt sie in
+  einzelne Pakete.
+- Ein **Hex-Editor** zeigt die rohen Bytes einer Datei.
+- Eine **ASCII-Tabelle** übersetzt Zahlen in Zeichen und zurück.
+
+## So funktioniert dieses Spiel
+
+Hinter fünf Türen stehen Geschichten über Dinge, die ich gebaut habe. Jede
+Tür ist verschlüsselt, und die Flagge ist der Schlüssel. Die erste Flagge
+steht irgendwo auf jeder Seite, jede weitere hinter der Tür davor.
 
 Flaggen sehen aus wie `drnhfr{...}` und werden im Terminal mit `submit`
-eingegeben. `hint` gibt einen Schubs in die richtige Richtung.
+eingegeben. `hint` gibt einen Schubs in die richtige Richtung, und `ctf`
+zeigt, wie lange du schon dabei bist.

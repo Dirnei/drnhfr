@@ -153,3 +153,58 @@ describe('session store', () => {
     expect(parseProgress('{nope')).toEqual({ keys: {}, hints: {} });
   });
 });
+
+describe('start and timer', () => {
+  it('starts once and keeps the first start time', () => {
+    const store = memoryStore();
+    const ctf = createCtf(pub, sealed, store);
+    expect(ctf.started()).toBe(false);
+    ctf.start(1000);
+    ctf.start(5000);
+    expect(ctf.started()).toBe(true);
+    expect(store.saved?.startedAt).toBe(1000);
+  });
+
+  it('counts elapsed time across a fresh instance on the same store', () => {
+    const store = memoryStore();
+    createCtf(pub, sealed, store).start(1000);
+    expect(createCtf(pub, sealed, store).elapsed(61_000)).toBe(60_000);
+  });
+
+  it('stops the timer when the last locked door opens, not before', async () => {
+    let clock = 0;
+    const store = memoryStore();
+    const ctf = createCtf(pub, sealed, store, () => clock);
+    ctf.start(0);
+    clock = 10_000;
+    await ctf.submit(flagOf('site'));
+    await ctf.submit(flagOf('homelab'));
+    expect(ctf.finishedIn()).toBeNull();
+    clock = 95_000;
+    await ctf.submit(flagOf('laser'));
+    expect(ctf.finishedIn()).toBe(95_000);
+    expect(ctf.elapsed(500_000)).toBe(95_000);
+  });
+
+  it('reports no time for a run that was never started', async () => {
+    const ctf = createCtf(pub, sealed, memoryStore());
+    for (const door of DOORS) await ctf.submit(flagOf(door));
+    expect(ctf.elapsed(1000)).toBeNull();
+    expect(ctf.finishedIn()).toBeNull();
+  });
+
+  it('reads an entry written before the timer existed', () => {
+    expect(parseProgress('{"keys":{"site":"abc"},"hints":{}}')).toMatchObject({
+      keys: { site: 'abc' },
+      startedAt: undefined,
+      finishedAt: undefined,
+    });
+  });
+
+  it('reads start and finish back from storage', () => {
+    expect(parseProgress('{"keys":{},"hints":{},"startedAt":5,"finishedAt":9}')).toMatchObject({
+      startedAt: 5,
+      finishedAt: 9,
+    });
+  });
+});

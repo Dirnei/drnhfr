@@ -1,5 +1,5 @@
 {
-  "salt": "qgGaIgZbwyAAW3AHSoJiuw==",
+  "salt": "fjM85sT2pSgFipQmqdqfKg==",
   "iterations": 300000,
   "doors": [
     "site",
@@ -11,12 +11,12 @@
   "entry": "ZHJuaGZye3ZpZXctc291cmNlLWlzLXN0ZXAtb25lfQ==",
   "hints": [
     {
-      "de": "Jede Seite hat mehr Quelltext, als man im Browser sieht. Fang auf der Startseite an.",
-      "en": "Every page has more source than the browser shows. Start on the home page."
+      "de": "Jede Seite hat mehr Quelltext, als man im Browser sieht.",
+      "en": "Every page has more source than the browser shows."
     },
     {
-      "de": "Quelltext der Startseite anzeigen (Strg+U). Der Kommentar ist base64. Die Flagge gibst du im Terminal mit submit ein.",
-      "en": "View the home page source (Ctrl+U). The comment is base64. Enter the flag in the terminal with submit."
+      "de": "Quelltext anzeigen (Strg+U), egal auf welcher Seite. Der Kommentar ist base64, dekodiert ist er die erste Flagge.",
+      "en": "View the source (Ctrl+U), on any page. The comment is base64, and decoded it is the first flag."
     }
   ]
 }
