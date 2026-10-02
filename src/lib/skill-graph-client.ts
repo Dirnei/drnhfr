@@ -119,7 +119,7 @@ export function attachGraph(svg: SVGSVGElement, handlers: GraphHandlers): GraphC
   const pointers = new Map<number, Pointer>();
   let gesture:
     | { type: 'node'; node: number; start: Pointer; moved: boolean }
-    | { type: 'pan'; start: Pointer; last: Pointer; moved: boolean }
+    | { type: 'pan'; start: Pointer; last: Pointer; moved: boolean; middle: boolean }
     | { type: 'pinch'; distance: number }
     | null = null;
 
@@ -135,12 +135,13 @@ export function attachGraph(svg: SVGSVGElement, handlers: GraphHandlers): GraphC
       gesture = { type: 'pinch', distance: pinchDistance() };
       return;
     }
-    const nodeEl = (event.target as Element).closest<SVGGElement>('[data-node]');
+    const middle = event.pointerType === 'mouse' && event.button === 1;
+    const nodeEl = middle ? null : (event.target as Element).closest<SVGGElement>('[data-node]');
     const start = { x: event.clientX, y: event.clientY };
     if (nodeEl) {
       gesture = { type: 'node', node: index.get(nodeEl.dataset.node!)!, start, moved: false };
     } else if (event.pointerType === 'mouse' || view.k > 1.001) {
-      gesture = { type: 'pan', start, last: start, moved: false };
+      gesture = { type: 'pan', start, last: start, moved: false, middle };
     } else {
       gesture = null;
       return;
@@ -200,12 +201,16 @@ export function attachGraph(svg: SVGSVGElement, handlers: GraphHandlers): GraphC
     }
     if (event.type === 'pointerup' && !gesture.moved) {
       if (gesture.type === 'node') handlers.onTap(nodeEls[gesture.node].dataset.node!);
-      else handlers.onBackground();
+      else if (!gesture.middle) handlers.onBackground();
     }
     if (gesture.type === 'node' && sim.held === gesture.node) release(gesture.node);
     gesture = null;
   };
   svg.addEventListener('pointerup', finish);
+  // Middle button would otherwise start the browser's autoscroll.
+  svg.addEventListener('mousedown', (event) => {
+    if (event.button === 1) event.preventDefault();
+  });
   svg.addEventListener('pointercancel', finish);
 
   svg.addEventListener(
