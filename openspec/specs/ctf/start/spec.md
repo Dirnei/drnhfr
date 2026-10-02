@@ -1,10 +1,10 @@
-# Spec Delta
+# ctf/start Specification
 
 ## Purpose
 
 Defines how the capture the flag game is started from the terminal, how long a run takes, and what the CTF main page tells a visitor who has never played a CTF before.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Starting the game with ctf
 
@@ -63,19 +63,19 @@ The time between starting the game and submitting the flag that opens the last u
 - **WHEN** a visitor runs `restart` during or after a run
 - **THEN** the game is no longer started, the timer is gone, and `submit` and `hint` no longer exist
 
-### Requirement: Visible first-flag string
+### Requirement: First flag in every page source
 
-Once the game is started, every page SHALL show the base64 encoding of the first flag as visible, unlabelled text that does not draw attention to itself. Before the game is started, the string MUST NOT be visible on any page.
+Every page in both languages SHALL contain an HTML comment holding the base64 encoding of the first flag, whether or not the game is started. Nothing of it is shown on the rendered page.
 
-#### Scenario: Started game
+#### Scenario: Viewing any page source
 
-- **WHEN** a visitor has started the game and opens any page of the site
-- **THEN** the base64 string is visible on that page
+- **WHEN** a visitor views the source of any page and base64-decodes the comment
+- **THEN** the result is the flag for the site door
 
-#### Scenario: Not started
+#### Scenario: Nothing on screen
 
-- **WHEN** a visitor who has not started the game opens any page
-- **THEN** no base64 string is visible
+- **WHEN** a visitor looks at any page in the browser
+- **THEN** no base64 string is displayed
 
 ### Requirement: CTF main page content
 

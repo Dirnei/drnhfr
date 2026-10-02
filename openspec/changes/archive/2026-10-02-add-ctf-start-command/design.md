@@ -15,7 +15,7 @@ Builds on `add-ctf-game`. Relevant pieces as they are today:
 
 **Goals:**
 
-- A visitor who never types `ctf` sees no game mechanics anywhere except one short paragraph on the home page.
+- A visitor who never types `ctf` sees no game mechanics anywhere except one short paragraph on the home page; the first flag sits only in the page source.
 - The timer is honest wall-clock time from `ctf` to the last flag, across navigation.
 
 **Non-Goals:**
@@ -42,11 +42,9 @@ Alternative considered: a separate `ctf-started` key. Rejected: one more entry f
 
 `run`: if not started, `start(Date.now())` and print a one-line welcome; if started and not finished, print the elapsed time; if finished, print the final time. Then `navigate` to `routePath('ctf', lang)`. Elapsed and final times are formatted as `h:mm:ss` by a small helper next to `humanise` in `duration.ts`, since a run is measured to the second and `humanise` rounds.
 
-### Visible first-flag string
+### First-flag comment on every page
 
-A `<p class="ctf-entry" hidden>` in the footer of `BaseLayout.astro`, holding the base64 from `public.json`, revealed by `src/lib/ctf/ui.ts` when `started()` is true. Styled like `.footer-hint` (mono, small, `--text-dim`), so it reads like a build id. The comment in `Home.astro` is removed. It is in the markup on every page, hidden until the start; that is consistent with the non-goal above, since the real protection of door 1 is unchanged (base64 of a flag was always public).
-
-Alternative considered: render the string only from JavaScript after the start. Rejected: no gain in secrecy (it is in `public.json` in the bundle anyway) and it would flash in after load.
+`BaseLayout.astro` renders `<!-- <base64> -->` from `public.json` at the top of `<body>` with `<Fragment set:html>`, the same technique the home page used, so every page carries it and the comment in `Home.astro` is removed. It is not gated on the start: the source is readable either way, and `submit` only exists after `ctf`, so finding it early changes nothing.
 
 ### Finale time on the smarthome page
 
