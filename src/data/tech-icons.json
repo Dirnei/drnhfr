@@ -31,5 +31,9 @@
   "VB.NET": "visualbasic",
   "Vite": "vite",
   "Vitest": "vitest",
-  "YAML": "yaml"
+  "YAML": "yaml",
+  "Azure DevOps": "azuredevops",
+  "Team Foundation Server": "visualstudio",
+  "GitHub": "github",
+  "Azure DevOps Pipelines": "azuredevops"
 }

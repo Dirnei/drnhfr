@@ -1,6 +1,6 @@
 {
   "begin": "2026",
-  "stack": ["Astro", "SVG", "Docker", "GitHub Pages"],
+  "stack": ["Astro", "SVG", "Docker", "GitHub Pages", "GitHub", "GitHub Actions"],
   "links": {
     "repo": "https://github.com/kellerlabs/homeracker",
     "docs": "https://homeracker.org/",

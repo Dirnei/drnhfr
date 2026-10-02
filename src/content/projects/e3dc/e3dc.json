@@ -1,6 +1,6 @@
 {
   "begin": "2026",
-  "stack": [".NET", "C#", "Akka.NET", "NuGet", "GitHub Pages"],
+  "stack": [".NET", "C#", "Akka.NET", "NuGet", "GitHub Pages", "GitHub", "GitHub Actions"],
   "links": {
     "repo": "https://github.com/Leberkas-org/e3dc.net",
     "docs": "https://e3dc.leberkas.org/"

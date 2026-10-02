@@ -40,6 +40,7 @@
   "pairs": [
     { "tech": ".NET", "with": ["C#", "VB.NET", "UWP", "WPF", "WinForms", "ASP.NET"] },
     { "tech": "Raspberry Pi", "with": ["Ansible", "Docker", "MQTT"] },
-    { "tech": { "de": "CO2-Laser", "en": "CO2 laser" }, "with": ["SVG", "CAD"] }
+    { "tech": { "de": "CO2-Laser", "en": "CO2 laser" }, "with": ["SVG", "CAD"] },
+    { "tech": "GitHub", "with": ["GitHub Actions"] }
   ]
 }

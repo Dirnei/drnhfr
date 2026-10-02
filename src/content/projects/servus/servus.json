@@ -1,6 +1,6 @@
 {
   "begin": "2017",
-  "stack": [".NET", "C#", "NuGet", "OpenTelemetry"],
+  "stack": [".NET", "C#", "NuGet", "OpenTelemetry", "Azure DevOps", "Azure DevOps Pipelines", "GitHub", "GitHub Actions"],
   "links": {
     "repo": "https://github.com/Leberkas-org/servus",
     "docs": "https://servus.leberkas.org"

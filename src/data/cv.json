@@ -23,7 +23,7 @@
         "de": "Softwarearchitekt und technischer Berater für die Kabelbaumfertigung der Komax Group. Entwurf einer verteilten MES-Architektur, Etablierung technischer Standards und Evaluierung des Technologie-Stacks.",
         "en": "Software Architect and Technical Consultant for Komax Group's wire harness manufacturing division. Architected distributed MES system design, established technical standards, and evaluated the technology stack."
       },
-      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry", "C#", "OpenAPI", "Ansible", "MQTT"]
+      "stack": ["Akka.NET", "MongoDB", "Docker", "AsyncAPI", "OpenTelemetry", "C#", "OpenAPI", "Ansible", "MQTT", "Azure DevOps", "Azure DevOps Pipelines", "NuGet"]
     },
     {
       "start": "2020-04",
@@ -35,7 +35,7 @@
         "de": "Lead Software Architect für das Warehouse-Management-System: eine ereignisgetriebene, cloud-native Microservice-Anwendung auf Basis von Akka.NET, die auf Kubernetes läuft und ein vollautomatisiertes Lager samt aller Maschinen und Roboter steuert.",
         "en": "Lead Software Architect for the Warehouse Management System: an event-driven, cloud native microservice application based on Akka.NET, running on Kubernetes and capable of managing a fully automated warehouse and all machines and robots associated with the process."
       },
-      "stack": ["C#", "Akka.NET", ".NET 8", "MongoDB", "MQTT", "Kubernetes", "Terraform", "Docker", "OpenAPI", "Ansible"]
+      "stack": ["C#", "Akka.NET", ".NET 8", "MongoDB", "MQTT", "Kubernetes", "Terraform", "Docker", "OpenAPI", "Ansible", "OpenTelemetry", "Azure DevOps", "Azure DevOps Pipelines", "NuGet", "GitHub"]
     },
     {
       "start": "2018-01",
@@ -47,7 +47,7 @@
         "de": "Entwicklung einer Fleet Control für AGVs (Automated Guided Vehicles). Vollständiges Refactoring aller Front- und Backend-Anwendungen.",
         "en": "Development of a Fleet Control for AGVs (Automated Guided Vehicles). Complete refactoring of all front- and backend applications."
       },
-      "stack": ["C#", ".NET 4.7", ".NET Standard", ".NET Core", "ASP.NET", "MSSQL", "OpenAPI", "WPF"]
+      "stack": ["C#", ".NET 4.7", ".NET Standard", ".NET Core", "ASP.NET", "MSSQL", "OpenAPI", "WPF", "Windows Forms", "Azure DevOps", "Azure DevOps Pipelines", "NuGet"]
     },
     {
       "start": "2017-01",
@@ -59,7 +59,7 @@
         "de": "Entwicklung eines Management-Informationssystems für Straßenbeleuchtung. Hauptentwickler von luxData.control, einem Modul zur Steuerung von Straßenlampen.",
         "en": "Development of a Management Information System for street lights. Primary developer of luxData.control, a module to control street lights."
       },
-      "stack": ["VB.NET", "C#", ".NET 3.5", "ASP.NET", "AngularJS", "MSSQL", "Oracle"]
+      "stack": ["VB.NET", "C#", ".NET 3.5", "ASP.NET", "AngularJS", "MSSQL", "Oracle", "Windows Forms", "Team Foundation Server"]
     },
     {
       "start": "2015-01",
@@ -71,7 +71,7 @@
         "de": "Entwicklung von Kunden-Websites und einer internen Webanwendung zur Analyse und zum Vergleich von Produktdaten. Aufbau und Betrieb der internen Hosting-Plattform.",
         "en": "Development of customer websites and an internal web application to analyse and compare product data. Building and supporting the internal hosting platform."
       },
-      "stack": ["PHP", "Java (Vaadin)", "Contao", "TYPO3", "Docker", "C#"]
+      "stack": ["PHP", "Java (Vaadin)", "Contao", "TYPO3", "Docker", "C#", "Team Foundation Server"]
     },
     {
       "start": "2014-02",
@@ -83,7 +83,7 @@
         "de": "Entwicklung kundenspezifischer Software für die Automobil- und Furnierindustrie, Back- und Frontend.",
         "en": "Development of customer specific software for the automotive and veneer industry, back- and frontend."
       },
-      "stack": ["C#", "Windows Forms", ".NET 2.0"]
+      "stack": ["C#", "Windows Forms", ".NET 2.0", "Visual Source Safe", "Team Foundation Server"]
     }
   ],
   "education": [
