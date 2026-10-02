@@ -287,10 +287,11 @@ it out, and `src/lib/skill-graph-client.ts` handles drag, pan and zoom.
 - **Where the lines come from.** The `stack` of every job (`cv.json`) and
   project (`<slug>.json`), plus `src/data/skill-extras.json` for what has no
   page: `projects` (this site), `areas` (Homelab, Werkstatt, which may list
-  `projects`), `related` (dashed: related, not used), `pairs` (technology to
-  technology) and `platforms` (linked only through pairs, all those lines
-  dashed; that is how .NET sits under C#, VB.NET, ASP.NET, UWP and WPF). Jobs
-  are labelled by their neutral `field` in `cv.json`, company underneath.
+  `projects`), `related` (project to technology), `pairs` (technology to
+  technology) and `platforms` (linked only through pairs; that is how .NET
+  sits under C#, VB.NET, ASP.NET, UWP and WPF). A solid line means one thing
+  only: used in this job or project. `related` and every pair are dashed.
+  Jobs are labelled by their neutral `field` in `cv.json`, company underneath.
 - **One node per technology.** `tech-names.json` merges spellings (`.NET 8` →
   `.NET`); `tech-icons.json` maps a node to its logo in `src/assets/tech/`
   (Simple Icons CC0 and Devicon MIT, colours stripped; see the README there).

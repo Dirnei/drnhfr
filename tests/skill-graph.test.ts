@@ -74,8 +74,8 @@ describe('the skill graph', () => {
     expect(printing?.kind).toBe('related');
     const extras = skillExtrasFor('en');
     const declared = Object.values(extras.related).flat().length;
-    const viaPlatforms = extras.platforms.flatMap((platform) => extras.pairs[platform] ?? []).length;
-    expect(graph.edges.filter((edge) => edge.kind === 'related')).toHaveLength(declared + viaPlatforms);
+    const paired = Object.values(extras.pairs).flat().length;
+    expect(graph.edges.filter((edge) => edge.kind === 'related')).toHaveLength(declared + paired);
   });
 
   it('links technologies that are used together', () => {
@@ -86,6 +86,9 @@ describe('the skill graph', () => {
     );
     const piEdges = graph.edges.filter((edge) => edge.a === 'tech:raspberry-pi' || edge.b === 'tech:raspberry-pi');
     expect(piEdges).toHaveLength(pi.length);
+    const piPairs = piEdges.filter((edge) => edge.a.startsWith('tech:') && edge.b.startsWith('tech:'));
+    expect(piPairs.map((edge) => edge.kind)).toEqual(['related', 'related', 'related']);
+    expect(neighbours(graph, 'tech:github')).toContain('tech:github-actions');
     expect(neighbours(graph, 'tech:co2-laser')).toEqual(expect.arrayContaining(['tech:svg', 'tech:cad']));
     const german = buildGraph({ ...realSource(), ...skillExtrasFor('de') });
     expect(neighbours(german, 'tech:co2-laser')).toEqual(expect.arrayContaining(['tech:svg', 'tech:cad']));

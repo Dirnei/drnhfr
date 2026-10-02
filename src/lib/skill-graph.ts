@@ -33,9 +33,9 @@ export interface GraphSource {
   areas?: { id: string; label: string; projects?: string[]; stack: string[] }[];
   /** Project slug to technologies it relates to without using them. */
   related?: Record<string, string[]>;
-  /** Technology to technologies it is used together with. */
+  /** Technology to technologies it goes together with; always drawn as related. */
   pairs?: Record<string, string[]>;
-  /** Technologies linked only through their pairs, such as .NET under C# and VB.NET; those lines are drawn as related. */
+  /** Technologies linked only through their pairs, such as .NET under C# and VB.NET, never to a job or project directly. */
   platforms?: string[];
   present: string;
   projectLabel: string;
@@ -111,10 +111,7 @@ export function buildGraph(source: GraphSource): Graph {
   }
   for (const [name, others] of Object.entries(source.pairs ?? {})) {
     const from = techNode(name);
-    for (const other of others) {
-      const viaPlatform = platforms.has(canonicalTech(name)) || platforms.has(canonicalTech(other));
-      link(from, techNode(other), viaPlatform ? 'related' : 'uses');
-    }
+    for (const other of others) link(from, techNode(other), 'related');
   }
 
   return { nodes: [...nodes, ...[...tech.values()].sort((a, b) => a.label.localeCompare(b.label))], edges };
