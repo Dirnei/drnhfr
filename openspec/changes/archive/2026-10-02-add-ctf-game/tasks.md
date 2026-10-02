@@ -2,7 +2,7 @@
 
 ## 1. Owner setup and spikes
 
-- [ ] 1.1 Owner: install `sops` and `age` (`winget install Mozilla.SOPS FiloSottile.age`), run `age-keygen` into `%AppData%\sops\age\keys.txt`, back the key up in 1Password; verify `sops --version` and `age --version` succeed
+- [x] 1.1 Owner: install `sops` and `age` (`winget install Mozilla.SOPS FiloSottile.age`), run `age-keygen` into `%AppData%\sops\age\keys.txt`, back the key up in 1Password; verify `sops --version` and `age --version` succeed
 - [x] 1.2 Add root `.sops.yaml` with a creation rule for `ctf/doors/*.sops.yaml` and the owner's age recipient; verify `sops encrypt` on a throwaway file under that path produces readable keys and encrypted values
 - [x] 1.3 Spike: render a Markdown string to HTML from a plain Node script with the `@astrojs/markdown-satteri` processor; verify the output matches how a content page renders the same text (smart quotes, headings); pin it as a devDependency if the import only works transitively
 - [x] 1.4 Spike: put an HTML comment in the home slice via `<Fragment set:html>` and build; verify the comment is present in `dist/de/index.html`, otherwise switch to the `<meta>` fallback from design.md
