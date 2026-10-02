@@ -53,5 +53,12 @@ describe.skipIf(!existsSync(dist))('the built site', () => {
         expect(html).toMatch(/<div data-door-html[^>]*><\/div>/);
       });
     }
+
+    for (const page of ['ascii', 'terminal']) {
+      it(`ships /${lang}/ctf/${page}/ noindex`, () => {
+        const html = text(join(dist, lang, 'ctf', page, 'index.html'));
+        expect(html).toContain('<meta name="robots" content="noindex">');
+      });
+    }
   }
 });

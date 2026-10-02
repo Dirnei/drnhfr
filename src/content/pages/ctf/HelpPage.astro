@@ -1,0 +1,117 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Prose from '../../../components/Prose.astro';
+import { routePath } from '../../../i18n/routes';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { asciiRows } from '../../../lib/ascii';
+import { getCtfHelpPages } from '../../../lib/entries';
+import { slugOf } from '../../../lib/ids';
+
+interface Props {
+  lang: Locale;
+  page: string;
+}
+
+const { lang, page } = Astro.props;
+const entry = (await getCtfHelpPages(lang)).find(({ id }) => slugOf(id) === page);
+if (!entry) throw new Error(`Missing page content: src/content/pages/ctf/${page}.${lang}.md`);
+const { data } = entry;
+const { columns } = data;
+const { Content } = await render(entry);
+const rows = asciiRows();
+const groups = [0, 32, 64, 96].map((start) => rows.slice(start, start + 32));
+---
+<BaseLayout
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  altHref={`${routePath('ctf', otherLocale(lang))}${page}/`}
+  noindex
+>
+  <div class="shell ctf-help">
+    <h1>{data.heading}</h1>
+    <Prose><Content /></Prose>
+    {
+      columns && (
+        <div class="ascii">
+          {groups.map((group) => (
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{columns.dec}</th>
+                  <th scope="col">{columns.hex}</th>
+                  <th scope="col">{columns.bin}</th>
+                  <th scope="col">{columns.char}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {group.map((row) => (
+                  <tr>
+                    <td>{row.code}</td>
+                    <td>{row.hex}</td>
+                    <td>{row.bin}</td>
+                    <td class:list={['glyph', { named: row.glyph.length > 1 }]}>{row.glyph}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+<style>
+  .ctf-help {
+    padding-block: 3rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    margin-bottom: 1.5rem;
+  }
+  .ascii {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 2rem;
+    margin-top: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  @media (min-width: 40rem) {
+    .ascii {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 64rem) {
+    .ascii {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    text-align: left;
+    font-weight: 400;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--hairline);
+    padding: 0.4rem 0.5rem 0.4rem 0;
+  }
+  td {
+    padding: 0.15rem 0.5rem 0.15rem 0;
+    border-bottom: 1px solid var(--hairline-soft);
+    color: var(--text-body);
+  }
+  .glyph {
+    color: var(--text);
+  }
+  .named {
+    color: var(--text-muted);
+  }
+  tbody tr:hover td {
+    background: var(--code-bg);
+  }
+</style>

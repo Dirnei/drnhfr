@@ -67,6 +67,10 @@ export async function getCtfPage(locale: Locale): Promise<CollectionEntry<'ctf'>
   return pick(await getCollection('ctf'), 'ctf', `ctf.${locale}`);
 }
 
+export async function getCtfHelpPages(locale: Locale): Promise<CollectionEntry<'ctfHelp'>[]> {
+  return getCollection('ctfHelp', ({ id }) => langOf(id) === locale);
+}
+
 export async function getNotFoundPage(locale: Locale): Promise<CollectionEntry<'notFound'>> {
   return pick(await getCollection('notFound'), 'notfound', `notfound.${locale}`);
 }

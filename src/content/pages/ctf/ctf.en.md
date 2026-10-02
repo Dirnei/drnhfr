@@ -45,15 +45,17 @@ enough for this game. For other CTFs these tools are a good start:
 
 - The browser's **developer tools** (F12) and **view source** (Ctrl+U) show
   what a page really delivers, including what is not displayed.
-- **CyberChef** is a web application that converts encodings such as base64
-  or hex and can chain many steps one after another.
-- **curl** sends HTTP requests from the command line and also shows the
-  response headers.
-- **strings** and **file** tell you what is inside an unknown file.
+- [**base64**](/en/ctf/terminal/#base64) encodes text as base64 and decodes
+  it again. This site's terminal has the command too.
+- [**curl**](/en/ctf/terminal/#curl) sends HTTP requests from the command
+  line and also shows the response headers. This site's terminal has a
+  simple version of it.
+- **strings** and **file** tell you what is inside an unknown file, and
+  [**cat**](/en/ctf/terminal/#cat) prints its contents.
 - **Wireshark** opens recordings of network traffic and takes them apart
   packet by packet.
 - A **hex editor** shows the raw bytes of a file.
-- An **ASCII table** turns numbers into characters and back.
+- An [**ASCII table**](/en/ctf/ascii/) turns numbers into characters and back.
 
 ## How this game works
 
@@ -64,3 +66,7 @@ page, every other one behind the door before it.
 Flags look like `drnhfr{...}` and are entered in the terminal with
 `submit`. `hint` gives you a nudge in the right direction, and `ctf` shows
 how long you have been at it.
+
+If you have never worked in a terminal, [The terminal](/en/ctf/terminal/)
+explains `cat`, `curl` and `base64`. To look up character codes there is the
+[ASCII table](/en/ctf/ascii/).

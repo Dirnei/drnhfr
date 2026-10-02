@@ -2,7 +2,7 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
-const localised = (base: string, pattern = "*.{de,en}.md") =>
+const localised = (base: string, pattern: string | string[] = "*.{de,en}.md") =>
   glob({
     base,
     pattern,
@@ -44,9 +44,13 @@ const projectFacts = defineCollection({
   }),
 });
 
-const pageCollection = <S extends z.ZodType>(dir: string, schema: S) =>
+const pageCollection = <S extends z.ZodType>(
+  dir: string,
+  schema: S,
+  pattern?: string | string[],
+) =>
   defineCollection({
-    loader: localised(`./src/content/pages/${dir}`),
+    loader: localised(`./src/content/pages/${dir}`, pattern),
     schema,
   });
 
@@ -150,6 +154,18 @@ const ctf = pageCollection(
     download: z.string(),
     finishedIn: z.string(),
   }),
+  "ctf.{de,en}.md",
+);
+
+const ctfHelp = pageCollection(
+  "ctf",
+  meta.extend({
+    heading: z.string(),
+    columns: z
+      .object({ dec: z.string(), hex: z.string(), bin: z.string(), char: z.string() })
+      .optional(),
+  }),
+  ["*.{de,en}.md", "!ctf.*.md"],
 );
 
 const notFound = pageCollection(
@@ -172,5 +188,6 @@ export const collections = {
   projectsIndex,
   skills,
   ctf,
+  ctfHelp,
   notFound,
 };

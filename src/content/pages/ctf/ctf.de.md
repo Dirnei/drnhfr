@@ -47,15 +47,17 @@ guter Anfang:
 - **Entwicklerwerkzeuge im Browser** (F12) und **Quelltext anzeigen**
   (Strg+U) zeigen, was eine Seite wirklich ausliefert, auch das, was nicht
   angezeigt wird.
-- **CyberChef** ist eine Webanwendung, die Kodierungen wie Base64 oder Hex
-  umwandelt und dabei viele Schritte hintereinander ausführen kann.
-- **curl** schickt HTTP-Anfragen von der Kommandozeile und zeigt auch die
-  Header der Antwort.
-- **strings** und **file** verraten, was in einer unbekannten Datei steckt.
+- [**base64**](/de/ctf/terminal/#base64) kodiert Text als Base64 und
+  dekodiert ihn wieder. Das Terminal dieser Seite hat den Befehl auch.
+- [**curl**](/de/ctf/terminal/#curl) schickt HTTP-Anfragen von der
+  Kommandozeile und zeigt auch die Header der Antwort. Das Terminal dieser
+  Seite hat eine einfache Version davon.
+- **strings** und **file** verraten, was in einer unbekannten Datei steckt,
+  und [**cat**](/de/ctf/terminal/#cat) gibt ihren Inhalt aus.
 - **Wireshark** öffnet Mitschnitte von Netzwerkverkehr und zerlegt sie in
   einzelne Pakete.
 - Ein **Hex-Editor** zeigt die rohen Bytes einer Datei.
-- Eine **ASCII-Tabelle** übersetzt Zahlen in Zeichen und zurück.
+- Eine [**ASCII-Tabelle**](/de/ctf/ascii/) übersetzt Zahlen in Zeichen und zurück.
 
 ## So funktioniert dieses Spiel
 
@@ -66,3 +68,8 @@ steht irgendwo auf jeder Seite, jede weitere hinter der Tür davor.
 Flaggen sehen aus wie `drnhfr{...}` und werden im Terminal mit `submit`
 eingegeben. `hint` gibt einen Schubs in die richtige Richtung, und `ctf`
 zeigt, wie lange du schon dabei bist.
+
+Wer noch nie mit einem Terminal gearbeitet hat, findet unter
+[Das Terminal](/de/ctf/terminal/) eine Anleitung zu `cat`, `curl` und
+`base64`. Zum Nachschlagen von Zeichencodes gibt es die
+[ASCII-Tabelle](/de/ctf/ascii/).
