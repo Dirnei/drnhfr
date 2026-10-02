@@ -63,6 +63,10 @@ export async function getSkillsPage(locale: Locale): Promise<CollectionEntry<'sk
   return pick(await getCollection('skills'), 'skills', `skills.${locale}`);
 }
 
+export async function getCtfPage(locale: Locale): Promise<CollectionEntry<'ctf'>> {
+  return pick(await getCollection('ctf'), 'ctf', `ctf.${locale}`);
+}
+
 export async function getNotFoundPage(locale: Locale): Promise<CollectionEntry<'notFound'>> {
   return pick(await getCollection('notFound'), 'notfound', `notfound.${locale}`);
 }

@@ -132,6 +132,25 @@ const skills = pageCollection(
   }),
 );
 
+const ctf = pageCollection(
+  "ctf",
+  meta.extend({
+    heading: z.string(),
+    doorTitle: z.string(),
+    locked: z.object({
+      command: z.string(),
+      error: z.string(),
+      line: z.string(),
+    }),
+    mobile: z.string(),
+    progress: z.object({
+      label: z.string(),
+      unknown: z.string(),
+    }),
+    download: z.string(),
+  }),
+);
+
 const notFound = pageCollection(
   "notfound",
   z.object({
@@ -151,5 +170,6 @@ export const collections = {
   cvGate,
   projectsIndex,
   skills,
+  ctf,
   notFound,
 };

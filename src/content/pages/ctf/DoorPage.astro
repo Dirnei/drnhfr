@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Prose from '../../../components/Prose.astro';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { getCtfPage } from '../../../lib/entries';
+import { doorHref } from '../../../lib/ctf/paths';
+
+interface Props {
+  lang: Locale;
+  door: string;
+}
+
+const { lang, door } = Astro.props;
+const { data } = await getCtfPage(lang);
+---
+<BaseLayout
+  lang={lang}
+  title={data.doorTitle}
+  description={data.description}
+  altHref={doorHref(otherLocale(lang), door)}
+  noindex
+>
+  <div class="shell door" data-door={door} data-lang={lang} data-download-label={data.download}>
+    <div class="locked" data-door-locked>
+      <p class="line">{data.locked.command}</p>
+      <p class="line err">{data.locked.error}</p>
+      <p class="line">{data.locked.line}</p>
+      <p class="line mobile">{data.mobile}</p>
+    </div>
+    <article data-door-story hidden>
+      <h1 data-door-title></h1>
+      <Prose><div data-door-html></div></Prose>
+      <ul class="downloads" data-door-downloads></ul>
+    </article>
+  </div>
+</BaseLayout>
+<style>
+  .door {
+    padding-block: 3rem;
+  }
+  .locked {
+    max-width: 50rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.8;
+  }
+  .locked p {
+    margin: 0;
+  }
+  .locked .err {
+    color: var(--red-text);
+  }
+  .mobile {
+    display: none;
+    margin-top: 1rem;
+    color: var(--text-muted);
+  }
+  @media (max-width: 37.5rem) {
+    .mobile {
+      display: block;
+    }
+  }
+  article[hidden] {
+    display: none;
+  }
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    margin-bottom: 1.5rem;
+  }
+  .downloads {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .downloads :global(button) {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 0;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+  }
+  .downloads :global(button:hover),
+  .downloads :global(button:focus-visible) {
+    border-color: var(--red);
+    color: var(--red);
+  }
+</style>
+<script>
+  import { ctf, ready } from '../../../lib/ctf/client';
+  import { pick } from '../../../lib/ctf/paths';
+
+  const root = document.querySelector<HTMLElement>('[data-door]');
+  const show = () => {
+    if (!root) return;
+    const payload = ctf.payload(root.dataset.door ?? '');
+    if (!payload) return;
+    const lang = root.dataset.lang ?? 'de';
+    root.querySelector<HTMLElement>('[data-door-locked]')!.hidden = true;
+    root.querySelector<HTMLElement>('[data-door-story]')!.hidden = false;
+    root.querySelector('[data-door-title]')!.textContent = pick(payload.title, lang);
+    root.querySelector('[data-door-html]')!.innerHTML = pick(payload.html, lang);
+    const list = root.querySelector('[data-door-downloads]')!;
+    list.replaceChildren(
+      ...payload.downloads.map((file) => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = `${root.dataset.downloadLabel}: ${file.name}`;
+        button.addEventListener('click', () => {
+          const url = URL.createObjectURL(new Blob([file.content], { type: 'text/plain' }));
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.name;
+          link.click();
+          URL.revokeObjectURL(url);
+        });
+        item.append(button);
+        return item;
+      }),
+    );
+  };
+  ctf.onChange(show);
+  void ready.then(show);
+</script>

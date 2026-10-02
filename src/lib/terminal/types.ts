@@ -1,3 +1,4 @@
+import type { Ctf } from '../ctf/doors';
 import type { BootConfig } from './boot-log';
 
 export interface Command {
@@ -75,4 +76,5 @@ export interface CommandContext {
   remove(href: string): void;
   /** Replaces the whole page with the logo, until reload. */
   wipe(): void;
+  ctf(): Ctf;
 }

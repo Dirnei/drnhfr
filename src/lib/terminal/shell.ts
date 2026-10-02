@@ -1,3 +1,5 @@
+import { ctf } from '../ctf/client';
+import { doorHref, pick } from '../ctf/paths';
 import { playBoot } from './boot-log';
 import { copy } from './copy';
 import { runPipeline, splitPipeline } from './pipeline';
@@ -51,8 +53,17 @@ export function boot(): void {
     description: copy.cvDescription,
   };
   const removed = new Set<string>();
+  const doorEntries = (): SearchEntry[] =>
+    ctf.opened().map(({ door, payload }) => ({
+      href: doorHref(config.lang, door),
+      type: 'page',
+      aliases: [`ctf/${door}`],
+      description: pick(payload.title, config.lang),
+    }));
   const visibleEntries = (): SearchEntry[] =>
-    (isUnlocked() ? [...entries, cvEntry] : entries).filter((entry) => !removed.has(entry.href));
+    [...entries, ...(isUnlocked() ? [cvEntry] : []), ...doorEntries()].filter(
+      (entry) => !removed.has(entry.href),
+    );
 
   const remove = (href: string) => {
     removed.add(href);
@@ -203,6 +214,7 @@ export function boot(): void {
     reboot,
     remove,
     wipe,
+    ctf: () => ctf,
   };
 
   const execute = async (raw: string) => {
@@ -378,6 +390,7 @@ export function boot(): void {
     if (input.disabled) return;
     const target = event.target;
     if (target instanceof Element && target.closest('.term-titlebar')) return;
+    if (!(window.getSelection()?.isCollapsed ?? true)) return;
     input.focus();
   });
 

@@ -1,0 +1,22 @@
+{
+  "salt": "qgGaIgZbwyAAW3AHSoJiuw==",
+  "iterations": 300000,
+  "doors": [
+    "site",
+    "homelab",
+    "laser",
+    "dartomat",
+    "smarthome"
+  ],
+  "entry": "ZHJuaGZye3ZpZXctc291cmNlLWlzLXN0ZXAtb25lfQ==",
+  "hints": [
+    {
+      "de": "Jede Seite hat mehr Quelltext, als man im Browser sieht. Fang auf der Startseite an.",
+      "en": "Every page has more source than the browser shows. Start on the home page."
+    },
+    {
+      "de": "Quelltext der Startseite anzeigen (Strg+U). Der Kommentar ist base64. Die Flagge gibst du im Terminal mit submit ein.",
+      "en": "View the home page source (Ctrl+U). The comment is base64. Enter the flag in the terminal with submit."
+    }
+  ]
+}

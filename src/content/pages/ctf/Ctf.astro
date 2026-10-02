@@ -1,0 +1,40 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CtfProgress from '../../../components/CtfProgress.astro';
+import Prose from '../../../components/Prose.astro';
+import { routePath } from '../../../i18n/routes';
+import { otherLocale, type Locale } from '../../../i18n/locales';
+import { getCtfPage } from '../../../lib/entries';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const entry = await getCtfPage(lang);
+const { data } = entry;
+const { Content } = await render(entry);
+---
+<BaseLayout
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  altHref={routePath('ctf', otherLocale(lang))}
+  noindex
+>
+  <div class="shell ctf-index">
+    <h1>{data.heading}</h1>
+    <Prose><Content /></Prose>
+    <CtfProgress lang={lang} />
+  </div>
+</BaseLayout>
+<style>
+  .ctf-index {
+    padding-block: 3rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    margin-bottom: 1.5rem;
+  }
+</style>

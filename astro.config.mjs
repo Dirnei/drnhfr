@@ -19,7 +19,7 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      filter: (page) => !/\/(lebenslauf|cv)\/$/.test(page),
+      filter: (page) => !/\/(lebenslauf|cv)\/$/.test(page) && !/\/ctf\//.test(page),
     }),
   ],
 });

@@ -51,9 +51,15 @@ unlocked when it is opened. A third entry holds the terminal's output and
 the commands typed into it, so it carries on when you move to another
 page.
 
-All three entries contain no personal data, are never transmitted to me, and
+The same terminal runs a small capture the flag game. Entering a correct
+flag with `submit` opens an encrypted page. So that it stays open when you
+move to another page, a fourth `sessionStorage` entry holds the key derived
+from the flag for each opened page, and how many hints were requested with
+`hint`.
+
+All four entries contain no personal data, are never transmitted to me, and
 are deleted when the browser tab is closed. The legal basis is § 25
-Abs. 2 Nr. 2 TDDG, as all three entries are strictly necessary to provide the
+Abs. 2 Nr. 2 TDDG, as all four entries are strictly necessary to provide the
 respective presentation you requested.
 
 ## Contacting me by email

@@ -1,7 +1,10 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import DecodeText from '../../../components/DecodeText.astro';
-import { getHomePage } from '../../../lib/entries';
+import Prose from '../../../components/Prose.astro';
+import publicData from '../../../data/ctf/public.json';
+import { render } from 'astro:content';
+import { getCtfPage, getHomePage } from '../../../lib/entries';
 import { otherLocale, type Locale } from '../../../i18n/locales';
 
 interface Props {
@@ -9,7 +12,10 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const { data } = await getHomePage(lang);
+const entry = await getHomePage(lang);
+const { data } = entry;
+const { Content } = await render(entry);
+const ctfPage = await getCtfPage(lang);
 const HEADLINE_STEP_MS = 210;
 ---
 <BaseLayout
@@ -41,6 +47,11 @@ const HEADLINE_STEP_MS = 210;
       }
     </p>
   </div>
+  <Fragment set:html={`<!-- ${publicData.entry} -->`} />
+  <section class="shell ctf">
+    <Prose><Content /></Prose>
+    <p class="mobile">{ctfPage.data.mobile}</p>
+  </section>
 </BaseLayout>
 <style>
   .hero {
@@ -52,6 +63,20 @@ const HEADLINE_STEP_MS = 210;
   }
   h1 {
     font-size: clamp(2.5rem, 12vw, 5.5rem);
+  }
+  .ctf {
+    padding-block: 1.5rem 3rem;
+  }
+  .mobile {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+  @media (max-width: 37.5rem) {
+    .mobile {
+      display: block;
+    }
   }
   .sub {
     font-family: var(--font-mono);

@@ -1,3 +1,4 @@
+import { findDotfile } from '../../ctf/terminal';
 import { copy } from '../copy';
 import type { Command } from '../types';
 
@@ -15,6 +16,11 @@ export default {
     }
     if (!trimmed) {
       ctx.printError(copy.catMissing);
+      return;
+    }
+    const file = findDotfile(ctx.ctf(), trimmed);
+    if (file) {
+      ctx.print(file.content);
       return;
     }
     const entry = ctx.find(trimmed);

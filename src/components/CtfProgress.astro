@@ -1,0 +1,75 @@
+---
+import publicData from '../data/ctf/public.json';
+import type { Locale } from '../i18n/locales';
+import { getCtfPage } from '../lib/entries';
+import { doorHref } from '../lib/ctf/paths';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const { data } = await getCtfPage(lang);
+---
+<div class="ctf-progress" data-ctf-progress>
+  <p class="mono-label count">
+    <span data-ctf-count>0</span>/{publicData.doors.length} {data.progress.label}
+  </p>
+  <ol>
+    {
+      publicData.doors.map((door) => (
+        <li data-ctf-door={door}>
+          <span class="unknown">{data.progress.unknown}</span>
+          <a href={doorHref(lang, door)} hidden />
+        </li>
+      ))
+    }
+  </ol>
+  <p class="mobile">{data.mobile}</p>
+</div>
+<style>
+  .ctf-progress {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .count {
+    color: var(--text-muted);
+    margin: 0 0 0.6rem;
+  }
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .unknown {
+    color: var(--text-dim);
+  }
+  li[data-open] .unknown {
+    display: none;
+  }
+  a {
+    color: var(--text);
+    border-bottom: 1px solid var(--hairline);
+  }
+  a:hover,
+  a:focus-visible {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+  a[hidden] {
+    display: none;
+  }
+  .mobile {
+    display: none;
+    margin: 0.8rem 0 0;
+    color: var(--text-muted);
+  }
+  @media (max-width: 37.5rem) {
+    .mobile {
+      display: block;
+    }
+  }
+</style>

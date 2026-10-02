@@ -1,3 +1,5 @@
+import { CTF_KEY } from '../ctf/session';
+
 export const UNLOCK_KEY = 'cv-unlocked';
 export const INTRO_KEY = 'intro-played';
 export const STATE_KEY = 'terminal-state';
@@ -26,6 +28,7 @@ export function clearSessionFlags(): void {
     sessionStorage.removeItem(INTRO_KEY);
     sessionStorage.removeItem(UNLOCK_KEY);
     sessionStorage.removeItem(STATE_KEY);
+    sessionStorage.removeItem(CTF_KEY);
   } catch {
     /* private mode or blocked storage: nothing to clear, reload anyway */
   }

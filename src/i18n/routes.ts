@@ -7,6 +7,7 @@ export const routeSegments = {
   contact: { de: 'kontakt', en: 'contact' },
   imprint: { de: 'impressum', en: 'imprint' },
   privacy: { de: 'datenschutz', en: 'privacy' },
+  ctf: { de: 'ctf', en: 'ctf' },
 } as const;
 
 export type RouteKey = keyof typeof routeSegments;

@@ -32,12 +32,16 @@
     border-bottom-color: var(--red);
   }
   .prose pre {
+    font-family: var(--font-mono);
     background: var(--code-bg);
     border: 1px solid var(--hairline-soft);
     padding: 0.8rem 0.9rem;
     overflow-x: auto;
     font-size: 0.8125rem;
     line-height: 1.7;
+  }
+  .prose pre code {
+    font: inherit;
   }
   .prose :not(pre) > code {
     font-family: var(--font-mono);

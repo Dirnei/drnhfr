@@ -51,9 +51,15 @@ Aufruf weiß, dass sie freigeschaltet wurde. Ein dritter Eintrag hält die
 Ausgabe und die eingegebenen Befehle des Terminals, damit es beim Wechsel
 auf eine andere Seite weiterläuft.
 
-Alle drei Einträge enthalten keine personenbezogenen Daten, werden nicht an
+Über dasselbe Terminal lässt sich ein kleines Capture-the-Flag-Spiel spielen.
+Wer mit `submit` eine richtige Flagge eingibt, öffnet eine verschlüsselte
+Seite. Damit sie beim Seitenwechsel offen bleibt, speichert ein vierter
+Eintrag im `sessionStorage` den aus der Flagge abgeleiteten Schlüssel jeder
+geöffneten Seite und wie viele Hinweise mit `hint` abgerufen wurden.
+
+Alle vier Einträge enthalten keine personenbezogenen Daten, werden nicht an
 mich übertragen und beim Schließen des Browser-Tabs gelöscht.
-Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDG, da alle drei Einträge zur
+Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDG, da alle vier Einträge zur
 Bereitstellung der von Ihnen jeweils angeforderten Darstellung
 unbedingt erforderlich sind.
 

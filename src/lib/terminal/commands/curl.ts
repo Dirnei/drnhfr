@@ -1,3 +1,4 @@
+import { findHost, formatResponse, privateHost } from '../../ctf/terminal';
 import type { Command } from '../types';
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
@@ -31,7 +32,16 @@ export default {
   summary: 'open a url in a new tab',
   order: 5,
   run(arg, ctx) {
-    const target = resolveTarget(arg, ctx.origin);
+    const input = arg.trim().split(/\s+/).find((token) => !token.startsWith('-')) ?? '';
+    const host = privateHost(input);
+    if (host) {
+      const answer = findHost(ctx.ctf(), host);
+      if (!answer) ctx.printError(`curl: (7) Failed to connect to ${host} port 80: Connection refused`);
+      else if (answer.error) ctx.printError(answer.error);
+      else ctx.print(formatResponse(answer));
+      return;
+    }
+    const target = resolveTarget(input, ctx.origin);
     if (!target.ok) {
       ctx.printError(target.reason);
       return;

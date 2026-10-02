@@ -18,6 +18,17 @@ import { parseLineCount } from '../src/lib/terminal/pipeline';
 import { parseRm } from '../src/lib/terminal/commands/rm';
 import { bar } from '../src/lib/terminal/commands/skills';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
+import type { Ctf, DoorPayload, SubmitResult } from '../src/lib/ctf/doors';
+
+const noCtf: Ctf = {
+  doors: [],
+  restore: async () => {},
+  submit: async () => ({ kind: 'wrong' }),
+  hint: () => ({ kind: 'done' }),
+  opened: () => [],
+  payload: () => undefined,
+  onChange: () => {},
+};
 
 describe('the unlock code', () => {
   it.each([
@@ -201,6 +212,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     reboot: () => {},
     remove: () => {},
     wipe: () => {},
+    ctf: () => noCtf,
     ...overrides,
   } as CommandContext;
   return { ctx, out, art, err };
@@ -836,5 +848,206 @@ describe('cd', () => {
     const { visited, err } = go('nirgendwo', '/de/');
     expect(visited).toEqual([]);
     expect(err).toHaveLength(1);
+  });
+});
+
+const both = (text: string) => ({ de: text, en: text });
+
+function door(overrides: Partial<DoorPayload> = {}): DoorPayload {
+  return {
+    title: both('Diese Seite'),
+    html: both('<p>story</p>'),
+    hints: null,
+    terminal: { files: [], hosts: [] },
+    downloads: [],
+    ...overrides,
+  };
+}
+
+function fakeCtf(open: Record<string, DoorPayload>, overrides: Partial<Ctf> = {}): Ctf {
+  return {
+    ...noCtf,
+    doors: ['site', 'homelab', 'laser', 'dartomat', 'smarthome'],
+    opened: () => Object.entries(open).map(([id, payload]) => ({ door: id, payload })),
+    payload: (id) => open[id],
+    ...overrides,
+  };
+}
+
+const run = async (line: string, ctx: CommandContext) => {
+  const [name, ...rest] = line.split(' ');
+  await findCommand(name)!.run(rest.join(' '), ctx);
+};
+
+const siteDoor = door({
+  terminal: { files: [{ name: '.env', content: 'HOMELAB_DOOR=drnhfr{test}' }], hosts: [] },
+});
+const homelabDoor = door({
+  title: both('Homelab'),
+  terminal: {
+    files: [],
+    hosts: [
+      { host: '10.0.30.7', status: 200, headers: { 'X-Flag': 'drnhfr{laser}' }, body: '<h1>hi</h1>' },
+      { host: '10.0.30.5', error: 'curl: (1) Received HTTP/0.9 when not allowed' },
+    ],
+  },
+});
+
+describe('submit', () => {
+  const submitting = (result: SubmitResult, open: Record<string, DoorPayload> = { site: siteDoor }) =>
+    stubContext({ ctf: () => fakeCtf(open, { submit: async () => result }) });
+
+  it('names the door that opened and how to get there', async () => {
+    const { ctx, out, err } = submitting({ kind: 'opened', door: 'site', persisted: true });
+    await run('submit drnhfr{x}', ctx);
+    expect(err).toEqual([]);
+    expect(out).toEqual(['door opened: Diese Seite  (1/5)', 'cd ctf/site']);
+  });
+
+  it('warns when the progress cannot be stored', async () => {
+    const { ctx, out } = submitting({ kind: 'opened', door: 'site', persisted: false });
+    await run('submit drnhfr{x}', ctx);
+    expect(out[2]).toMatch(/storage is blocked/);
+  });
+
+  it('rejects a wrong flag as an error', async () => {
+    const { ctx, err } = submitting({ kind: 'wrong' });
+    await run('submit drnhfr{nope}', ctx);
+    expect(err).toEqual(['submit: no door opens with that']);
+  });
+
+  it('says which door a used flag opened', async () => {
+    const { ctx, out } = submitting({ kind: 'already', door: 'site' });
+    await run('submit drnhfr{x}', ctx);
+    expect(out).toEqual(['submit: that flag already opened "Diese Seite"']);
+  });
+
+  it('explains a missing WebCrypto', async () => {
+    const { ctx, err } = submitting({ kind: 'unsupported' });
+    await run('submit drnhfr{x}', ctx);
+    expect(err[0]).toMatch(/WebCrypto/);
+  });
+
+  it('asks for a flag', async () => {
+    const { ctx, err } = submitting({ kind: 'wrong' });
+    await run('submit', ctx);
+    expect(err[0]).toMatch(/usage/);
+  });
+});
+
+describe('hint', () => {
+  it('prints the hint in the page language', async () => {
+    const { ctx, out } = stubContext({
+      ctf: () => fakeCtf({}, { hint: () => ({ kind: 'hint', door: 'site', text: { de: 'schau', en: 'look' } }) }),
+    });
+    await run('hint', ctx);
+    expect(out).toEqual(['hint: schau']);
+  });
+
+  it('says when nothing is left', async () => {
+    const { ctx, out } = stubContext({ ctf: () => fakeCtf({}) });
+    await run('hint', ctx);
+    expect(out[0]).toMatch(/nothing left/);
+  });
+});
+
+describe('cd to a door', () => {
+  it('reaches a door whose name a project also uses', () => {
+    const visited: string[] = [];
+    const { ctx } = stubContext({
+      path: '/de/',
+      find: (name) =>
+        findIn(
+          [
+            { href: '/de/projekte/dartomat/', type: 'project' },
+            { href: '/de/ctf/dartomat/', type: 'page', aliases: ['ctf/dartomat'] },
+          ],
+          name,
+        ),
+      navigate: (href) => void visited.push(href),
+    });
+    void findCommand('cd')!.run('ctf/dartomat', ctx);
+    expect(visited).toEqual(['/de/ctf/dartomat/']);
+  });
+});
+
+describe('dotfiles', () => {
+  const entries: SearchEntry[] = [{ href: '/de/projekte/', type: 'page' }];
+
+  it('are listed by ls -a once the site door is open', async () => {
+    const { ctx, out } = stubContext({ entries: () => entries, ctf: () => fakeCtf({ site: siteDoor }) });
+    await run('ls -a', ctx);
+    expect(out[0]).toContain('.env');
+  });
+
+  it('are not listed by plain ls', async () => {
+    const { ctx, out } = stubContext({ entries: () => entries, ctf: () => fakeCtf({ site: siteDoor }) });
+    await run('ls', ctx);
+    expect(out[0]).not.toContain('.env');
+  });
+
+  it('can be read with cat', async () => {
+    const { ctx, out } = stubContext({ ctf: () => fakeCtf({ site: siteDoor }) });
+    await run('cat .env', ctx);
+    expect(out).toEqual(['HOMELAB_DOOR=drnhfr{test}']);
+  });
+
+  it('do not exist before the site door is open', async () => {
+    const { ctx, out, err } = stubContext({ entries: () => entries });
+    await run('ls -a', ctx);
+    await run('cat .env', ctx);
+    expect(out[0]).not.toContain('.env');
+    expect(err).toEqual(['cat: no such file: .env']);
+  });
+});
+
+describe('curl on the homelab network', () => {
+  const opened = () => fakeCtf({ homelab: homelabDoor });
+
+  it('answers the odd host with headers and body', async () => {
+    const tabs: string[] = [];
+    const { ctx, out } = stubContext({ ctf: opened, openTab: (href) => (tabs.push(href), true) });
+    await run('curl http://10.0.30.7:80/', ctx);
+    expect(out[0].split('\n')).toEqual(['HTTP/1.1 200 OK', 'X-Flag: drnhfr{laser}', '', '<h1>hi</h1>']);
+    expect(tabs).toEqual([]);
+  });
+
+  it('accepts curl flags before the address', async () => {
+    const { ctx, out } = stubContext({ ctf: opened });
+    await run('curl -i 10.0.30.7', ctx);
+    expect(out[0]).toContain('X-Flag');
+  });
+
+  it('prints a host error as curl would', async () => {
+    const { ctx, err } = stubContext({ ctf: opened });
+    await run('curl 10.0.30.5', ctx);
+    expect(err).toEqual(['curl: (1) Received HTTP/0.9 when not allowed']);
+  });
+
+  it('refuses unknown private hosts', async () => {
+    const { ctx, err } = stubContext({ ctf: opened });
+    await run('curl 192.168.1.1', ctx);
+    expect(err[0]).toMatch(/^curl: \(7\) Failed to connect/);
+  });
+
+  it('refuses every private host while the homelab door is locked, and opens no tab', async () => {
+    const tabs: string[] = [];
+    const { ctx, err } = stubContext({ openTab: (href) => (tabs.push(href), true) });
+    await run('curl 10.0.30.7', ctx);
+    expect(err[0]).toMatch(/^curl: \(7\) Failed to connect/);
+    expect(tabs).toEqual([]);
+  });
+
+  it('still opens public urls in a tab', async () => {
+    const tabs: string[] = [];
+    const { ctx } = stubContext({ ctf: opened, openTab: (href) => (tabs.push(href), true) });
+    await run('curl example.com', ctx);
+    expect(tabs).toEqual(['https://example.com/']);
+  });
+});
+
+describe('restart', () => {
+  it('answers to reboot too', () => {
+    expect(findCommand('reboot')?.name).toBe('restart');
   });
 });

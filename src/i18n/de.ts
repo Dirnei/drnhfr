@@ -5,6 +5,8 @@ export const de = {
   'nav.contact': 'Kontakt',
   'nav.imprint': 'Impressum',
   'nav.privacy': 'Datenschutz',
+  'nav.ctf': 'CTF',
+  'nav.ctfLocked': 'Verschlossene Tür',
   'projects.role': 'Rolle',
   'projects.period': 'Zeitraum',
   'projects.stack': 'Stack',
