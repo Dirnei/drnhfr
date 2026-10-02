@@ -17,6 +17,7 @@ import { runPipeline, splitPipeline } from '../src/lib/terminal/pipeline';
 import { parseLineCount } from '../src/lib/terminal/pipeline';
 import { parseRm } from '../src/lib/terminal/commands/rm';
 import { bar } from '../src/lib/terminal/commands/skills';
+import { decodeBase64, encodeBase64 } from '../src/lib/terminal/commands/base64';
 import type { CommandContext, SearchEntry } from '../src/lib/terminal/types';
 import type { Ctf, DoorPayload, SubmitResult } from '../src/lib/ctf/doors';
 
@@ -1153,5 +1154,96 @@ describe('submit on the last door', () => {
     });
     await run('submit x', ctx);
     expect(out).toContain('every door is open. your time: 0:12:34');
+  });
+});
+
+describe('base64 encoding', () => {
+  const reasonFor = (input: string) => {
+    try {
+      decodeBase64(input);
+      return 'decoded';
+    } catch (error) {
+      return (error as { reason?: string }).reason;
+    }
+  };
+
+  it('encodes UTF-8 text', () => {
+    expect(encodeBase64('hallo')).toBe('aGFsbG8=');
+    expect(encodeBase64('Grüße')).toBe('R3LDvMOfZQ==');
+  });
+
+  it('decodes back to the same text', () => {
+    expect(decodeBase64('aGFsbG8=')).toBe('hallo');
+    expect(decodeBase64('R3LDvMOfZQ==')).toBe('Grüße');
+  });
+
+  it('forgives missing padding, whitespace and line breaks', () => {
+    expect(decodeBase64('aGFsbG8')).toBe('hallo');
+    expect(decodeBase64(' aGFs\nbG8= ')).toBe('hallo');
+  });
+
+  it('reads the URL-safe alphabet', () => {
+    expect(decodeBase64('Pz8_')).toBe('???');
+    expect(decodeBase64('Pz8-')).toBe('??>');
+  });
+
+  it('rejects what is not base64', () => {
+    expect(reasonFor('not*base64')).toBe('not-base64');
+    expect(reasonFor('aGFsb')).toBe('not-base64');
+  });
+
+  it('rejects bytes that are not text', () => {
+    expect(reasonFor('//79')).toBe('not-text');
+  });
+});
+
+describe('base64', () => {
+  const resolve = (raw: string) =>
+    splitPipeline(raw)!.map((stage) => ({ ...stage, command: findCommand(stage.name)! }));
+  const run = async (raw: string, stdin: string | null = null) => {
+    const result = stubContext({ stdin });
+    await runPipeline(resolve(raw), result.ctx);
+    return result;
+  };
+
+  it('encodes its argument', async () => {
+    expect((await run('base64 hallo')).out).toEqual(['aGFsbG8=']);
+  });
+
+  it('decodes with -d and --decode', async () => {
+    expect((await run('base64 -d aGFsbG8=')).out).toEqual(['hallo']);
+    expect((await run('base64 --decode R3LDvMOfZQ==')).out).toEqual(['Grüße']);
+  });
+
+  it('reads a pipe and round-trips through one', async () => {
+    expect((await run('echo hallo | base64')).out).toEqual(['aGFsbG8=']);
+    expect((await run('echo Grüße | base64 | base64 -d')).out).toEqual(['Grüße']);
+  });
+
+  it('prefers its argument to the pipe', async () => {
+    expect((await run('echo other | base64 hallo')).out).toEqual(['aGFsbG8=']);
+  });
+
+  it('prints a long encoding on one line', async () => {
+    const { out } = await run(`base64 ${'x'.repeat(100)}`);
+    expect(out).toHaveLength(1);
+    expect(out[0]).not.toContain(String.fromCharCode(10));
+    expect(out[0].length).toBeGreaterThan(76);
+  });
+
+  it.each([
+    ['base64', 'echo hallo | base64'],
+    ['base64 -d not*base64', 'not base64'],
+    ['base64 -d //79', 'not text'],
+    ['base64 -x hallo', '-x'],
+  ])('%s prints only an error', async (raw, expected) => {
+    const { out, err } = await run(raw);
+    expect(out).toHaveLength(0);
+    expect(err).toHaveLength(1);
+    expect(err[0]).toContain(expected);
+  });
+
+  it('names -d when the option is unknown', async () => {
+    expect((await run('base64 -x hallo')).err[0]).toContain('-d');
   });
 });

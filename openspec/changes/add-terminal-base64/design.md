@@ -2,7 +2,7 @@
 
 ## Context
 
-A terminal command is one file in `src/lib/terminal/commands/`, found by `import.meta.glob`; `help` and Tab derive from the registry. Commands only talk to `CommandContext`. A command that takes text reads its argument first and `ctx.stdin` second (`cowsay`, `cat`); `ctx.stdin` is `null` when nothing was piped in. Pipeline stages capture `print` output joined with `\n`, so piped text never carries a trailing newline. Errors go through `ctx.printError` with an inline English message and a working example, as in `grep` and `wc`. `help` positions are unique `order` values; 0 to 28 and 99 are taken.
+A terminal command is one file in `src/lib/terminal/commands/`, found by `import.meta.glob`; `help` and Tab derive from the registry. Commands only talk to `CommandContext`. A command that takes text reads its argument first and `ctx.stdin` second (`cowsay`, `cat`); `ctx.stdin` is `null` when nothing was piped in. Pipeline stages capture `print` output joined with `\n`, so piped text never carries a trailing newline. Errors go through `ctx.printError` with an inline English message and a working example, as in `grep` and `wc`. `help` positions are unique `order` values; 0 to 29 and 99 are taken.
 
 ## Goals / Non-Goals
 
@@ -28,7 +28,7 @@ A terminal command is one file in `src/lib/terminal/commands/`, found by `import
 
 **Helpers live in the command file and are exported.** `encodeBase64(text)` and `decodeBase64(text)` (throwing a small error kind for "not base64" vs "not text"). `curl.ts`, `rm.ts` and `skills.ts` already export their pure helpers for the tests the same way. No shared module: nothing else needs them. `src/lib/ctf/crypto.ts` has its own `toBase64`/`fromBase64` for key bytes; those work on `Uint8Array` for the vault and stay separate so the CTF code does not depend on a toy command.
 
-**`order: 29`.** Next free slot, after the CTF commands. Slotting it among the filters (16 to 21) would renumber eight commands for a cosmetic gain.
+**`order: 30`.** Next free slot, after the CTF commands. Slotting it among the filters (16 to 21) would renumber eight commands for a cosmetic gain.
 
 ## Risks / Trade-offs
 
