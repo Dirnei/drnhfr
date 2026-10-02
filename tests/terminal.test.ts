@@ -171,6 +171,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
       lang: 'de',
       cvHref: '/de/lebenslauf/',
       cvAliases: ['lebenslauf', 'cv'],
+      homeHref: '/de/',
       otherHomeHref: '/en/',
       searchHref: '/de/search.json',
       boot: { lines: [], lineStepMinMs: 0, lineStepMaxMs: 0 },
@@ -195,6 +196,7 @@ function stubContext(overrides: Partial<CommandContext> = {}) {
     navigate: () => {},
     openTab: () => true,
     origin: 'https://www.dirnhofer.net',
+    path: '/de/',
     stdin: null,
     reboot: () => {},
     remove: () => {},
@@ -768,6 +770,7 @@ describe('uptime and the last commit', () => {
         lang: 'de',
         cvHref: '/de/lebenslauf/',
       cvAliases: ['lebenslauf', 'cv'],
+        homeHref: '/de/',
         otherHomeHref: '/en/',
         searchHref: '/de/search.json',
         boot: { lines: [], lineStepMinMs: 0, lineStepMaxMs: 0 },
@@ -800,5 +803,38 @@ describe('uptime and the last commit', () => {
     const { ctx, out } = withCommit('not-a-date');
     findCommand('uptime')!.run('', ctx);
     expect(out).toHaveLength(1);
+  });
+});
+
+describe('cd', () => {
+  const cd = findCommand('cd')!;
+  const go = (arg: string, path: string) => {
+    const visited: string[] = [];
+    const { ctx, err } = stubContext({ path, navigate: (href) => void visited.push(href) });
+    cd.run(arg, ctx);
+    return { visited, err };
+  };
+
+  it('goes home for ~, / and no argument', () => {
+    for (const arg of ['~', '/', '~/', '']) {
+      expect(go(arg, '/de/projekte/').visited).toEqual(['/de/']);
+    }
+  });
+
+  it('goes up one level for ..', () => {
+    expect(go('..', '/de/projekte/edict/').visited).toEqual(['/de/projekte/']);
+    expect(go('..', '/de/projekte/').visited).toEqual(['/de/']);
+  });
+
+  it('stays put when already there', () => {
+    expect(go('~', '/de/').visited).toEqual([]);
+    expect(go('..', '/de/').visited).toEqual([]);
+    expect(go('.', '/de/projekte/').visited).toEqual([]);
+  });
+
+  it('reports an unknown target', () => {
+    const { visited, err } = go('nirgendwo', '/de/');
+    expect(visited).toEqual([]);
+    expect(err).toHaveLength(1);
   });
 });

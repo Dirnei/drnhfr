@@ -43,15 +43,17 @@ Beim ersten Aufruf pro Browsersitzung wird eine kurze Startanimation
 gezeigt. Damit sie sich nicht wiederholt, wird ein Eintrag im
 `sessionStorage` Ihres Browsers gespeichert.
 
-Die Startseite enthält außerdem ein Terminal, mit dem sich per
+Am unteren Rand jeder Seite befindet sich außerdem ein Terminal, mit dem sich per
 `su`-Befehl der Lebenslauf freischalten lässt. Bei
 erfolgreicher Eingabe wird dafür ein zweiter Eintrag im
 `sessionStorage` gespeichert, damit die Lebenslauf-Seite beim
-Aufruf weiß, dass sie freigeschaltet wurde.
+Aufruf weiß, dass sie freigeschaltet wurde. Ein dritter Eintrag hält die
+Ausgabe und die eingegebenen Befehle des Terminals, damit es beim Wechsel
+auf eine andere Seite weiterläuft.
 
-Beide Einträge enthalten keine personenbezogenen Daten, werden nicht an
+Alle drei Einträge enthalten keine personenbezogenen Daten, werden nicht an
 mich übertragen und beim Schließen des Browser-Tabs gelöscht.
-Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDG, da beide Einträge zur
+Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDG, da alle drei Einträge zur
 Bereitstellung der von Ihnen jeweils angeforderten Darstellung
 unbedingt erforderlich sind.
 

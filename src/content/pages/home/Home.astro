@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import DecodeText from '../../../components/DecodeText.astro';
-import Terminal from '../../../components/Terminal.astro';
 import { getHomePage } from '../../../lib/entries';
 import { otherLocale, type Locale } from '../../../i18n/locales';
 
@@ -42,7 +41,6 @@ const HEADLINE_STEP_MS = 210;
       }
     </p>
   </div>
-  <Terminal lang={lang} />
 </BaseLayout>
 <style>
   .hero {

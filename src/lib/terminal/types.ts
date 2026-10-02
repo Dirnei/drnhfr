@@ -33,6 +33,7 @@ export interface TerminalConfig {
   lang: string;
   cvHref: string;
   cvAliases: string[];
+  homeHref: string;
   otherHomeHref: string;
   searchHref: string;
   boot: BootConfig;
@@ -44,6 +45,8 @@ export interface CommandContext {
   readonly config: TerminalConfig;
   /** Base for resolving anything relative the visitor types. */
   readonly origin: string;
+  /** Path of the page the terminal is on, with a trailing slash. */
+  readonly path: string;
   /** Output of the previous command in a pipeline, or null when nothing was piped in. */
   readonly stdin: string | null;
   print(text: string): void;

@@ -53,11 +53,13 @@ html {
 
 html {
   scroll-padding-top: 5rem;
+  scroll-padding-bottom: 8rem;
 }
 
 @media (max-width: 37.5rem) {
   html {
     scroll-padding-top: 8rem;
+    scroll-padding-bottom: 4rem;
   }
 }
 

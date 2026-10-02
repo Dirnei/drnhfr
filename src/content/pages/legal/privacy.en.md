@@ -44,14 +44,16 @@ A short intro animation is shown the first time the site is opened in a
 browser session. To prevent it from repeating, an entry is stored in
 your browser's `sessionStorage`.
 
-The home page also contains a terminal, which can unlock the cv via a
+Every page also has a terminal docked at the bottom, which can unlock the cv via a
 `su` command. On a successful entry, a second
 `sessionStorage` entry is stored, so the cv page knows it was
-unlocked when it is opened.
+unlocked when it is opened. A third entry holds the terminal's output and
+the commands typed into it, so it carries on when you move to another
+page.
 
-Both entries contain no personal data, are never transmitted to me, and
+All three entries contain no personal data, are never transmitted to me, and
 are deleted when the browser tab is closed. The legal basis is § 25
-Abs. 2 Nr. 2 TDDG, as both entries are strictly necessary to provide the
+Abs. 2 Nr. 2 TDDG, as all three entries are strictly necessary to provide the
 respective presentation you requested.
 
 ## Contacting me by email

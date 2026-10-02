@@ -29,6 +29,7 @@
 
   .site-header,
   .site-footer,
+  .dock,
   .skip-link,
   .print-hide {
     display: none !important;

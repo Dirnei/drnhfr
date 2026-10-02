@@ -2,7 +2,7 @@
 import '../styles/base.css';
 import Logo from '../components/Logo.astro';
 import SiteNav from '../components/SiteNav.astro';
-import TerminalShortcut from '../components/TerminalShortcut.astro';
+import Terminal from '../components/Terminal.astro';
 import { routePath, type RouteKey } from '../i18n/routes';
 import { useTranslations } from '../i18n/ui';
 import { UNLOCK_KEY, BYPASS_HASH } from '../lib/terminal/unlock';
@@ -104,16 +104,18 @@ const xDefaultHref =
     <main id="main">
       <slot />
     </main>
-    <footer class="site-footer">
-      <div class="shell footer-inner">
-        <ul class="footer-list">
-          <li><a href={routePath('imprint', lang)}>{t('nav.imprint')}</a></li>
-          <li><a href={routePath('privacy', lang)}>{t('nav.privacy')}</a></li>
-        </ul>
-        <p class="footer-hint"><kbd>/</kbd> <kbd>{shortcutKey}</kbd> {shortcutHint}</p>
-      </div>
-    </footer>
-    <TerminalShortcut lang={lang} />
+    <div class="dock">
+      <Terminal lang={lang} />
+      <footer class="site-footer">
+        <div class="shell footer-inner">
+          <ul class="footer-list">
+            <li><a href={routePath('imprint', lang)}>{t('nav.imprint')}</a></li>
+            <li><a href={routePath('privacy', lang)}>{t('nav.privacy')}</a></li>
+          </ul>
+          <p class="footer-hint"><kbd>/</kbd> <kbd>{shortcutKey}</kbd> {shortcutHint}</p>
+        </div>
+      </footer>
+    </div>
   </body>
 </html>
 <style>
@@ -145,9 +147,15 @@ const xDefaultHref =
       flex-wrap: wrap;
     }
   }
+  .dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin-top: 4rem;
+    background: var(--ink);
+  }
   .site-footer {
     border-top: 1px solid var(--hairline);
-    margin-top: 4rem;
     padding-block: 1.25rem;
   }
   .footer-inner {
@@ -185,7 +193,7 @@ const xDefaultHref =
   }
   @media (max-width: 37.5rem) {
     .footer-hint {
-      margin-left: 0;
+      display: none;
     }
   }
 </style>

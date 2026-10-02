@@ -3,7 +3,7 @@ import type { Locale } from '../i18n/locales';
 import { otherLocale } from '../i18n/locales';
 import { routePath, routeSegments } from '../i18n/routes';
 import { bootTiming, bootLines } from '../data/boot';
-import { INTRO_KEY } from '../lib/terminal/unlock';
+import { INTRO_KEY, STATE_KEY } from '../lib/terminal/unlock';
 import { copy } from '../lib/terminal/copy';
 import { lastCommitIso } from '../lib/build-info';
 
@@ -13,16 +13,19 @@ interface Props {
 const { lang } = Astro.props;
 
 const cvHref = routePath('cv', lang);
+const homeHref = `/${lang}/`;
 const otherHomeHref = `/${otherLocale(lang)}/`;
 const searchHref = `/${lang}/search.json`;
 const terminalLabel = 'Interactive terminal';
 const logLabel = lang === 'de' ? 'Terminal-Ausgabe' : 'Terminal output';
 const inputLabel = 'Terminal input';
+const toggleLabel = lang === 'de' ? 'Terminal-Ausgabe ein- oder ausblenden' : 'Show or hide terminal output';
 
 const config = {
   lang,
   cvHref,
   cvAliases: Object.values(routeSegments.cv),
+  homeHref,
   otherHomeHref,
   searchHref,
   boot: { ...bootTiming, lines: bootLines },
@@ -34,118 +37,132 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
 ---
 
 <section class="terminal" id="terminal" lang="en" aria-label={terminalLabel}>
-  <div class="chips" id="terminal-chips">
-    {
-      copy.chips.map((chip) => (
-        <button type="button" class="chip" data-run={chip.run} disabled>
-          {chip.label}
-        </button>
-      ))
-    }
+  <div class="term-inner">
+    <div class="term-drawer">
+      <div class="term-titlebar">
+        <span class="term-title" aria-hidden="true">drnhfr-sh</span>
+        <button
+          type="button"
+          class="term-toggle"
+          id="terminal-toggle"
+          aria-controls="terminal-body"
+          aria-expanded="false"
+          aria-label={toggleLabel}
+        ></button>
+      </div>
+      <div class="term-body" id="terminal-body">
+        <div class="term-body-clip">
+          <div class="log" id="terminal-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={logLabel}>
+            <p class="line art motd logo-art" aria-hidden="true"><span class="bar">{logoBar}</span>{nl}{copy.logo.join(nl)}{nl}<span class="bar">{logoBar}</span></p>
+            <p class="line hint motd">{copy.motd.join(nl)}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script is:inline define:vars={{ introKey: INTRO_KEY, stateKey: STATE_KEY }}>
+      (() => {
+        const terminal = document.getElementById('terminal');
+        let played = true;
+        let open = false;
+        try {
+          played = sessionStorage.getItem(introKey) === '1';
+          open = JSON.parse(sessionStorage.getItem(stateKey) ?? '{}').open === true;
+        } catch {
+          // Storage blocked or state unreadable: skip the boot log, start closed.
+        }
+        if (open) terminal.dataset.open = '';
+        if (!played) {
+          terminal.dataset.boot = '';
+          terminal.dataset.open = '';
+        }
+      })();
+    </script>
+    <form class="term-form" id="terminal-form">
+      <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
+      <span class="seg seg-err" id="terminal-status" hidden aria-hidden="true">&#10007;</span>
+      <span class="seg seg-time" id="terminal-clock" aria-hidden="true">--:--</span>
+      <span class="seg seg-host" id="terminal-host" aria-hidden="true">{copy.promptUser}</span>
+      <span class="seg seg-path" aria-hidden="true">~</span>
+      <span class="seg seg-lang" aria-hidden="true">{lang}</span>
+      <span class="seg seg-lock" id="terminal-lock" hidden aria-hidden="true">cv unlocked</span>
+      <span class="seg-cap" aria-hidden="true"></span>
+      <input
+        type="text"
+        id="terminal-input"
+        class="term-input"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        disabled
+      />
+    </form>
   </div>
-  <div class="log" id="terminal-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={logLabel}>
-    <p class="line art motd logo-art" aria-hidden="true"><span class="bar">{logoBar}</span>{nl}{copy.logo.join(nl)}{nl}<span class="bar">{logoBar}</span></p>
-    <p class="line hint motd">{copy.motd.join(nl)}</p>
-  </div>
-  <script is:inline define:vars={{ introKey: INTRO_KEY }}>
-    try {
-      if (sessionStorage.getItem(introKey) !== '1') {
-        document.getElementById('terminal-log').dataset.boot = '';
-      }
-    } catch {
-      // Storage blocked: skip the boot log rather than replay it on every load.
-    }
-  </script>
-  <form class="term-form" id="terminal-form">
-    <label for="terminal-input" class="visually-hidden">{inputLabel}</label>
-    <span class="seg seg-err" id="terminal-status" hidden aria-hidden="true">&#10007;</span>
-    <span class="seg seg-time" id="terminal-clock" aria-hidden="true">--:--</span>
-    <span class="seg seg-host" id="terminal-host" aria-hidden="true">{copy.promptUser}</span>
-    <span class="seg seg-path" aria-hidden="true">~</span>
-    <span class="seg seg-lang" aria-hidden="true">{lang}</span>
-    <span class="seg seg-lock" id="terminal-lock" hidden aria-hidden="true">cv unlocked</span>
-    <span class="seg-cap" aria-hidden="true"></span>
-    <input
-      type="text"
-      id="terminal-input"
-      class="term-input"
-      autocomplete="off"
-      autocapitalize="off"
-      spellcheck="false"
-      enterkeyhint="go"
-      disabled
-    />
-  </form>
 </section>
 
 <style>
   .terminal {
-    max-width: var(--page-max);
-    margin: 0 auto;
-    padding-inline: var(--gutter);
-    padding-block: 1.5rem;
+    position: relative;
+    background: var(--ink);
     font-family: var(--font-mono);
     font-size: 0.8125rem;
   }
-  .chips {
-    display: none;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+  .term-inner {
+    position: relative;
   }
   @media (max-width: 37.5rem) {
-    .chips {
-      display: flex;
+    .terminal {
+      display: none;
     }
   }
-  .chip {
-    background: transparent;
-    border: 1px solid var(--hairline);
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    padding: 0.35rem 0.6rem;
-    cursor: pointer;
+  .term-drawer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
   }
-  .chip:hover,
-  .chip:focus-visible {
-    color: var(--red-text);
-    border-color: var(--red-text);
+  .terminal[data-boot] .term-drawer {
+    bottom: 0;
   }
-  .chip:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  .term-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border-top: 1px solid var(--hairline);
+    padding-left: 0.75rem;
   }
-  @media (min-height: 45rem) {
-    :global(body:has(.terminal)) {
-      height: 100dvh;
+  .term-title {
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+  .term-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+  .terminal[data-open] .term-body {
+    grid-template-rows: 1fr;
+  }
+  .term-body-clip {
+    min-height: 0;
+    overflow: hidden;
+    background: var(--ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .term-body {
+      transition: none;
     }
-    :global(main:has(.terminal)) {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-    }
-    :global(main:has(.terminal) > *) {
-      width: 100%;
-    }
-    :global(main:has(.terminal)) .terminal {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-    }
-    :global(main:has(.terminal)) .log {
-      flex: 1;
-      max-height: none;
-    }
+  }
+  .terminal[data-boot] .term-form,
+  .terminal[data-boot] .term-toggle {
+    visibility: hidden;
   }
 
   .log {
-    border: 1px solid var(--hairline);
     padding: 1rem;
-    min-height: 8rem;
-    max-height: 24rem;
+    height: min(24rem, 50dvh);
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-word;
@@ -189,7 +206,7 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .logo-art .bar {
     color: var(--text-dim);
   }
-  .log[data-boot] .motd {
+  .terminal[data-boot] .motd {
     display: none;
   }
   .log :global(.line.boot) {
@@ -234,8 +251,7 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
     display: flex;
     align-items: stretch;
     gap: 0;
-    border: 1px solid var(--hairline);
-    border-top: 0;
+    border-top: 1px solid var(--hairline);
     --prev: transparent;
   }
 
@@ -316,14 +332,6 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .seg-lock:not([hidden]) ~ .seg-cap {
     --prev: color-mix(in srgb, var(--boot-ok) 16%, var(--surface));
   }
-  @media (max-width: 30rem) {
-    .seg-path {
-      display: none;
-    }
-    .seg-lang {
-      --prev: var(--surface);
-    }
-  }
   .term-input {
     flex: 1;
     min-width: 0;
@@ -339,6 +347,33 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   }
   .term-input:disabled {
     color: var(--text-dim);
+  }
+  .term-toggle {
+    flex: none;
+    width: 2.25rem;
+    height: 1.75rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .term-toggle::before {
+    content: '';
+    display: block;
+    width: 0.6rem;
+    height: 0.35rem;
+    margin: 0 auto;
+    background: currentColor;
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+  }
+  .terminal[data-open] .term-toggle::before {
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  .term-toggle:hover,
+  .term-toggle:focus-visible {
+    color: var(--red-text);
+    outline: none;
   }
   .visually-hidden {
     position: absolute;

@@ -45,8 +45,4 @@ export const copy = {
   cvDescription: 'the cv. root only.',
   exitDone: 'back to guest. cv locked.',
   exitIdle: 'already guest.',
-  chips: [
-    { label: 'ls', run: 'ls' },
-    { label: 'help', run: 'help' },
-  ],
 } as const;

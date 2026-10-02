@@ -3,11 +3,10 @@ import { copy } from './copy';
 import { runPipeline, splitPipeline } from './pipeline';
 import { findIn, nameFromHref } from './fs';
 import { renderHelp } from './help-text';
+import { readState, writeState, type SavedLine } from './session';
 import { commands, completionNames, findCommand } from './registry';
 import { clearSessionFlags, isUnlocked, setUnlocked } from './unlock';
 import type { CommandContext, SearchEntry, TerminalConfig } from './types';
-
-const FOCUS_KEY = 'focus-terminal';
 
 export function boot(): void {
   const configEl = document.getElementById('terminal-config');
@@ -15,23 +14,35 @@ export function boot(): void {
   const log = document.getElementById('terminal-log');
   const form = document.getElementById('terminal-form') as HTMLFormElement | null;
   const input = document.getElementById('terminal-input') as HTMLInputElement | null;
-  const chipsRow = document.getElementById('terminal-chips');
-  if (!configEl || !section || !log || !form || !input || !chipsRow) return;
+  const body = document.getElementById('terminal-body');
+  const toggle = document.getElementById('terminal-toggle');
+  if (!configEl || !section || !log || !form || !input || !body || !toggle) return;
+  if (getComputedStyle(section).display === 'none') return;
 
   const config = JSON.parse(configEl.textContent ?? '{}') as TerminalConfig;
-  const chipButtons = Array.from(chipsRow.querySelectorAll<HTMLButtonElement>('.chip'));
 
   let entries: SearchEntry[] = [];
-  const entriesPromise = fetch(config.searchHref)
-    .then((response) => response.json())
-    .then((data: unknown) => {
-      entries = Array.isArray(data) ? (data as SearchEntry[]) : [];
-      return entries;
-    })
-    .catch(() => {
-      entries = [];
-      return entries;
-    });
+  let entriesPromise: Promise<SearchEntry[]> | null = null;
+  const loadEntries = () =>
+    (entriesPromise ??= fetch(config.searchHref)
+      .then((response) => response.json())
+      .then((data: unknown) => {
+        entries = Array.isArray(data) ? (data as SearchEntry[]) : [];
+        return entries;
+      })
+      .catch(() => {
+        entries = [];
+        return entries;
+      }));
+
+  const isOpen = () => section.dataset.open !== undefined;
+  const setOpen = (open: boolean) => {
+    if (open) section.dataset.open = '';
+    else delete section.dataset.open;
+    body.inert = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open) log.scrollTop = log.scrollHeight;
+  };
 
   const cvEntry: SearchEntry = {
     href: config.cvHref,
@@ -154,6 +165,7 @@ export function boot(): void {
   const ctx: CommandContext = {
     config,
     origin: window.location.origin,
+    path: window.location.pathname.replace(/\/?$/, '/'),
     stdin: null,
     print: (text) => appendLine(text, 'out'),
     printArt: (text) => appendLine(text, 'art'),
@@ -219,14 +231,53 @@ export function boot(): void {
     }
   };
 
+  let focused = false;
+
+  const save = () => {
+    if (halted || section.dataset.boot !== undefined) return;
+    const lines: SavedLine[] = [];
+    for (const el of Array.from(log.children)) {
+      if (!(el instanceof HTMLElement) || el.matches('.motd, .draw, .boot')) continue;
+      const kind = ['echo', 'err', 'art', 'hint'].find((name) => el.classList.contains(name)) ?? 'out';
+      const text = (el.textContent ?? '').slice(kind === 'echo' ? 1 : 0);
+      lines.push({ kind, text });
+    }
+    writeState({
+      open: isOpen(),
+      focused,
+      failed: lastFailed,
+      motd: log.querySelector('.motd') !== null,
+      history,
+      lines,
+    });
+  };
+
+  const restore = () => {
+    const state = readState();
+    if (!state) return false;
+    if (!state.motd) log.querySelectorAll('.motd').forEach((el) => el.remove());
+    for (const line of state.lines) {
+      if (line.kind === 'echo') echo(line.text);
+      else appendLine(line.text, line.kind);
+    }
+    history.push(...state.history);
+    historyCursor = history.length;
+    lastFailed = state.failed;
+    return state.focused && state.open;
+  };
+
   const run = async (raw: string) => {
     echo(raw);
-    if (!raw.trim()) return;
-    await entriesPromise;
+    if (!raw.trim()) {
+      save();
+      return;
+    }
+    await loadEntries();
     lastFailed = false;
     await execute(raw);
     stampClock();
     refreshStatus(lastFailed);
+    save();
   };
 
   let interruptWaiters: Array<() => void> = [];
@@ -245,6 +296,7 @@ export function boot(): void {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    setOpen(true);
     const raw = input.value;
     input.value = '';
     if (raw.trim()) {
@@ -254,8 +306,27 @@ export function boot(): void {
     void run(raw);
   });
 
+  input.addEventListener('focus', () => {
+    focused = true;
+    void loadEntries();
+    setOpen(true);
+  });
+  input.addEventListener('blur', () => {
+    if (!input.disabled) focused = false;
+  });
+  window.addEventListener('pagehide', save);
+
+  toggle.addEventListener('click', () => {
+    setOpen(!isOpen());
+    save();
+  });
+
   input.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowUp') {
+    if (event.key === 'Escape') {
+      input.blur();
+      setOpen(false);
+      save();
+    } else if (event.key === 'ArrowUp') {
       if (history.length === 0) return;
       event.preventDefault();
       if (historyCursor === history.length) draft = input.value;
@@ -303,23 +374,27 @@ export function boot(): void {
     }
   });
 
-  chipButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      if (input.disabled) return;
-      input.value = button.dataset.run ?? '';
-      form.requestSubmit();
-    });
-  });
-
   section.addEventListener('click', (event) => {
     if (input.disabled) return;
     const target = event.target;
-    if (target instanceof Element && target.closest('.chip')) return;
+    if (target instanceof Element && target.closest('.term-titlebar')) return;
     input.focus();
   });
 
   document.addEventListener('keydown', (event) => {
+    const bare = !event.metaKey && !event.ctrlKey && !event.altKey;
+    const isSlash = event.key === '/' && bare;
+    const isK = event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey);
+    if (!isSlash && !isK) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]')) return;
     if (input.disabled) return;
+    event.preventDefault();
+    input.focus();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (input.disabled || !isOpen()) return;
     if (document.activeElement !== document.body) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     if (event.key.length !== 1) return;
@@ -327,36 +402,26 @@ export function boot(): void {
     input.focus();
   });
 
-  const focusIfRequested = () => {
-    let wanted = false;
-    try {
-      wanted = sessionStorage.getItem(FOCUS_KEY) === '1';
-      sessionStorage.removeItem(FOCUS_KEY);
-    } catch {
-      // Storage blocked: nothing asked for focus, so nothing to do.
-    }
-    if (!wanted) return;
-    input.scrollIntoView({ block: 'center' });
-    input.focus();
-  };
-
   const enable = () => {
     input.disabled = false;
-    chipButtons.forEach((button) => button.removeAttribute('disabled'));
-    focusIfRequested();
   };
 
   stampClock();
-  refreshStatus(false);
 
-  if (log.dataset.boot === undefined) {
+  if (section.dataset.boot === undefined) {
+    const refocus = restore();
+    refreshStatus(lastFailed);
+    setOpen(isOpen());
     enable();
+    if (refocus) input.focus({ preventScroll: true });
     return;
   }
+  refreshStatus(false);
+  setOpen(true);
   const motd = log.querySelector('.motd');
   void playBoot(log, motd, config.boot, section, reducedMotion()).then(() => {
-    delete log.dataset.boot;
-    log.scrollTop = log.scrollHeight;
+    delete section.dataset.boot;
+    setOpen(false);
     enable();
   });
 }
