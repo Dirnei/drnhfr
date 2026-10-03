@@ -58,7 +58,13 @@ at least everyone knows why. Understand first, then build.
 
 The site stays the way it is, though.
 
-## Projects
+## More projects
+
+There are more projects I build outside of work. They range from .NET libraries
+through various 3D printing and laser projects to the Dartomat, which I have
+kept tinkering with and improving since 2013. And now and then an open source
+contribution like HomeRacker, where I contributed the website and the
+configurator.
 
 <!-- projects -->
 

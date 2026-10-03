@@ -59,7 +59,13 @@ wenigstens, warum. Erst verstehen, dann bauen.
 
 Die Seite hier bleibt trotzdem so.
 
-## Projekte
+## Weitere Projekte
+
+Es gibt auch noch weitere Projekte, die ich neben der Arbeit baue. Das reicht
+von .NET-Bibliotheken über diverse 3D-Druck- und Laserprojekte bis zum
+Dartomat, an dem ich seit 2013 immer wieder schraube und verbessere.
+Und ab und zu auch ein Open-Source-Beitrag wie bei HomeRacker, wo ich die
+Website und den Konfigurator beigesteuert hab.
 
 <!-- projects -->
 
