@@ -1,0 +1,123 @@
+---
+import ProjectLogo from './ProjectLogo.astro';
+import { getProjects } from '../lib/entries';
+import { slugOf } from '../lib/ids';
+import { routePath } from '../i18n/routes';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const base = routePath('projects', lang);
+const projects = (await getProjects(lang)).map((project) => ({
+  slug: slugOf(project.id),
+  title: project.data.title,
+}));
+---
+<div class="carousel">
+  <div class="track">
+    {
+      [false, true].map((copy) => (
+        <ul class="set" aria-hidden={copy ? 'true' : undefined}>
+          {projects.map(({ slug, title }) => (
+            <li>
+              <a href={`${base}${slug}/`} tabindex={copy ? -1 : undefined}>
+                <span class="art">
+                  <ProjectLogo slug={slug} />
+                  <span class="initial" aria-hidden="true">
+                    {title.charAt(0)}
+                  </span>
+                </span>
+                <span class="title mono-label">{title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+<style>
+  .carousel {
+    max-width: var(--measure);
+    margin: 0.6rem 0 1.6rem;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .track {
+    display: flex;
+    width: max-content;
+    animation: scroll 32s linear infinite;
+  }
+  .carousel:hover .track,
+  .carousel:focus-within .track {
+    animation-play-state: paused;
+  }
+  @keyframes scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .set {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0 2rem 0 0;
+  }
+  .set a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    border: 0;
+    text-decoration: none;
+  }
+  .art {
+    display: grid;
+    --logo-size: 6rem;
+    --logo-padding: 1rem;
+  }
+  .art > * {
+    grid-area: 1 / 1;
+  }
+  .art :global(.logo) + .initial {
+    display: none;
+  }
+  .initial {
+    display: grid;
+    place-items: center;
+    width: 6rem;
+    height: 6rem;
+    border: 1px solid var(--hairline);
+    font-size: 3rem;
+    font-weight: 800;
+    font-stretch: 75%;
+    color: var(--text-muted);
+  }
+  .title {
+    color: var(--text-muted);
+  }
+  .set a:hover .title,
+  .set a:focus-visible .title {
+    color: var(--red-text);
+  }
+  .set a:focus-visible {
+    outline: 1px solid var(--red);
+    outline-offset: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carousel {
+      overflow-x: auto;
+      mask-image: none;
+    }
+    .track {
+      animation: none;
+    }
+    .set[aria-hidden] {
+      display: none;
+    }
+  }
+</style>

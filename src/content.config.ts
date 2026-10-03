@@ -70,6 +70,12 @@ const home = pageCollection(
     headline: z.array(z.string()).min(1),
     headlineDelay: z.number().default(0),
     sub: z.array(z.string()).min(1),
+    gitStats: z.object({
+      commits: z.string(),
+      lines: z.string(),
+      span: z.string(),
+      since: z.string(),
+    }),
   }),
 );
 

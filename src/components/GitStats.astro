@@ -1,0 +1,79 @@
+---
+import { repoStats } from '../lib/build-info';
+import { daysBetween } from '../lib/days';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  lang: Locale;
+  labels: { commits: string; lines: string; span: string; since: string };
+}
+
+const { lang, labels } = Astro.props;
+const format = (value: number) => value.toLocaleString(lang);
+const stats = repoStats && [
+  { value: format(repoStats.commits), label: labels.commits },
+  { value: format(repoStats.linesOfCode), label: labels.lines },
+  { value: format(daysBetween(repoStats.firstCommitIso, repoStats.lastCommitIso)), label: labels.span },
+  {
+    value: format(daysBetween(repoStats.lastCommitIso, new Date().toISOString())),
+    label: labels.since,
+    since: repoStats.lastCommitIso,
+  },
+];
+---
+{
+  stats && (
+    <dl class="git-stats">
+      {stats.map((stat) => (
+        <div class="card">
+          <dt class="mono-label">{stat.label}</dt>
+          <dd data-since={stat.since}>{stat.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+<script>
+  import { daysBetween } from '../lib/days';
+
+  for (const node of document.querySelectorAll<HTMLElement>('.git-stats [data-since]')) {
+    const days = daysBetween(node.dataset.since!, new Date().toISOString());
+    node.textContent = days.toLocaleString(document.documentElement.lang);
+  }
+</script>
+<style>
+  .git-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    max-width: var(--measure);
+    margin: 0.4rem 0 1.6rem;
+  }
+  .card {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.9rem 0.9rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+  }
+  dt {
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  dd {
+    margin: 0;
+    font-size: 2.25rem;
+    font-weight: 800;
+    font-stretch: 75%;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 37.5rem) {
+    .git-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

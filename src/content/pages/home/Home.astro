@@ -1,8 +1,10 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import DecodeText from '../../../components/DecodeText.astro';
+import CtfFlag from '../../../components/CtfFlag.astro';
+import GitStats from '../../../components/GitStats.astro';
+import ProjectCarousel from '../../../components/ProjectCarousel.astro';
 import Prose from '../../../components/Prose.astro';
-import { render } from 'astro:content';
 import { getCtfPage, getHomePage } from '../../../lib/entries';
 import { otherLocale, type Locale } from '../../../i18n/locales';
 
@@ -10,10 +12,12 @@ interface Props {
   lang: Locale;
 }
 
+const SLOT_MARKER = /<!-- (git-stats|ctf-flag|projects) -->/;
+
 const { lang } = Astro.props;
 const entry = await getHomePage(lang);
 const { data } = entry;
-const { Content } = await render(entry);
+const parts = (entry.rendered?.html ?? '').split(SLOT_MARKER);
 const ctfPage = await getCtfPage(lang);
 const HEADLINE_STEP_MS = 210;
 ---
@@ -47,7 +51,21 @@ const HEADLINE_STEP_MS = 210;
     </p>
   </div>
   <section class="shell ctf">
-    <Prose><Content /></Prose>
+    <Prose>
+      {
+        parts.map((part, index) =>
+          index % 2 === 0 ? (
+            <Fragment set:html={part} />
+          ) : part === 'git-stats' ? (
+            <GitStats lang={lang} labels={data.gitStats} />
+          ) : part === 'projects' ? (
+            <ProjectCarousel lang={lang} />
+          ) : (
+            <CtfFlag />
+          ),
+        )
+      }
+    </Prose>
     <p class="mobile">{ctfPage.data.mobile}</p>
   </section>
 </BaseLayout>
@@ -74,6 +92,41 @@ const HEADLINE_STEP_MS = 210;
   @media (max-width: 37.5rem) {
     .mobile {
       display: block;
+    }
+  }
+  .ctf :global(.shine) {
+    color: transparent;
+    background: linear-gradient(
+        105deg,
+        var(--text) 0 42%,
+        var(--text-muted) 46%,
+        var(--shine) 50%,
+        var(--text-muted) 54%,
+        var(--text) 58% 100%
+      )
+      100% 0 / 400% 100%;
+    background-clip: text;
+    animation: shine 3.5s ease-in-out infinite;
+  }
+  @keyframes shine {
+    0% {
+      background-position: 100% 0;
+      filter: none;
+    }
+    20% {
+      filter: drop-shadow(0 0 0.4em color-mix(in srgb, var(--shine) 60%, transparent));
+    }
+    40%,
+    100% {
+      background-position: 0 0;
+      filter: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ctf :global(.shine) {
+      color: var(--text);
+      background: none;
+      animation: none;
     }
   }
   .sub {

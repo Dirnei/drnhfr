@@ -1,0 +1,34 @@
+---
+import { renderBanner } from '../lib/terminal/font';
+
+const banner = renderBanner('CTF', '#');
+const width = Math.max(...banner.map((line) => line.length)) + 8;
+const cloth = [
+  '',
+  ...banner,
+  '',
+].map((line, index) => `${' '.repeat(4)}${line}`.padEnd(width) + (index % 2 === 0 ? ')' : '('));
+const edge = '~'.repeat(width);
+---
+<pre class="ctf-flag" aria-hidden="true"><span class="pole"> o</span>
+<span class="pole"> |</span>{edge}
+{cloth.map((line) => <><span class="pole"> |</span><span class="cloth">{line}</span>{'\n'}</>)}<span class="pole"> |</span>{edge}
+<span class="pole"> |
+ |
+_|_</span></pre>
+<style>
+  .ctf-flag {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    color: var(--text-muted);
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0.6rem 0 1.4rem;
+    overflow-x: auto;
+  }
+  .cloth {
+    color: var(--text);
+  }
+</style>
