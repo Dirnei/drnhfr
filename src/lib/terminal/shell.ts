@@ -18,7 +18,8 @@ export function boot(): void {
   const input = document.getElementById('terminal-input') as HTMLInputElement | null;
   const body = document.getElementById('terminal-body');
   const toggle = document.getElementById('terminal-toggle');
-  if (!configEl || !section || !log || !form || !input || !body || !toggle) return;
+  const resizer = document.getElementById('terminal-resize');
+  if (!configEl || !section || !log || !form || !input || !body || !toggle || !resizer) return;
   if (getComputedStyle(section).display === 'none') return;
 
   const config = JSON.parse(configEl.textContent ?? '{}') as TerminalConfig;
@@ -245,6 +246,15 @@ export function boot(): void {
 
   let focused = false;
 
+  const MIN_LOG_HEIGHT = 128;
+  let logHeight: number | null = null;
+  const setHeight = (height: number | null) => {
+    const max = Math.max(MIN_LOG_HEIGHT, window.innerHeight - 160);
+    logHeight = height === null ? null : Math.round(Math.min(max, Math.max(MIN_LOG_HEIGHT, height)));
+    if (logHeight === null) section.style.removeProperty('--log-height');
+    else section.style.setProperty('--log-height', `${logHeight}px`);
+  };
+
   const save = () => {
     if (halted || section.dataset.boot !== undefined) return;
     const lines: SavedLine[] = [];
@@ -261,6 +271,7 @@ export function boot(): void {
       motd: log.querySelector('.motd') !== null,
       history,
       lines,
+      height: logHeight,
     });
   };
 
@@ -275,6 +286,7 @@ export function boot(): void {
     history.push(...state.history);
     historyCursor = history.length;
     lastFailed = state.failed;
+    setHeight(state.height);
     return state.focused && state.open;
   };
 
@@ -321,12 +333,54 @@ export function boot(): void {
   input.addEventListener('focus', () => {
     focused = true;
     void loadEntries();
-    setOpen(true);
+    if (!isOpen()) setOpen(true);
   });
   input.addEventListener('blur', () => {
     if (!input.disabled) focused = false;
   });
   window.addEventListener('pagehide', save);
+
+  section.addEventListener(
+    'wheel',
+    (event) => {
+      if (!isOpen() || event.ctrlKey) return;
+      if (event.target instanceof Node && log.contains(event.target)) {
+        const atTop = log.scrollTop <= 0;
+        const atBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 1;
+        if ((event.deltaY < 0 && !atTop) || (event.deltaY > 0 && !atBottom)) return;
+      }
+      event.preventDefault();
+    },
+    { passive: false },
+  );
+
+  resizer.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    resizer.setPointerCapture(event.pointerId);
+    const startY = event.clientY;
+    const startHeight = log.clientHeight;
+    const move = (moved: PointerEvent) => setHeight(startHeight + startY - moved.clientY);
+    const stop = () => {
+      resizer.removeEventListener('pointermove', move);
+      resizer.removeEventListener('pointerup', stop);
+      resizer.removeEventListener('pointercancel', stop);
+      save();
+    };
+    resizer.addEventListener('pointermove', move);
+    resizer.addEventListener('pointerup', stop);
+    resizer.addEventListener('pointercancel', stop);
+  });
+  resizer.addEventListener('dblclick', () => {
+    setHeight(null);
+    save();
+  });
+  resizer.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    setHeight(log.clientHeight + (event.key === 'ArrowUp' ? 32 : -32));
+    save();
+  });
 
   toggle.addEventListener('click', () => {
     setOpen(!isOpen());
@@ -399,6 +453,7 @@ export function boot(): void {
     const isSlash = event.key === '/' && bare;
     const isK = event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey);
     if (!isSlash && !isK) return;
+    if (isSlash && isOpen()) return;
     const target = event.target;
     if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]')) return;
     if (input.disabled) return;
@@ -406,13 +461,38 @@ export function boot(): void {
     input.focus();
   });
 
+  const focusAtEnd = () => {
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(input.value.length, input.value.length);
+  };
+
   document.addEventListener('keydown', (event) => {
     if (input.disabled || !isOpen()) return;
-    if (document.activeElement !== document.body) return;
-    if (event.metaKey || event.ctrlKey || event.altKey) return;
-    if (event.key.length !== 1) return;
-    if (event.key === '/') return;
-    input.focus();
+    const target = event.target;
+    if (target instanceof Element && target.closest('input, textarea, select, [contenteditable], .term-resize')) return;
+    const modified = event.metaKey || event.ctrlKey || event.altKey;
+    if (modified) {
+      if (event.key.toLowerCase() === 'v') focusAtEnd();
+      return;
+    }
+    if (event.key.length === 1) {
+      focusAtEnd();
+      return;
+    }
+    const idle = document.activeElement === document.body || section.contains(document.activeElement);
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+      focusAtEnd();
+      input.value = input.value.slice(0, -1);
+    } else if (idle && event.key === 'Enter') {
+      event.preventDefault();
+      focusAtEnd();
+      form.requestSubmit();
+    } else if (idle && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+      event.preventDefault();
+      focusAtEnd();
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: event.key, bubbles: true, cancelable: true }));
+    }
   });
 
   const enable = () => {

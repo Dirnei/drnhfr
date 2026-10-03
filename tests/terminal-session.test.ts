@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_SAVED_LINES, parseState, trimState } from '../src/lib/terminal/session';
 
-const base = { open: true, focused: false, failed: false, motd: true, history: ['ls'], lines: [] };
+const base = { open: true, focused: false, failed: false, motd: true, history: ['ls'], lines: [], height: 320 };
 
 describe('terminal session state', () => {
   it('round-trips through JSON', () => {

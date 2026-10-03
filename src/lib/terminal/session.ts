@@ -12,6 +12,7 @@ export interface TerminalState {
   motd: boolean;
   history: string[];
   lines: SavedLine[];
+  height: number | null;
 }
 
 export const MAX_SAVED_LINES = 400;
@@ -35,6 +36,7 @@ export function parseState(raw: string | null): TerminalState | null {
       focused: value.focused === true,
       failed: value.failed === true,
       motd: value.motd !== false,
+      height: typeof value.height === 'number' && value.height > 0 ? value.height : null,
       history: value.history.filter((entry): entry is string => typeof entry === 'string'),
       lines: value.lines.filter(
         (line): line is SavedLine =>

@@ -48,8 +48,8 @@ Am unteren Rand jeder Seite befindet sich außerdem ein Terminal, mit dem sich p
 erfolgreicher Eingabe wird dafür ein zweiter Eintrag im
 `sessionStorage` gespeichert, damit die Lebenslauf-Seite beim
 Aufruf weiß, dass sie freigeschaltet wurde. Ein dritter Eintrag hält die
-Ausgabe und die eingegebenen Befehle des Terminals, damit es beim Wechsel
-auf eine andere Seite weiterläuft.
+Ausgabe und die eingegebenen Befehle des Terminals sowie die eingestellte
+Höhe, damit es beim Wechsel auf eine andere Seite weiterläuft.
 
 Über dasselbe Terminal lässt sich mit `ctf` ein kleines Capture-the-Flag-Spiel
 starten. Wer danach mit `submit` eine richtige Flagge eingibt, öffnet eine

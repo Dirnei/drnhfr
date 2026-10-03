@@ -18,6 +18,7 @@ const otherHomeHref = `/${otherLocale(lang)}/`;
 const searchHref = `/${lang}/search.json`;
 const terminalLabel = 'Interactive terminal';
 const logLabel = lang === 'de' ? 'Terminal-Ausgabe' : 'Terminal output';
+const resizeLabel = lang === 'de' ? 'Höhe des Terminals ändern' : 'Resize the terminal';
 const inputLabel = 'Terminal input';
 const toggleLabel = lang === 'de' ? 'Terminal-Ausgabe ein- oder ausblenden' : 'Show or hide terminal output';
 
@@ -39,6 +40,7 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
 <section class="terminal" id="terminal" lang="en" aria-label={terminalLabel}>
   <div class="term-inner">
     <div class="term-drawer">
+      <div class="term-resize" id="terminal-resize" role="separator" aria-orientation="horizontal" aria-label={resizeLabel} tabindex="0"></div>
       <div class="term-titlebar">
         <span class="term-title" aria-hidden="true">drnhfr-sh</span>
         <button
@@ -124,6 +126,25 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .terminal[data-boot] .term-drawer {
     bottom: 0;
   }
+  .term-resize {
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: 9px;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+  .term-resize:hover,
+  .term-resize:focus-visible {
+    outline: none;
+    background: linear-gradient(var(--red), var(--red)) center / 100% 2px no-repeat;
+  }
+  .terminal:not([data-open]) .term-resize,
+  .terminal[data-boot] .term-resize {
+    display: none;
+  }
   .term-titlebar {
     display: flex;
     align-items: center;
@@ -148,7 +169,8 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
   .term-body-clip {
     min-height: 0;
     overflow: hidden;
-    background: var(--ink);
+    background: color-mix(in srgb, var(--ink) 85%, transparent);
+    backdrop-filter: blur(6px);
   }
   @media (prefers-reduced-motion: reduce) {
     .term-body {
@@ -162,8 +184,10 @@ const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
 
   .log {
     padding: 1rem;
-    height: min(24rem, 50dvh);
+    height: var(--log-height, min(24rem, 50dvh));
+    max-height: calc(100dvh - 10rem);
     overflow-y: auto;
+    overscroll-behavior: contain;
     white-space: pre-wrap;
     word-break: break-word;
     line-height: 1.6;

@@ -48,8 +48,8 @@ Every page also has a terminal docked at the bottom, which can unlock the cv via
 `su` command. On a successful entry, a second
 `sessionStorage` entry is stored, so the cv page knows it was
 unlocked when it is opened. A third entry holds the terminal's output and
-the commands typed into it, so it carries on when you move to another
-page.
+the commands typed into it, along with the height it was set to, so it
+carries on when you move to another page.
 
 The same terminal starts a small capture the flag game with `ctf`. After
 that, entering a correct flag with `submit` opens an encrypted page. A fourth
