@@ -17,6 +17,7 @@ export const en: Record<keyof typeof de, string> = {
   'projects.docs': 'Project page',
   'projects.demo': 'Try it',
   'projects.kind': 'Project',
+  'projects.contribution': 'Open source contribution',
   'cv.title': 'CV',
   'cv.print': 'Print as PDF',
   'cv.timeline': 'Career',

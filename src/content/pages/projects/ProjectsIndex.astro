@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import EntryRow from '../../../components/EntryRow.astro';
+import ProjectLogo from '../../../components/ProjectLogo.astro';
 import { getProjects, getProjectsPage } from '../../../lib/entries';
+import { formatRange } from '../../../data/cv';
 import { slugOf } from '../../../lib/ids';
 import { useTranslations } from '../../../i18n/ui';
 import { routePath } from '../../../i18n/routes';
@@ -27,16 +28,28 @@ const base = routePath('projects', lang);
   <div class="shell">
     <h1>{data.heading}</h1>
     {projects.length === 0 && <p class="mono-label">{data.empty}</p>}
-    <ul class="rows">
+    <ul class="cards">
       {
-        projects.map((project, index) => (
-          <EntryRow
-            href={`${base}${slugOf(project.id)}/`}
-            index={index}
-            title={project.data.title}
-            kind={t('projects.kind')}
-          />
-        ))
+        projects.map((project) => {
+          const slug = slugOf(project.id);
+          return (
+            <li>
+              <a href={`${base}${slug}/`}>
+                <span class="art">
+                  <ProjectLogo slug={slug} />
+                </span>
+                <span class="body">
+                  <span class="title">{project.data.title}</span>
+                  <span class="meta mono-label">
+                    {formatRange(project.facts.begin, project.facts.end, lang)}
+                    {project.facts.contribution && <span class="contribution">{t('projects.contribution')}</span>}
+                  </span>
+                  <span class="summary">{project.data.summary}</span>
+                </span>
+              </a>
+            </li>
+          );
+        })
       }
     </ul>
   </div>
@@ -46,10 +59,80 @@ const base = routePath('projects', lang);
     font-size: clamp(2rem, 8vw, 3.5rem);
     padding-block: 2rem 1.25rem;
   }
-  .rows {
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1rem;
     list-style: none;
-    margin: 0;
+    margin: 0 0 3rem;
     padding: 0;
-    border-top: 1px solid var(--hairline);
+  }
+  .cards a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .art {
+    display: grid;
+    border-bottom: 1px solid var(--hairline);
+    --logo-width: 100%;
+    --logo-height: 10rem;
+    --logo-padding: 2rem;
+  }
+  .art :global(.logo) {
+    border: 0;
+  }
+  .art :global(img) {
+    transition: transform 0.25s ease-out;
+  }
+  .cards a:hover .art :global(img),
+  .cards a:focus-visible .art :global(img) {
+    transform: scale(1.08);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .art :global(img) {
+      transition: none;
+    }
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.1rem 1.25rem;
+  }
+  .title {
+    align-self: flex-start;
+    padding-bottom: 0.15rem;
+    border-bottom: 2px solid transparent;
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-stretch: 75%;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+  }
+  .contribution {
+    color: var(--boot-ok);
+  }
+  .summary {
+    color: var(--text-body);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .cards a:hover,
+  .cards a:focus-visible {
+    border-color: var(--red);
+  }
+  .cards a:hover .title,
+  .cards a:focus-visible .title {
+    border-bottom-color: var(--red);
   }
 </style>

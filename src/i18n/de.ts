@@ -15,6 +15,7 @@ export const de = {
   'projects.docs': 'Projektseite',
   'projects.demo': 'Ausprobieren',
   'projects.kind': 'Projekt',
+  'projects.contribution': 'Open-Source-Beitrag',
   'cv.title': 'Lebenslauf',
   'cv.print': 'Als PDF drucken',
   'cv.timeline': 'Werdegang',
