@@ -25,10 +25,12 @@ const graph = buildGraph({
     title: project.data.title,
     href: `${projectBase}${slugOf(project.id)}/`,
     stack: project.facts.stack,
+    contribution: project.facts.contribution,
   })),
   ...skillExtrasFor(lang),
   present: data.present,
   projectLabel: data.legend.project,
+  contributionLabel: data.legend.contribution,
   areaLabel: data.legend.area,
 });
 
@@ -46,7 +48,7 @@ const byId = new Map(graph.nodes.map((node) => [node.id, node]));
 const logos = [...new Set(graph.nodes.flatMap((node) => (node.icon ? [node.icon] : [])))]
   .map((slug) => iconBySlug(slug)!)
   .filter(Boolean);
-const KIND_ORDER = { job: 0, project: 1, area: 2, tech: 3 };
+const KIND_ORDER = { job: 0, project: 1, contribution: 2, area: 3, tech: 4 };
 const linksOf = (id: string): GraphNode[] =>
   neighbours(graph, id)
     .map((other) => byId.get(other)!)
@@ -65,6 +67,7 @@ const linksOf = (id: string): GraphNode[] =>
     <ul class="legend">
       <li><span class="key job"></span>{data.legend.job}</li>
       <li><span class="key project"></span>{data.legend.project}</li>
+      <li><span class="key contribution"></span>{data.legend.contribution}</li>
       <li><span class="key area"></span>{data.legend.area}</li>
       <li><span class="key tech"></span>{data.legend.tech}</li>
       <li><span class="key related"></span>{data.legend.related}</li>
@@ -245,6 +248,11 @@ const linksOf = (id: string): GraphNode[] =>
   .node.project rect {
     background: var(--boot-info);
     fill: var(--boot-info);
+  }
+  .key.contribution,
+  .node.contribution rect {
+    background: var(--boot-ok);
+    fill: var(--boot-ok);
   }
   .key.area,
   .node.area rect {

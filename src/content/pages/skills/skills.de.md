@@ -8,6 +8,7 @@ present: heute
 legend:
   job: Beruflich
   project: Eigenes Projekt
+  contribution: Open-Source-Beitrag
   area: Privat
   tech: Technik
   related: related

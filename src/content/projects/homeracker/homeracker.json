@@ -7,5 +7,6 @@
     "demo": "https://homeracker.org/configurator/"
   },
   "featured": true,
+  "contribution": true,
   "order": 30
 }

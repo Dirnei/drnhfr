@@ -20,7 +20,7 @@ function realSource(): GraphSource {
     const md = readFileSync(`src/content/projects/${slug}/${slug}.en.md`, 'utf8');
     const title = md.match(/^title: '?(.*?)'?\r?$/m)![1];
     const facts = JSON.parse(readFileSync(`src/content/projects/${slug}/${slug}.json`, 'utf8'));
-    return { slug, title, href: `/en/projects/${slug}/`, stack: facts.stack as string[] };
+    return { slug, title, href: `/en/projects/${slug}/`, stack: facts.stack as string[], contribution: facts.contribution === true };
   });
   return {
     jobs: cv.experience.map((job) => ({
@@ -254,5 +254,14 @@ describe('dragging a node', () => {
     watched.forEach((i, w) => {
       expect(reversals[w], graph.nodes[i].id).toBeLessThanOrEqual(2);
     });
+  });
+});
+
+describe('project kinds', () => {
+  it('draws an open source contribution as its own kind, not as an own project', () => {
+    const graph = buildGraph(realSource());
+    const kindOf = (id: string) => graph.nodes.find((node) => node.id === id)?.kind;
+    expect(kindOf('project:homeracker')).toBe('contribution');
+    expect(kindOf('project:dartomat')).toBe('project');
   });
 });

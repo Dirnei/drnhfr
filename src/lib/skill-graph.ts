@@ -1,7 +1,7 @@
 import techNames from '../data/tech-names.json';
 import techIcons from '../data/tech-icons.json';
 
-export type NodeKind = 'job' | 'project' | 'area' | 'tech';
+export type NodeKind = 'job' | 'project' | 'contribution' | 'area' | 'tech';
 export type EdgeKind = 'uses' | 'related';
 
 export interface GraphNode {
@@ -27,7 +27,7 @@ export interface Graph {
 
 export interface GraphSource {
   jobs: { field: string; organisation: string; start: string; end: string | null; stack: string[] }[];
-  projects: { slug: string; title: string; href: string; stack: string[] }[];
+  projects: { slug: string; title: string; href: string; stack: string[]; contribution?: boolean }[];
   /** Own projects without a project page, such as this site. */
   extraProjects?: { id: string; label: string; href: string; stack: string[] }[];
   areas?: { id: string; label: string; projects?: string[]; stack: string[] }[];
@@ -39,6 +39,7 @@ export interface GraphSource {
   platforms?: string[];
   present: string;
   projectLabel: string;
+  contributionLabel?: string;
   areaLabel?: string;
 }
 
@@ -85,7 +86,11 @@ export function buildGraph(source: GraphSource): Graph {
   }
   for (const project of source.projects) {
     const id = `project:${project.slug}`;
-    nodes.push({ id, kind: 'project', label: project.title, detail: source.projectLabel, href: project.href });
+    nodes.push(
+      project.contribution
+        ? { id, kind: 'contribution', label: project.title, detail: source.contributionLabel, href: project.href }
+        : { id, kind: 'project', label: project.title, detail: source.projectLabel, href: project.href },
+    );
     connect(id, project.stack, 'uses');
   }
   for (const project of source.extraProjects ?? []) {

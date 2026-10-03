@@ -8,6 +8,7 @@ present: today
 legend:
   job: Work
   project: Own project
+  contribution: Open source contribution
   area: Private
   tech: Technology
   related: related

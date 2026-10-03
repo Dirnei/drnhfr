@@ -326,7 +326,8 @@ it out, and `src/lib/skill-graph-client.ts` handles drag, pan and zoom.
   each other when their slugs match, which is what `findCounterpart` compares.
 - **A project's untranslated facts live once, in `<slug>.json`** next to its
   texts: `begin`, optional `end` (`YYYY` or `YYYY-MM`), `stack`, `links`,
-  `featured`, `order`. The `.de.md` / `.en.md` files carry only `title`,
+  `featured`, `contribution` (someone else's project I contributed to; the
+  skills graph draws it as its own kind), `order`. The `.de.md` / `.en.md` files carry only `title`,
   `summary`, `role` and the body. The period used to be a string in both
   files and they disagreed ("heute" vs "present"); now it is two facts and
   `formatRange` words it per language. `getProjects()` joins the two

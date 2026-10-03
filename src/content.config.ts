@@ -40,6 +40,7 @@ const projectFacts = defineCollection({
       })
       .default({}),
     featured: z.boolean().default(false),
+    contribution: z.boolean().default(false),
     order: z.number().default(100),
   }),
 });
@@ -128,6 +129,7 @@ const skills = pageCollection(
     legend: z.object({
       job: z.string(),
       project: z.string(),
+      contribution: z.string(),
       area: z.string(),
       tech: z.string(),
       related: z.string(),
